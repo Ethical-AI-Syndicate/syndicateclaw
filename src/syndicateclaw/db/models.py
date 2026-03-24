@@ -571,3 +571,163 @@ class ShadowEvaluation(Base):
     disagreement_type: Mapped[str | None] = mapped_column(Text)
     cache_hit: Mapped[bool] = mapped_column(default=False)
     evaluation_latency_us: Mapped[int] = mapped_column(Integer, default=0)
+
+
+# ---------------------------------------------------------------------------
+# Inference / provider layer (Phase 1) — YAML is authoritative for topology;
+# these tables store idempotency, catalog materialization, and audit evidence.
+# ---------------------------------------------------------------------------
+
+
+class InferenceEnvelope(Base):
+    """Idempotency envelope: one row per idempotency_key (unique).
+
+    request_hash must be SHA-256 hex from syndicateclaw.inference.hashing.canonical_json_hash.
+    """
+
+    __tablename__ = "inference_request_envelopes"
+    __table_args__ = (
+        UniqueConstraint("idempotency_key", name="uq_inference_request_envelopes_idempotency_key"),
+        Index(
+            "ix_inference_request_envelopes_stale_sweep",
+            "status",
+            "updated_at",
+        ),
+        Index("ix_inference_request_envelopes_inference_id", "inference_id"),
+        Index("ix_inference_request_envelopes_trace_id", "trace_id"),
+    )
+
+    idempotency_key: Mapped[str] = mapped_column(Text, nullable=False)
+    request_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    inference_id: Mapped[str] = mapped_column(Text, nullable=False)
+    system_config_version: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="pending")
+    trace_id: Mapped[str | None] = mapped_column(Text)
+    failure_reason: Mapped[str | None] = mapped_column(Text)
+    first_seen_at: Mapped[datetime | None]
+    last_seen_at: Mapped[datetime | None]
+
+
+class InferenceDecisionEvidence(Base):
+    """Persisted inference decision record (table: inference_decision_records)."""
+
+    __tablename__ = "inference_decision_records"
+    __table_args__ = (
+        Index("ix_inference_decision_records_inference_id", "inference_id"),
+        Index("ix_inference_decision_records_trace_id", "trace_id"),
+        Index("ix_inference_decision_records_created_at", "created_at"),
+        Index("ix_inference_decision_records_policy_chain_id", "policy_chain_id"),
+        Index("ix_inference_decision_records_capability_status", "capability", "status"),
+    )
+
+    inference_id: Mapped[str] = mapped_column(Text, nullable=False)
+    trace_id: Mapped[str | None] = mapped_column(Text)
+    policy_chain_id: Mapped[str | None] = mapped_column(Text)
+    capability: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False)
+    actor: Mapped[str] = mapped_column(Text, nullable=False)
+    scope_type: Mapped[str] = mapped_column(Text, nullable=False)
+    scope_id: Mapped[str] = mapped_column(Text, nullable=False)
+    resolved_provider_id: Mapped[str | None] = mapped_column(Text)
+    resolved_model_id: Mapped[str | None] = mapped_column(Text)
+    resolved_provider_type: Mapped[str | None] = mapped_column(Text)
+    adapter_protocol: Mapped[str | None] = mapped_column(Text)
+    request_payload_hash: Mapped[str | None] = mapped_column(Text)
+    response_payload_hash: Mapped[str | None] = mapped_column(Text)
+    parent_decision_id: Mapped[str | None] = mapped_column(Text)
+    attempt_number: Mapped[int] = mapped_column(Integer, default=1)
+    details: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+
+class InferenceCatalogSnapshot(Base):
+    """models.dev / sync snapshot metadata (not raw provider topology)."""
+
+    __tablename__ = "inference_catalog_snapshots"
+    __table_args__ = (
+        Index("ix_inference_catalog_snapshots_synced_at", "synced_at"),
+        UniqueConstraint("snapshot_version", name="uq_inference_catalog_snapshots_version"),
+    )
+
+    snapshot_version: Mapped[str] = mapped_column(Text, nullable=False)
+    previous_version: Mapped[str | None] = mapped_column(Text)
+    synced_at: Mapped[datetime] = mapped_column(nullable=False)
+    models_accepted: Mapped[int] = mapped_column(Integer, default=0)
+    models_rejected: Mapped[int] = mapped_column(Integer, default=0)
+    summary: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+
+class InferenceCatalogEntry(Base):
+    """Materialized catalog entry for a snapshot (provider + model identity)."""
+
+    __tablename__ = "inference_catalog_entries"
+    __table_args__ = (
+        UniqueConstraint(
+            "snapshot_version",
+            "provider_id",
+            "model_id",
+            name="uq_inference_catalog_entries_snapshot_provider_model",
+        ),
+        Index("ix_inference_catalog_entries_provider", "provider_id"),
+        Index("ix_inference_catalog_entries_model_id", "model_id"),
+        Index("ix_inference_catalog_entries_snapshot_provider", "snapshot_version", "provider_id"),
+        Index("ix_inference_catalog_entries_status", "status"),
+    )
+
+    snapshot_version: Mapped[str] = mapped_column(Text, nullable=False)
+    provider_id: Mapped[str] = mapped_column(Text, nullable=False)
+    model_id: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="active")
+    descriptor: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+
+class InferenceRoutingDecision(Base):
+    """Materialized routing decision for a single inference attempt."""
+
+    __tablename__ = "inference_routing_decisions"
+    __table_args__ = (
+        Index("ix_inference_routing_decisions_inference_id", "inference_id"),
+        Index("ix_inference_routing_decisions_created_at", "created_at"),
+    )
+
+    inference_id: Mapped[str] = mapped_column(Text, nullable=False)
+    routing_decision_id: Mapped[str] = mapped_column(Text, nullable=False)
+    decision: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+
+class InferencePolicyChain(Base):
+    """Linked policy gate results for an inference."""
+
+    __tablename__ = "inference_policy_chains"
+    __table_args__ = (
+        Index("ix_inference_policy_chains_inference_id", "inference_id"),
+        UniqueConstraint("chain_id", name="uq_inference_policy_chains_chain_id"),
+    )
+
+    inference_id: Mapped[str] = mapped_column(Text, nullable=False)
+    chain_id: Mapped[str] = mapped_column(Text, nullable=False)
+    gates: Mapped[list[Any]] = mapped_column(JSONB, default=list)
+
+
+class InferenceModelPin(Base):
+    """Pinned model identity for embeddings / reproducibility."""
+
+    __tablename__ = "inference_model_pins"
+    __table_args__ = (
+        UniqueConstraint(
+            "scope_type",
+            "scope_id",
+            "provider_id",
+            "model_id",
+            name="uq_inference_model_pins_scope_provider_model",
+        ),
+        Index("ix_inference_model_pins_provider_model", "provider_id", "model_id"),
+    )
+
+    scope_type: Mapped[str] = mapped_column(Text, nullable=False)
+    scope_id: Mapped[str] = mapped_column(Text, nullable=False)
+    provider_id: Mapped[str] = mapped_column(Text, nullable=False)
+    model_id: Mapped[str] = mapped_column(Text, nullable=False)
+    pin_version: Mapped[str] = mapped_column(Text, nullable=False)
+    embedding_dimensions: Mapped[int | None] = mapped_column(Integer)
+    pinned_by: Mapped[str] = mapped_column(Text, nullable=False)
+    pinned_at: Mapped[datetime] = mapped_column(nullable=False)

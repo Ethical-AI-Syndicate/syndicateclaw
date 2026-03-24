@@ -60,6 +60,16 @@ class InferenceStatus(str, enum.Enum):
     TIMED_OUT = "timed_out"
 
 
+class InferenceEnvelopeStatus(str, enum.Enum):
+    """Persisted idempotency envelope lifecycle (DB-backed)."""
+
+    PENDING = "pending"
+    EXECUTING = "executing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    TIMED_OUT = "timed_out"
+
+
 class DataSensitivity(str, enum.Enum):
     PUBLIC = "public"
     INTERNAL = "internal"
