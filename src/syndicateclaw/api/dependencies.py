@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 import structlog
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.config import Settings
@@ -64,6 +64,14 @@ def get_tool_executor(request: Request) -> Any:
     return _get_service(request, "tool_executor")
 
 
+def get_provider_service(request: Request) -> Any:
+    return _get_service(request, "provider_service")
+
+
+def get_provider_loader(request: Request) -> Any:
+    return _get_service(request, "provider_config_loader")
+
+
 async def get_current_actor(request: Request) -> str:
     """Extract actor identity from JWT bearer token or X-API-Key header.
 
@@ -90,11 +98,11 @@ async def get_current_actor(request: Request) -> str:
                 )
             request.state.actor = actor
             return actor
-        except JWTError:
+        except JWTError as err:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid or expired token",
-            )
+            ) from err
 
     api_key = request.headers.get("X-API-Key")
     if api_key:

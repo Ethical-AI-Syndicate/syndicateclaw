@@ -176,6 +176,8 @@ class TestAuditEventType:
             "HTTP_REQUEST",
             "DECISION_RECORDED",
             "INPUT_SNAPSHOT_CAPTURED", "REPLAY_STARTED", "REPLAY_DIVERGENCE_DETECTED",
+            "INFERENCE_STARTED", "INFERENCE_COMPLETED", "INFERENCE_FAILED",
+            "INFERENCE_STREAM_STARTED", "INFERENCE_STREAM_COMPLETED", "INFERENCE_STREAM_FAILED",
         }
         actual = {e.value for e in AuditEventType}
         assert expected_prefixes == actual

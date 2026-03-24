@@ -7,7 +7,6 @@ sliding window. Burst is tracked separately as a short sub-window.
 from __future__ import annotations
 
 import time
-from typing import Any
 
 import structlog
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint

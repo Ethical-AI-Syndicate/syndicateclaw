@@ -55,6 +55,11 @@ class ModelCatalog:
         with self._lock:
             return self._snapshot_version
 
+    @property
+    def entry_count(self) -> int:
+        with self._lock:
+            return len(self._entries)
+
     def get(self, provider_id: str, model_id: str) -> CatalogEntryRecord | None:
         with self._lock:
             return self._entries.get((provider_id, model_id))

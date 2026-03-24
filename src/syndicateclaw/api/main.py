@@ -3,17 +3,18 @@ from __future__ import annotations
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 import structlog
 from fastapi import FastAPI, Request
-from sqlalchemy import text
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
 from syndicateclaw.api.middleware import AuditMiddleware, RequestIDMiddleware
 from syndicateclaw.api.rate_limit import RateLimitMiddleware
-from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.api.routes import ALL_ROUTERS
+from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.config import Settings
 
 logger = structlog.get_logger(__name__)
@@ -91,7 +92,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     asymmetric_keypair = None
     if settings.ed25519_private_key_path:
-        from pathlib import Path
         from syndicateclaw.security.signing import SigningKeyPair
         key_path = Path(settings.ed25519_private_key_path)
         if not key_path.exists():
@@ -152,6 +152,44 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     for tool, handler in BUILTIN_TOOLS:
         tool_registry.register(tool, handler)
 
+    repo_root = Path(__file__).resolve().parents[2]
+    yaml_path = Path(settings.providers_yaml_path or (repo_root / "providers.yaml.example"))
+    if not yaml_path.exists():
+        yaml_path.write_text("inference_enabled: false\nproviders: []\n", encoding="utf-8")
+
+    from syndicateclaw.inference.catalog import ModelCatalog
+    from syndicateclaw.inference.config_loader import ProviderConfigLoader
+    from syndicateclaw.inference.config_schema import ProviderSystemConfig
+    from syndicateclaw.inference.registry import ProviderRegistry
+    from syndicateclaw.inference.service import ProviderService
+    from syndicateclaw.tools.inference_tools import build_inference_tools
+
+    provider_config_loader = ProviderConfigLoader(yaml_path)
+    try:
+        provider_config_loader.load_and_activate()
+    except Exception:
+        logger.warning("provider_config.initial_load_failed", exc_info=True)
+        provider_config_loader.activate(ProviderSystemConfig(inference_enabled=False, providers=()))
+
+    _cfg, _ver = provider_config_loader.current()
+    inference_catalog = ModelCatalog()
+    inference_catalog.replace_from_yaml_static(_cfg, snapshot_version=_ver)
+    provider_registry = ProviderRegistry(_cfg)
+    provider_service = ProviderService(
+        loader=provider_config_loader,
+        catalog=inference_catalog,
+        registry=provider_registry,
+        policy_engine=policy_engine,
+        audit_service=audit_service,
+    )
+    for tool, handler in build_inference_tools(provider_service):
+        tool_registry.register(tool, handler)
+
+    app.state.provider_config_loader = provider_config_loader
+    app.state.inference_catalog = inference_catalog
+    app.state.provider_registry = provider_registry
+    app.state.provider_service = provider_service
+
     app.state.audit_service = audit_service
     app.state.memory_service = memory_service
     app.state.policy_engine = policy_engine
@@ -190,7 +228,10 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="SyndicateClaw",
         version=VERSION,
-        description="Production-oriented agent orchestration platform with stateful graph-based workflows",
+        description=(
+            "Production-oriented agent orchestration platform with "
+            "stateful graph-based workflows"
+        ),
         lifespan=lifespan,
     )
 

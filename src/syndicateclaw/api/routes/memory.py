@@ -10,7 +10,6 @@ from pydantic import BaseModel, Field
 from syndicateclaw.api.dependencies import (
     get_current_actor,
     get_db_session,
-    get_memory_service,
 )
 from syndicateclaw.models import MemoryDeletionStatus, MemoryType
 

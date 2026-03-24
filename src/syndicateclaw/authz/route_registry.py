@@ -11,10 +11,10 @@ They must not have side effects. A None return signals scope resolution failure.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from sqlalchemy import select, text
+from sqlalchemy import text
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -380,6 +380,28 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="platform",
         legacy_check="authenticated_only",
         notes="Body carries actor/resource for evaluation; no admin check.",
+    ),
+
+    # ── Inference / providers (Gate 1 absent; ProviderService runs 2–4) ──
+    ("POST", "/api/v1/inference/chat"): RouteAuthzSpec(
+        permission="inference:invoke_chat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/inference/embedding"): RouteAuthzSpec(
+        permission="inference:invoke_embedding",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/inference/chat/stream"): RouteAuthzSpec(
+        permission="inference:invoke_chat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/providers/"): RouteAuthzSpec(
+        permission="provider:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
     ),
 
     # ── Tools ──────────────────────────────────────────────────────────

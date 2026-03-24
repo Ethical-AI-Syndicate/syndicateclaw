@@ -31,6 +31,7 @@ class RoutingPolicyConfig(BaseModel):
     cost_weight_cap: float = 1_000_000.0
     policy_cache_ttl_seconds: float = 60.0
     policy_max_candidates_per_request: int = 64
+    max_total_latency_ms: float = 120_000.0
 
 
 class YamlCatalogCoexistence(BaseModel):

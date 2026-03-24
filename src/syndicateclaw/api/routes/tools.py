@@ -12,7 +12,6 @@ from syndicateclaw.api.dependencies import (
     get_db_session,
     get_tool_executor,
 )
-from syndicateclaw.models import ToolRiskLevel
 
 logger = structlog.get_logger(__name__)
 

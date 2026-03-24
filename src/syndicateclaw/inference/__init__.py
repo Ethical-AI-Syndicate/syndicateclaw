@@ -6,6 +6,7 @@ from syndicateclaw.inference.config_schema import ProviderSystemConfig
 from syndicateclaw.inference.hashing import canonical_json_hash
 from syndicateclaw.inference.registry import ProviderRegistry
 from syndicateclaw.inference.router import InferenceRouter
+from syndicateclaw.inference.service import ProviderService
 from syndicateclaw.inference.types import (
     AdapterProtocol,
     ChatInferenceRequest,
@@ -27,6 +28,7 @@ __all__ = [
     "ProviderConfig",
     "ProviderConfigLoader",
     "ProviderRegistry",
+    "ProviderService",
     "ProviderSystemConfig",
     "ProviderType",
 ]

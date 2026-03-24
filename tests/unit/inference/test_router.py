@@ -25,10 +25,10 @@ from tests.unit.inference.fixtures import minimal_system, provider, static_chat_
 
 
 class _AllowAll(PolicyRoutingPort):
-    def gate_inference_capability(self, **kwargs):
+    async def gate_inference_capability(self, **kwargs):
         return "allow"
 
-    def gate_model_use(self, **kwargs):
+    async def gate_model_use(self, **kwargs):
         return "allow"
 
 
@@ -36,10 +36,10 @@ class _DenySpecificModel(PolicyRoutingPort):
     def __init__(self, denied: set[str]) -> None:
         self._denied = denied
 
-    def gate_inference_capability(self, **kwargs):
+    async def gate_inference_capability(self, **kwargs):
         return "allow"
 
-    def gate_model_use(self, *, model_id: str, **kwargs):
+    async def gate_model_use(self, *, model_id: str, **kwargs):
         return "deny" if model_id in self._denied else "allow"
 
 
@@ -52,7 +52,8 @@ def _chat(**kwargs):
     )
 
 
-def test_deterministic_same_decision_except_ulid() -> None:
+@pytest.mark.asyncio
+async def test_deterministic_same_decision_except_ulid() -> None:
     d1 = ModelDescriptor(
         model_id="m1",
         name="m1",
@@ -88,7 +89,7 @@ def test_deterministic_same_decision_except_ulid() -> None:
     router = InferenceRouter(sys.routing)
     cache = BoundedPolicyCache(ttl_seconds=60.0, max_entries=128)
     req = _chat()
-    a1 = router.route(
+    a1 = await router.route(
         req,
         system=sys,
         registry=reg,
@@ -96,7 +97,7 @@ def test_deterministic_same_decision_except_ulid() -> None:
         policy=_AllowAll(),
         policy_cache=cache,
     )
-    a2 = router.route(
+    a2 = await router.route(
         req,
         system=sys,
         registry=reg,
@@ -109,7 +110,8 @@ def test_deterministic_same_decision_except_ulid() -> None:
     assert a1.fallback_chain == a2.fallback_chain
 
 
-def test_fallback_chain_order_by_score_then_lex() -> None:
+@pytest.mark.asyncio
+async def test_fallback_chain_order_by_score_then_lex() -> None:
     cheap = ModelDescriptor(
         model_id="cheap",
         name="cheap",
@@ -146,7 +148,7 @@ def test_fallback_chain_order_by_score_then_lex() -> None:
     reg = ProviderRegistry(sys)
     router = InferenceRouter(sys.routing)
     cache = BoundedPolicyCache(ttl_seconds=60.0, max_entries=128)
-    d = router.route(
+    d = await router.route(
         _chat(),
         system=sys,
         registry=reg,
@@ -158,7 +160,8 @@ def test_fallback_chain_order_by_score_then_lex() -> None:
     assert d.fallback_chain == [("p", "pricey")]
 
 
-def test_policy_prefilter_drops_denied_model() -> None:
+@pytest.mark.asyncio
+async def test_policy_prefilter_drops_denied_model() -> None:
     sys = minimal_system(
         provider("p"),
         static=(
@@ -171,7 +174,7 @@ def test_policy_prefilter_drops_denied_model() -> None:
     reg = ProviderRegistry(sys)
     router = InferenceRouter(sys.routing)
     cache = BoundedPolicyCache(ttl_seconds=60.0, max_entries=128)
-    d = router.route(
+    d = await router.route(
         _chat(),
         system=sys,
         registry=reg,
@@ -182,7 +185,8 @@ def test_policy_prefilter_drops_denied_model() -> None:
     assert d.selected_model_id == "good"
 
 
-def test_pin_required_without_model_or_pin_raises() -> None:
+@pytest.mark.asyncio
+async def test_pin_required_without_model_or_pin_raises() -> None:
     sys = minimal_system(provider("p"), static=(static_chat_row("p", "m"),))
     cat = ModelCatalog()
     cat.replace_from_yaml_static(sys, snapshot_version="v")
@@ -195,7 +199,7 @@ def test_pin_required_without_model_or_pin_raises() -> None:
         trace_id="t",
     )
     with pytest.raises(InferenceRoutingError) as ei:
-        router.route(
+        await router.route(
             req,
             system=sys,
             registry=reg,
@@ -206,7 +210,8 @@ def test_pin_required_without_model_or_pin_raises() -> None:
     assert ei.value.failure_reason == RoutingFailureReason.PIN_MISMATCH
 
 
-def test_circuit_open_skips_provider() -> None:
+@pytest.mark.asyncio
+async def test_circuit_open_skips_provider() -> None:
     sys = minimal_system(
         provider("open"),
         provider("closed"),
@@ -225,7 +230,7 @@ def test_circuit_open_skips_provider() -> None:
     assert reg.circuit_state("open", now=now) == CircuitState.OPEN
     router = InferenceRouter(sys.routing)
     cache = BoundedPolicyCache(ttl_seconds=60.0, max_entries=128)
-    d = router.route(
+    d = await router.route(
         _chat(),
         system=sys,
         registry=reg,

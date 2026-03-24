@@ -82,9 +82,9 @@ def _policy_model_key(
 
 @runtime_checkable
 class PolicyRoutingPort(Protocol):
-    """Policy hooks for routing (implemented by ProviderService with PolicyEngine)."""
+    """Policy hooks for routing (async PolicyEngine.evaluate from ProviderService)."""
 
-    def gate_inference_capability(
+    async def gate_inference_capability(
         self,
         *,
         capability: InferenceCapability,
@@ -93,7 +93,7 @@ class PolicyRoutingPort(Protocol):
         scope_id: str,
     ) -> Literal["allow", "deny"]: ...
 
-    def gate_model_use(
+    async def gate_model_use(
         self,
         *,
         provider_id: str,
@@ -119,7 +119,7 @@ class InferenceRouter:
     def __init__(self, routing: RoutingPolicyConfig) -> None:
         self._routing = routing
 
-    def route(
+    async def route(
         self,
         request: ChatInferenceRequest | EmbeddingInferenceRequest,
         *,
@@ -140,7 +140,7 @@ class InferenceRouter:
             )
 
         cap = _capability_for(request)
-        if policy.gate_inference_capability(
+        if await policy.gate_inference_capability(
             capability=cap,
             actor=request.actor,
             scope_type=request.scope_type,
@@ -209,7 +209,7 @@ class InferenceRouter:
             )
             cached = policy_cache.get(pkey, now=t)
             if cached is None:
-                ans = policy.gate_model_use(
+                ans = await policy.gate_model_use(
                     provider_id=pid,
                     model_id=mid,
                     capability=cap,

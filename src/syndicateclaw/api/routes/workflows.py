@@ -5,19 +5,17 @@ from typing import Any
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func, select
 from pydantic import BaseModel, Field
+from sqlalchemy import func, select
 
 from syndicateclaw.api.dependencies import (
     get_audit_service,
     get_current_actor,
     get_db_session,
-    get_settings,
     get_workflow_engine,
 )
 from syndicateclaw.config import Settings
 from syndicateclaw.models import (
-    AuditEventType,
     EdgeDefinition,
     NodeDefinition,
     WorkflowRunStatus,
