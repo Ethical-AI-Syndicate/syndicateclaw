@@ -25,6 +25,7 @@ dependencies = [
     "structlog==25.1.0",
     "tenacity==9.0.0",
     "python-ulid==3.0.0",
+    "pyyaml==6.0.2",
     "cryptography==44.0.2",
     "PyJWT[crypto]==2.10.1",
     "passlib[bcrypt]==1.7.4",

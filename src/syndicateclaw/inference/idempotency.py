@@ -7,7 +7,7 @@ are marked FAILED with ``failure_reason='stale_in_progress'``. The idempotency_k
 callers must use a new idempotency key to start a new logical inference (spec: same key+hash
 → same inference_id; a stale failure is a terminal outcome for that key).
 
-See: docs/superpowers/specs/2025-03-24-provider-integration-architecture-design.md (sections 1.4, 4).
+See docs/superpowers/specs/2025-03-24-provider-integration-architecture-design.md (1.4, 4).
 """
 
 from __future__ import annotations

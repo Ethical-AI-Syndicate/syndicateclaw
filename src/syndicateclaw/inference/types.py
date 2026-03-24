@@ -123,6 +123,13 @@ class CatalogEntryStatus(str, enum.Enum):
     REJECTED = "rejected"
 
 
+class CatalogEntrySource(str, enum.Enum):
+    """Origin of a catalog row within a snapshot (YAML vs models.dev)."""
+
+    YAML_STATIC = "yaml_static"
+    MODELS_DEV = "models_dev"
+
+
 class ModelPinning(str, enum.Enum):
     REQUIRED = "required"
     PREFERRED = "preferred"

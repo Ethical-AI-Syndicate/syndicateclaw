@@ -1,0 +1,53 @@
+# Example provider system config (Phase 1 — YAML is authoritative for topology).
+# Copy and point SYNDICATECLAW_PROVIDERS_YAML_PATH at your file.
+
+inference_enabled: true
+
+routing:
+  weights:
+    cost: 1.0
+    latency_proxy: 0.001
+    sensitivity_match_bonus: 2.0
+    degraded_penalty: 100.0
+    trust_tier_trusted_bonus: 0.0
+    trust_tier_untrusted_penalty: 50.0
+  cost_weight_cap: 1000000.0
+  policy_cache_ttl_seconds: 60.0
+  policy_max_candidates_per_request: 64
+
+catalog_coexistence:
+  yaml_wins_on_key_collision: true
+
+models_dev:
+  enabled: false
+
+providers:
+  - id: local-llm
+    name: Local Ollama
+    provider_type: local
+    adapter_protocol: ollama_native
+    base_url: http://127.0.0.1:11434
+    capabilities:
+      - chat
+      - embedding
+    health_strategy: models_list
+    enabled: true
+
+static_catalog:
+  - provider_id: local-llm
+    model_id: llama3
+    capability: chat
+    descriptor:
+      model_id: llama3
+      name: Llama 3
+      provider_id: local-llm
+      is_embedding_model: false
+  - provider_id: local-llm
+    model_id: llama3
+    capability: embedding
+    descriptor:
+      model_id: llama3
+      name: Llama 3
+      provider_id: local-llm
+      is_embedding_model: true
+      embedding_dimensions: 4096

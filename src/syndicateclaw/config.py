@@ -109,3 +109,7 @@ class Settings(BaseSettings):
         description="JWT signing algorithm. 'HS256' for symmetric (default), "
         "'EdDSA' for Ed25519 asymmetric (requires ed25519_private_key_path).",
     )
+    providers_yaml_path: str | None = Field(
+        default=None,
+        description="Optional path to providers.yaml (Phase 1 provider topology; YAML authoritative).",
+    )
