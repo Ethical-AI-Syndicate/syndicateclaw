@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-import hashlib
 import json
 import time
 from datetime import UTC, datetime, timedelta
@@ -16,8 +15,8 @@ from syndicateclaw.models import (
     ApprovalScope,
     AuditEvent,
     AuditEventType,
-    DecisionDomain,
     PolicyEffect,
+    Tool,
     ToolExecution,
     ToolExecutionStatus,
     ToolSandboxPolicy,
@@ -206,7 +205,8 @@ class ToolExecutor:
         enforce_sandbox(tool_name, input_data, sandbox)
 
         # --- 3. Policy check ---
-        decision = await self._check_policy(tool_name, input_data, context)
+        # PolicyEngine.evaluate(resource_type, resource_id, action, actor, context)
+        decision = await self._check_policy(tool_name, input_data, context, tool_meta)
 
         if decision == PolicyEffect.DENY:
             await self._record_decision(
@@ -308,18 +308,64 @@ class ToolExecutor:
 
     # -- internals ----------------------------------------------------------
 
+    def _policy_actor(self, context: ExecutionContext) -> str:
+        """Actor for policy evaluation; workflow runs may use actor from config."""
+        if context.config.get("actor"):
+            return str(context.config["actor"])
+        return context.run_id
+
+    def _build_tool_policy_context(
+        self,
+        tool_name: str,
+        tool_meta: Tool,
+        input_data: dict[str, Any],
+        context: ExecutionContext,
+    ) -> dict[str, Any]:
+        """Context for PolicyEngine conditions (risk_level, input, run metadata)."""
+        actor = self._policy_actor(context)
+        ctx: dict[str, Any] = {
+            "input": input_data,
+            "tool": tool_name,
+            "risk_level": tool_meta.risk_level.value,
+            "run_id": context.run_id,
+            "node_id": context.node_id,
+            "actor": actor,
+        }
+        reserved = frozenset(ctx.keys())
+        for key, value in (context.config or {}).items():
+            if key not in reserved:
+                ctx[key] = value
+        return ctx
+
     async def _check_policy(
-        self, tool_name: str, input_data: dict[str, Any], context: ExecutionContext,
+        self,
+        tool_name: str,
+        input_data: dict[str, Any],
+        context: ExecutionContext,
+        tool_meta: Tool,
     ) -> PolicyEffect:
         if self._policy_engine is None:
             logger.error("policy_engine.missing", tool=tool_name)
             return PolicyEffect.DENY
-        if hasattr(self._policy_engine, "evaluate"):
-            result = await self._policy_engine.evaluate(tool_name, input_data, context)
-            if hasattr(result, "effect"):
-                return result.effect
-            return result
-        return PolicyEffect.ALLOW
+        if not hasattr(self._policy_engine, "evaluate"):
+            return PolicyEffect.ALLOW
+        actor = self._policy_actor(context)
+        policy_context = self._build_tool_policy_context(
+            tool_name, tool_meta, input_data, context)
+        try:
+            result = await self._policy_engine.evaluate(
+                "tool",
+                tool_name,
+                "execute",
+                actor,
+                policy_context,
+            )
+        except Exception:
+            logger.exception("policy_engine.evaluate_failed", tool=tool_name)
+            return PolicyEffect.DENY
+        if hasattr(result, "effect"):
+            return result.effect  # PolicyDecision
+        return result  # tests may return PolicyEffect directly
 
     async def _record_decision(
         self,
