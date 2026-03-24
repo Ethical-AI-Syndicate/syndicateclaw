@@ -606,6 +606,7 @@ class InferenceEnvelope(Base):
     failure_reason: Mapped[str | None] = mapped_column(Text)
     first_seen_at: Mapped[datetime | None]
     last_seen_at: Mapped[datetime | None]
+    result_json: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
 
 
 class InferenceDecisionEvidence(Base):

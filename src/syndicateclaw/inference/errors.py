@@ -30,6 +30,20 @@ class IdempotencyConflictError(InferenceError):
         super().__init__(message, category=ErrorCategory.VALIDATION, retryable=False)
 
 
+class IdempotencyInProgressError(InferenceError):
+    """Second caller while the same idempotency key is still pending or executing."""
+
+    def __init__(self, message: str = "idempotency_key in progress") -> None:
+        super().__init__(message, category=ErrorCategory.VALIDATION, retryable=False)
+
+
+class IdempotencyTerminalKeyError(InferenceError):
+    """Key is terminal (e.g. stale sweep); client must use a new idempotency key."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message, category=ErrorCategory.VALIDATION, retryable=False)
+
+
 class InferenceDeniedError(InferenceError):
     def __init__(self, message: str) -> None:
         super().__init__(message, category=ErrorCategory.POLICY, retryable=False)

@@ -10,6 +10,11 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from syndicateclaw.api.dependencies import get_current_actor, get_provider_service
+from syndicateclaw.inference.errors import (
+    IdempotencyConflictError,
+    IdempotencyInProgressError,
+    IdempotencyTerminalKeyError,
+)
 from syndicateclaw.inference.types import (
     ChatInferenceRequest,
     ChatMessage,
@@ -25,6 +30,7 @@ router = APIRouter(prefix="/api/v1/inference", tags=["inference"])
 class ChatApiRequest(BaseModel):
     messages: list[dict[str, Any]]
     trace_id: str | None = None
+    idempotency_key: str | None = None
     provider_id: str | None = None
     model_id: str | None = None
     sensitivity: str = DataSensitivity.INTERNAL.value
@@ -37,6 +43,7 @@ class ChatApiRequest(BaseModel):
 class EmbeddingApiRequest(BaseModel):
     inputs: list[str]
     trace_id: str | None = None
+    idempotency_key: str | None = None
     provider_id: str | None = None
     model_id: str | None = None
     scope_type: str = "PLATFORM"
@@ -54,6 +61,7 @@ async def inference_chat(
             messages=[ChatMessage(**m) for m in body.messages],
             actor=actor,
             trace_id=body.trace_id or "",
+            idempotency_key=body.idempotency_key,
             provider_id=body.provider_id,
             model_id=body.model_id,
             sensitivity=DataSensitivity(body.sensitivity),
@@ -64,6 +72,12 @@ async def inference_chat(
         )
         out = await svc.infer_chat(req)
         return out.model_dump(mode="json")
+    except (
+        IdempotencyConflictError,
+        IdempotencyInProgressError,
+        IdempotencyTerminalKeyError,
+    ) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("inference.chat_failed")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
@@ -80,6 +94,7 @@ async def inference_embedding(
             inputs=body.inputs,
             actor=actor,
             trace_id=body.trace_id or "",
+            idempotency_key=body.idempotency_key,
             provider_id=body.provider_id,
             model_id=body.model_id,
             scope_type=body.scope_type,
@@ -87,6 +102,12 @@ async def inference_embedding(
         )
         out = await svc.infer_embedding(req)
         return out.model_dump(mode="json")
+    except (
+        IdempotencyConflictError,
+        IdempotencyInProgressError,
+        IdempotencyTerminalKeyError,
+    ) as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("inference.embedding_failed")
         raise HTTPException(status_code=502, detail=str(exc)) from exc

@@ -13,6 +13,7 @@ See docs/superpowers/specs/2025-03-24-provider-integration-architecture-design.m
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -120,3 +121,65 @@ class IdempotencyStore:
             row.last_seen_at = now
             await session.flush()
             return row, False
+
+    async def mark_executing(self, inference_id: str) -> None:
+        """Move envelope to ``executing`` once work has started."""
+        now = _utcnow()
+        async with self._session_factory() as session, session.begin():
+            await session.execute(
+                update(InferenceEnvelope)
+                .where(InferenceEnvelope.inference_id == inference_id)
+                .where(
+                    InferenceEnvelope.status.in_(
+                        [
+                            InferenceEnvelopeStatus.PENDING.value,
+                            InferenceEnvelopeStatus.EXECUTING.value,
+                        ]
+                    )
+                )
+                .values(
+                    status=InferenceEnvelopeStatus.EXECUTING.value,
+                    updated_at=now,
+                )
+            )
+
+    async def update_completed(
+        self,
+        inference_id: str,
+        *,
+        result_json: dict[str, Any],
+    ) -> None:
+        now = _utcnow()
+        async with self._session_factory() as session, session.begin():
+            await session.execute(
+                update(InferenceEnvelope)
+                .where(InferenceEnvelope.inference_id == inference_id)
+                .values(
+                    status=InferenceEnvelopeStatus.COMPLETED.value,
+                    result_json=result_json,
+                    failure_reason=None,
+                    updated_at=now,
+                )
+            )
+
+    async def update_failed(
+        self,
+        inference_id: str,
+        *,
+        failure_reason: str,
+        result_json: dict[str, Any] | None = None,
+    ) -> None:
+        now = _utcnow()
+        vals: dict[str, Any] = {
+            "status": InferenceEnvelopeStatus.FAILED.value,
+            "failure_reason": failure_reason,
+            "updated_at": now,
+        }
+        if result_json is not None:
+            vals["result_json"] = result_json
+        async with self._session_factory() as session, session.begin():
+            await session.execute(
+                update(InferenceEnvelope)
+                .where(InferenceEnvelope.inference_id == inference_id)
+                .values(**vals)
+            )

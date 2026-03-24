@@ -14,8 +14,17 @@ from syndicateclaw.audit.service import AuditService
 from syndicateclaw.inference.adapters.factory import adapter_for
 from syndicateclaw.inference.catalog import ModelCatalog
 from syndicateclaw.inference.config_loader import ProviderConfigLoader
-from syndicateclaw.inference.errors import InferenceError, InferenceExecutionError
+from syndicateclaw.inference.errors import (
+    IdempotencyConflictError,
+    IdempotencyInProgressError,
+    IdempotencyTerminalKeyError,
+    InferenceError,
+    InferenceExecutionError,
+)
 from syndicateclaw.inference.execution_binding import ExecutionBinding, provider_from_binding
+from syndicateclaw.inference.hashing import canonical_json_hash
+from syndicateclaw.inference.idempotency import IdempotencyStore
+from syndicateclaw.inference.idempotency_payload import fingerprint_chat, fingerprint_embedding
 from syndicateclaw.inference.metrics import record_inference_outcome
 from syndicateclaw.inference.policy_gates import BoundedPolicyCache
 from syndicateclaw.inference.policy_port import PolicyEngineRoutingPort
@@ -27,6 +36,7 @@ from syndicateclaw.inference.types import (
     EmbeddingInferenceRequest,
     EmbeddingInferenceResponse,
     ErrorCategory,
+    InferenceEnvelopeStatus,
 )
 from syndicateclaw.models import AuditEvent, AuditEventType
 from syndicateclaw.policy.engine import PolicyEngine
@@ -53,20 +63,158 @@ class ProviderService:
         registry: ProviderRegistry,
         policy_engine: PolicyEngine,
         audit_service: AuditService,
+        idempotency_store: IdempotencyStore | None = None,
     ) -> None:
         self._loader = loader
         self._catalog = catalog
         self._registry = registry
         self._policy_engine = policy_engine
         self._audit = audit_service
+        self._idempotency = idempotency_store
         self._policy_cache = BoundedPolicyCache(ttl_seconds=60.0, max_entries=256)
+
+    async def _idempotency_chat_begin(
+        self,
+        req: ChatInferenceRequest,
+        binding: ExecutionBinding,
+    ) -> tuple[str, bool, ChatInferenceResponse | None]:
+        """Resolve idempotency: ``(inference_id, finalize_row, replay_response_or_none)``."""
+        if not req.idempotency_key or self._idempotency is None:
+            return str(ULID()), False, None
+
+        h = canonical_json_hash(fingerprint_chat(req))
+        candidate = str(ULID())
+        try:
+            row, is_new = await self._idempotency.acquire(
+                idempotency_key=req.idempotency_key,
+                request_hash=h,
+                inference_id=candidate,
+                system_config_version=binding.system_config_version,
+                trace_id=req.trace_id or None,
+            )
+        except IdempotencyConflictError:
+            raise
+
+        inference_id = row.inference_id
+
+        if not is_new:
+            st = row.status
+            if st == InferenceEnvelopeStatus.COMPLETED.value and row.result_json:
+                if row.result_json.get("_failed"):
+                    raise InferenceExecutionError(
+                        str(row.result_json.get("detail", "inference_failed")),
+                        category=ErrorCategory.PROVIDER,
+                        retryable=False,
+                    )
+                return inference_id, False, ChatInferenceResponse.model_validate(row.result_json)
+
+            if st in (
+                InferenceEnvelopeStatus.PENDING.value,
+                InferenceEnvelopeStatus.EXECUTING.value,
+            ):
+                raise IdempotencyInProgressError()
+
+            if st == InferenceEnvelopeStatus.FAILED.value:
+                if row.result_json and row.result_json.get("_failed"):
+                    raise InferenceExecutionError(
+                        str(row.result_json.get("detail", "inference_failed")),
+                        category=ErrorCategory.PROVIDER,
+                        retryable=False,
+                    )
+                raise IdempotencyTerminalKeyError(
+                    row.failure_reason or "idempotency_key_terminal",
+                )
+
+        await self._idempotency.mark_executing(inference_id)
+        return inference_id, True, None
+
+    async def _idempotency_embedding_begin(
+        self,
+        req: EmbeddingInferenceRequest,
+        binding: ExecutionBinding,
+    ) -> tuple[str, bool, EmbeddingInferenceResponse | None]:
+        if not req.idempotency_key or self._idempotency is None:
+            return str(ULID()), False, None
+
+        h = canonical_json_hash(fingerprint_embedding(req))
+        candidate = str(ULID())
+        try:
+            row, is_new = await self._idempotency.acquire(
+                idempotency_key=req.idempotency_key,
+                request_hash=h,
+                inference_id=candidate,
+                system_config_version=binding.system_config_version,
+                trace_id=req.trace_id or None,
+            )
+        except IdempotencyConflictError:
+            raise
+
+        inference_id = row.inference_id
+
+        if not is_new:
+            st = row.status
+            if st == InferenceEnvelopeStatus.COMPLETED.value and row.result_json:
+                if row.result_json.get("_failed"):
+                    raise InferenceExecutionError(
+                        str(row.result_json.get("detail", "inference_failed")),
+                        category=ErrorCategory.PROVIDER,
+                        retryable=False,
+                    )
+                return inference_id, False, EmbeddingInferenceResponse.model_validate(
+                    row.result_json
+                )
+
+            if st in (
+                InferenceEnvelopeStatus.PENDING.value,
+                InferenceEnvelopeStatus.EXECUTING.value,
+            ):
+                raise IdempotencyInProgressError()
+
+            if st == InferenceEnvelopeStatus.FAILED.value:
+                if row.result_json and row.result_json.get("_failed"):
+                    raise InferenceExecutionError(
+                        str(row.result_json.get("detail", "inference_failed")),
+                        category=ErrorCategory.PROVIDER,
+                        retryable=False,
+                    )
+                raise IdempotencyTerminalKeyError(
+                    row.failure_reason or "idempotency_key_terminal",
+                )
+
+        await self._idempotency.mark_executing(inference_id)
+        return inference_id, True, None
 
     async def infer_chat(self, req: ChatInferenceRequest) -> ChatInferenceResponse:
         """Buffered chat completion (tools and API non-streaming)."""
         binding = ExecutionBinding.capture(self._loader, self._catalog)
-        inference_id = str(ULID())
+        inference_id, idem_finalize, replay = await self._idempotency_chat_begin(req, binding)
+        if replay is not None:
+            return replay
+
         req = req.model_copy(update={"trace_id": req.trace_id or inference_id})
 
+        try:
+            return await self._infer_chat_execute(req, binding, inference_id, idem_finalize)
+        except Exception as exc:
+            if idem_finalize and self._idempotency:
+                await self._idempotency.update_failed(
+                    inference_id,
+                    failure_reason="inference_failed",
+                    result_json={
+                        "_failed": True,
+                        "detail": str(exc),
+                        "error_type": type(exc).__name__,
+                    },
+                )
+            raise
+
+    async def _infer_chat_execute(
+        self,
+        req: ChatInferenceRequest,
+        binding: ExecutionBinding,
+        inference_id: str,
+        idem_finalize: bool,
+    ) -> ChatInferenceResponse:
         router = InferenceRouter(binding.system_config.routing)
         policy_port = PolicyEngineRoutingPort(self._policy_engine)
 
@@ -221,6 +369,10 @@ class ProviderService:
                 },
             )
             record_inference_outcome("chat", "success")
+            if idem_finalize and self._idempotency:
+                await self._idempotency.update_completed(
+                    inference_id, result_json=out.model_dump(mode="json")
+                )
             return out
 
         await self._emit_audit(
@@ -246,9 +398,38 @@ class ProviderService:
     async def infer_embedding(self, req: EmbeddingInferenceRequest) -> EmbeddingInferenceResponse:
         """Buffered embedding inference."""
         binding = ExecutionBinding.capture(self._loader, self._catalog)
-        inference_id = str(ULID())
+        inference_id, idem_finalize, replay = await self._idempotency_embedding_begin(
+            req, binding
+        )
+        if replay is not None:
+            return replay
+
         req = req.model_copy(update={"trace_id": req.trace_id or inference_id})
 
+        try:
+            return await self._infer_embedding_execute(
+                req, binding, inference_id, idem_finalize
+            )
+        except Exception as exc:
+            if idem_finalize and self._idempotency:
+                await self._idempotency.update_failed(
+                    inference_id,
+                    failure_reason="inference_failed",
+                    result_json={
+                        "_failed": True,
+                        "detail": str(exc),
+                        "error_type": type(exc).__name__,
+                    },
+                )
+            raise
+
+    async def _infer_embedding_execute(
+        self,
+        req: EmbeddingInferenceRequest,
+        binding: ExecutionBinding,
+        inference_id: str,
+        idem_finalize: bool,
+    ) -> EmbeddingInferenceResponse:
         router = InferenceRouter(binding.system_config.routing)
         policy_port = PolicyEngineRoutingPort(self._policy_engine)
 
@@ -357,6 +538,10 @@ class ProviderService:
                 },
             )
             record_inference_outcome("embedding", "success")
+            if idem_finalize and self._idempotency:
+                await self._idempotency.update_completed(
+                    inference_id, result_json=out.model_dump(mode="json")
+                )
             return out
 
         await self._emit_audit(

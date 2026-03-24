@@ -160,6 +160,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from syndicateclaw.inference.catalog import ModelCatalog
     from syndicateclaw.inference.config_loader import ProviderConfigLoader
     from syndicateclaw.inference.config_schema import ProviderSystemConfig
+    from syndicateclaw.inference.idempotency import IdempotencyStore
     from syndicateclaw.inference.registry import ProviderRegistry
     from syndicateclaw.inference.service import ProviderService
     from syndicateclaw.tools.inference_tools import build_inference_tools
@@ -175,12 +176,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     inference_catalog = ModelCatalog()
     inference_catalog.replace_from_yaml_static(_cfg, snapshot_version=_ver)
     provider_registry = ProviderRegistry(_cfg)
+    idempotency_store = IdempotencyStore(session_factory)
     provider_service = ProviderService(
         loader=provider_config_loader,
         catalog=inference_catalog,
         registry=provider_registry,
         policy_engine=policy_engine,
         audit_service=audit_service,
+        idempotency_store=idempotency_store,
     )
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)

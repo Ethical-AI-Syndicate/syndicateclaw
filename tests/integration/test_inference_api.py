@@ -16,6 +16,7 @@ from httpx import ASGITransport, AsyncClient
 
 from syndicateclaw.api.dependencies import get_provider_service
 from syndicateclaw.authz.route_registry import get_route_spec
+from syndicateclaw.inference.errors import IdempotencyConflictError
 from syndicateclaw.inference.types import (
     ChatInferenceRequest,
     ChatInferenceResponse,
@@ -190,6 +191,18 @@ class TestInferenceHttpWithMockedService:
         assert resp.status_code == 502
         body = resp.json()
         assert "simulated upstream failure" in body.get("detail", "")
+
+    async def test_idempotency_conflict_maps_to_409(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = IdempotencyConflictError("hash mismatch")
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 409
+        assert "hash mismatch" in resp.json().get("detail", "")
 
     async def test_stream_chat_media_type_and_body(
         self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
