@@ -185,7 +185,11 @@ class ProviderService:
         return inference_id, True, None
 
     async def infer_chat(self, req: ChatInferenceRequest) -> ChatInferenceResponse:
-        """Buffered chat completion (tools and API non-streaming)."""
+        """Buffered chat completion (tools and API non-streaming).
+
+        Idempotency replay (when ``idempotency_key`` is set) applies here only — not to
+        ``stream_chat`` in Phase 1.
+        """
         binding = ExecutionBinding.capture(self._loader, self._catalog)
         inference_id, idem_finalize, replay = await self._idempotency_chat_begin(req, binding)
         if replay is not None:
@@ -396,7 +400,10 @@ class ProviderService:
         )
 
     async def infer_embedding(self, req: EmbeddingInferenceRequest) -> EmbeddingInferenceResponse:
-        """Buffered embedding inference."""
+        """Buffered embedding inference.
+
+        Idempotency replay applies when ``idempotency_key`` is set.
+        """
         binding = ExecutionBinding.capture(self._loader, self._catalog)
         inference_id, idem_finalize, replay = await self._idempotency_embedding_begin(
             req, binding
@@ -567,6 +574,7 @@ class ProviderService:
         """API-only streaming; emits provisional + final audit events.
 
         Phase 1: single primary candidate only (no streaming fallback chain).
+        Intentionally no idempotency — add only with a first-class streaming session model.
         """
         binding = ExecutionBinding.capture(self._loader, self._catalog)
         inference_id = str(ULID())

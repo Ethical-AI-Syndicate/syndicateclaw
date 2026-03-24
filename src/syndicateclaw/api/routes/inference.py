@@ -5,16 +5,13 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from syndicateclaw.api.dependencies import get_current_actor, get_provider_service
-from syndicateclaw.inference.errors import (
-    IdempotencyConflictError,
-    IdempotencyInProgressError,
-    IdempotencyTerminalKeyError,
-)
+from syndicateclaw.api.inference_http import inference_error_to_http
+from syndicateclaw.inference.errors import InferenceError
 from syndicateclaw.inference.types import (
     ChatInferenceRequest,
     ChatMessage,
@@ -72,12 +69,10 @@ async def inference_chat(
         )
         out = await svc.infer_chat(req)
         return out.model_dump(mode="json")
-    except (
-        IdempotencyConflictError,
-        IdempotencyInProgressError,
-        IdempotencyTerminalKeyError,
-    ) as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValidationError as exc:
+        raise inference_error_to_http(exc) from exc
+    except InferenceError as exc:
+        raise inference_error_to_http(exc) from exc
     except Exception as exc:
         logger.exception("inference.chat_failed")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
@@ -102,39 +97,54 @@ async def inference_embedding(
         )
         out = await svc.infer_embedding(req)
         return out.model_dump(mode="json")
-    except (
-        IdempotencyConflictError,
-        IdempotencyInProgressError,
-        IdempotencyTerminalKeyError,
-    ) as exc:
-        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except ValidationError as exc:
+        raise inference_error_to_http(exc) from exc
+    except InferenceError as exc:
+        raise inference_error_to_http(exc) from exc
     except Exception as exc:
         logger.exception("inference.embedding_failed")
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@router.post("/chat/stream")
+@router.post("/chat/stream", response_model=None)
 async def inference_chat_stream(
     body: ChatApiRequest,
     actor: str = Depends(get_current_actor),  # noqa: B008
     svc=Depends(get_provider_service),  # noqa: B008
-) -> StreamingResponse:
-    req = ChatInferenceRequest(
-        messages=[ChatMessage(**m) for m in body.messages],
-        actor=actor,
-        trace_id=body.trace_id or "",
-        provider_id=body.provider_id,
-        model_id=body.model_id,
-        sensitivity=DataSensitivity(body.sensitivity),
-        scope_type=body.scope_type,
-        scope_id=body.scope_id,
-        temperature=body.temperature,
-        max_tokens=body.max_tokens,
-    )
+) -> StreamingResponse | Response:
+    """Streaming: no idempotency in Phase 1.
+
+    First-chunk errors are preflighted so status codes are not committed as 200 first.
+    """
+
+    try:
+        req = ChatInferenceRequest(
+            messages=[ChatMessage(**m) for m in body.messages],
+            actor=actor,
+            trace_id=body.trace_id or "",
+            provider_id=body.provider_id,
+            model_id=body.model_id,
+            sensitivity=DataSensitivity(body.sensitivity),
+            scope_type=body.scope_type,
+            scope_id=body.scope_id,
+            temperature=body.temperature,
+            max_tokens=body.max_tokens,
+        )
+    except ValidationError as exc:
+        raise inference_error_to_http(exc) from exc
+
+    it = svc.stream_chat(req)
+    try:
+        first = await it.__anext__()
+    except StopAsyncIteration:
+        return Response(status_code=204)
+    except InferenceError as exc:
+        raise inference_error_to_http(exc) from exc
 
     async def gen() -> Any:
+        yield first
         try:
-            async for chunk in svc.stream_chat(req):
+            async for chunk in it:
                 yield chunk
         except Exception:
             logger.exception("inference.stream_failed")

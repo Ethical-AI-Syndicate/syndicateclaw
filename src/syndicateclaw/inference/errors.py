@@ -49,6 +49,13 @@ class InferenceDeniedError(InferenceError):
         super().__init__(message, category=ErrorCategory.POLICY, retryable=False)
 
 
+class InferenceApprovalRequiredError(InferenceError):
+    """Reserved for future approval-gated inference; maps to HTTP 409 at the API layer."""
+
+    def __init__(self, message: str = "approval_required") -> None:
+        super().__init__(message, category=ErrorCategory.POLICY, retryable=False)
+
+
 class InferenceRoutingError(InferenceError):
     def __init__(
         self,

@@ -16,11 +16,20 @@ from httpx import ASGITransport, AsyncClient
 
 from syndicateclaw.api.dependencies import get_provider_service
 from syndicateclaw.authz.route_registry import get_route_spec
-from syndicateclaw.inference.errors import IdempotencyConflictError
+from syndicateclaw.inference.errors import (
+    IdempotencyConflictError,
+    InferenceApprovalRequiredError,
+    InferenceDeniedError,
+    InferenceExecutionError,
+    InferenceRoutingError,
+    InferenceValidationError,
+)
 from syndicateclaw.inference.types import (
     ChatInferenceRequest,
     ChatInferenceResponse,
     EmbeddingInferenceResponse,
+    ErrorCategory,
+    RoutingFailureReason,
 )
 
 pytestmark = pytest.mark.integration
@@ -241,6 +250,134 @@ class TestInferenceHttpWithMockedService:
         )
         assert resp.status_code == 200
         assert resp.headers.get("X-Request-ID") == rid
+
+
+class TestInferenceHttpErrorMapping:
+    """Pins inference domain exception → HTTP status (see api/inference_http.py)."""
+
+    async def test_inference_denied_maps_to_403(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceDeniedError("policy")
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 403
+
+    async def test_routing_policy_denied_maps_to_403(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceRoutingError(
+            "capability_denied",
+            failure_reason=RoutingFailureReason.POLICY_DENIED,
+        )
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 403
+
+    async def test_routing_pin_mismatch_maps_to_400(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceRoutingError(
+            "pin",
+            failure_reason=RoutingFailureReason.PIN_MISMATCH,
+        )
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 400
+
+    async def test_routing_no_candidates_maps_to_503(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceRoutingError(
+            "none",
+            failure_reason=RoutingFailureReason.NO_CANDIDATES,
+        )
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 503
+
+    async def test_execution_provider_maps_to_503(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceExecutionError(
+            "all_candidates_failed",
+            category=ErrorCategory.PROVIDER,
+            retryable=False,
+        )
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 503
+
+    async def test_execution_timeout_maps_to_503(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceExecutionError(
+            "global_latency_cap_exceeded",
+            category=ErrorCategory.TIMEOUT,
+            retryable=False,
+        )
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 503
+
+    async def test_validation_maps_to_422(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceValidationError("bad input")
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 422
+
+    async def test_approval_required_maps_to_409(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+        mock_svc.raise_on_chat = InferenceApprovalRequiredError("pending approval")
+        resp = await client.post(
+            "/api/v1/inference/chat",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 409
+
+    async def test_stream_preflight_routing_error_maps_to_status(
+        self, inference_mock_client: tuple[AsyncClient, _RecordingMockProviderService]
+    ) -> None:
+        client, mock_svc = inference_mock_client
+
+        async def fail_before_yield(_req: ChatInferenceRequest) -> AsyncIterator[str]:
+            raise InferenceRoutingError(
+                "no_routes",
+                failure_reason=RoutingFailureReason.NO_CANDIDATES,
+            )
+            yield ""  # pragma: no cover
+
+        mock_svc.stream_chat = fail_before_yield  # type: ignore[method-assign]
+        resp = await client.post(
+            "/api/v1/inference/chat/stream",
+            json={"messages": [{"role": "user", "content": "x"}]},
+        )
+        assert resp.status_code == 503
 
 
 class TestInferenceOpenApiSurface:
