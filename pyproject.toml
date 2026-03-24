@@ -1,0 +1,63 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "syndicateclaw"
+version = "0.1.0"
+description = "Production-oriented agent orchestration platform with stateful graph-based workflows"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "fastapi==0.115.12",
+    "uvicorn[standard]==0.34.0",
+    "pydantic>=2.0,==2.11.1",
+    "pydantic-settings==2.8.1",
+    "sqlalchemy[asyncio]>=2.0,==2.0.40",
+    "asyncpg==0.30.0",
+    "alembic==1.15.1",
+    "redis[hiredis]==5.2.1",
+    "opentelemetry-api==1.30.0",
+    "opentelemetry-sdk==1.30.0",
+    "opentelemetry-instrumentation-fastapi==0.51b0",
+    "opentelemetry-exporter-otlp==1.30.0",
+    "httpx==0.28.1",
+    "structlog==25.1.0",
+    "tenacity==9.0.0",
+    "python-ulid==3.0.0",
+    "cryptography==44.0.2",
+    "PyJWT[crypto]==2.10.1",
+    "passlib[bcrypt]==1.7.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==8.3.5",
+    "pytest-asyncio==0.25.3",
+    "pytest-cov==6.1.1",
+    "httpx==0.28.1",
+    "asgi-lifespan==2.1.0",
+    "factory-boy==3.3.1",
+    "ruff==0.11.2",
+    "mypy==1.15.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/syndicateclaw"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["integration: marks tests as integration tests (require DB/services)"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]

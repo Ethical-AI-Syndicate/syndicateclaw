@@ -1,0 +1,283 @@
+from __future__ import annotations
+
+import sys
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+from typing import Any
+
+import structlog
+from fastapi import FastAPI, Request
+from sqlalchemy import text
+from fastapi.middleware.cors import CORSMiddleware
+
+from syndicateclaw.api.middleware import AuditMiddleware, RequestIDMiddleware
+from syndicateclaw.api.rate_limit import RateLimitMiddleware
+from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+from syndicateclaw.api.routes import ALL_ROUTERS
+from syndicateclaw.config import Settings
+
+logger = structlog.get_logger(__name__)
+
+VERSION = "0.1.0"
+
+
+def _configure_structlog() -> None:
+    structlog.configure(
+        processors=[
+            structlog.contextvars.merge_contextvars,
+            structlog.processors.add_log_level,
+            structlog.processors.StackInfoRenderer(),
+            structlog.dev.set_exc_info,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.JSONRenderer(),
+        ],
+        wrapper_class=structlog.make_filtering_bound_logger(0),
+        context_class=dict,
+        logger_factory=structlog.PrintLoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
+
+
+def _configure_otel(app: FastAPI, endpoint: str) -> None:
+    try:
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+            OTLPSpanExporter,
+        )
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        resource = Resource.create({"service.name": "syndicateclaw"})
+        provider = TracerProvider(resource=resource)
+        provider.add_span_processor(
+            BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True))
+        )
+
+        from opentelemetry import trace
+
+        trace.set_tracer_provider(provider)
+        FastAPIInstrumentor.instrument_app(app)
+        logger.info("otel.configured", endpoint=endpoint)
+    except Exception:
+        logger.warning("otel.setup_failed", exc_info=True)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    import redis.asyncio as aioredis
+
+    from syndicateclaw.approval.service import ApprovalService
+    from syndicateclaw.audit.service import AuditService
+    from syndicateclaw.db.base import get_engine, get_session_factory
+    from syndicateclaw.memory.service import MemoryService
+    from syndicateclaw.orchestrator.engine import WorkflowEngine
+    from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
+    from syndicateclaw.policy.engine import PolicyEngine
+    from syndicateclaw.tools.builtin import BUILTIN_TOOLS
+    from syndicateclaw.tools.executor import ToolExecutor
+    from syndicateclaw.tools.registry import ToolRegistry
+
+    settings = Settings()
+    _configure_structlog()
+
+    engine = get_engine(settings.database_url)
+    session_factory = get_session_factory(engine)
+    redis_client = aioredis.from_url(settings.redis_url, decode_responses=True)
+
+    from syndicateclaw.security.signing import derive_signing_key
+
+    signing_key = derive_signing_key(settings.secret_key)
+
+    asymmetric_keypair = None
+    if settings.ed25519_private_key_path:
+        from pathlib import Path
+        from syndicateclaw.security.signing import SigningKeyPair
+        key_path = Path(settings.ed25519_private_key_path)
+        if not key_path.exists():
+            raise RuntimeError(
+                f"Ed25519 private key not found at {key_path}. "
+                "Set SYNDICATECLAW_ED25519_PRIVATE_KEY_PATH to a valid PEM file."
+            )
+        asymmetric_keypair = SigningKeyPair(private_key_bytes=key_path.read_bytes())
+        logger.info("security.ed25519_key_loaded", path=str(key_path))
+    elif settings.require_asymmetric_signing:
+        raise RuntimeError(
+            "SYNDICATECLAW_REQUIRE_ASYMMETRIC_SIGNING is enabled but "
+            "SYNDICATECLAW_ED25519_PRIVATE_KEY_PATH is not set. "
+            "Provide an Ed25519 private key or disable the requirement."
+        )
+
+    app.state.settings = settings
+    app.state.engine = engine
+    app.state.session_factory = session_factory
+    app.state.redis_client = redis_client
+
+    audit_service = AuditService(session_factory, signing_key=signing_key)
+    memory_service = MemoryService(
+        session_factory,
+        redis_client=redis_client,
+        max_value_bytes=settings.memory_max_value_bytes,
+        max_key_length=settings.memory_max_key_length,
+        max_namespace_length=settings.memory_max_namespace_length,
+    )
+    policy_engine = PolicyEngine(session_factory)
+    from syndicateclaw.approval.authority import ApprovalAuthorityResolver
+    authority_resolver = ApprovalAuthorityResolver(session_factory=session_factory)
+    approval_service = ApprovalService(
+        session_factory,
+        authority_resolver=authority_resolver,
+    )
+
+    from syndicateclaw.audit.ledger import DecisionLedger
+    from syndicateclaw.orchestrator.snapshots import InputSnapshotStore
+
+    decision_ledger = DecisionLedger(session_factory, signing_key=signing_key)
+    snapshot_store = InputSnapshotStore(session_factory)
+
+    tool_registry = ToolRegistry()
+    tool_executor = ToolExecutor(
+        tool_registry, policy_engine, audit_service,
+        decision_ledger=decision_ledger,
+        snapshot_store=snapshot_store,
+    )
+
+    workflow_engine = WorkflowEngine(
+        BUILTIN_HANDLERS,
+        checkpoint_store=None,
+        audit_service=audit_service,
+        signing_key=signing_key,
+    )
+
+    for tool, handler in BUILTIN_TOOLS:
+        tool_registry.register(tool, handler)
+
+    app.state.audit_service = audit_service
+    app.state.memory_service = memory_service
+    app.state.policy_engine = policy_engine
+    app.state.approval_service = approval_service
+    app.state.tool_registry = tool_registry
+    app.state.tool_executor = tool_executor
+    app.state.workflow_engine = workflow_engine
+    app.state.decision_ledger = decision_ledger
+    app.state.snapshot_store = snapshot_store
+    app.state.signing_key = signing_key
+    app.state.asymmetric_keypair = asymmetric_keypair
+
+    from syndicateclaw.security.api_keys import ApiKeyService
+    api_key_service = ApiKeyService(session_factory)
+    app.state.api_key_service = api_key_service
+
+    logger.info(
+        "app.startup",
+        version=VERSION,
+        tools_registered=len(tool_registry),
+    )
+
+    if settings.otel_endpoint:
+        _configure_otel(app, settings.otel_endpoint)
+
+    yield
+
+    logger.info("app.shutdown")
+    await engine.dispose()
+    await redis_client.aclose()
+
+
+def create_app() -> FastAPI:
+    settings = Settings()
+
+    app = FastAPI(
+        title="SyndicateClaw",
+        version=VERSION,
+        description="Production-oriented agent orchestration platform with stateful graph-based workflows",
+        lifespan=lifespan,
+    )
+
+    app.add_middleware(AuditMiddleware)
+    app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(RequestIDMiddleware)
+    app.add_middleware(ShadowRBACMiddleware)
+
+    if settings.cors_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=settings.cors_origins,
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    for router in ALL_ROUTERS:
+        app.include_router(router)
+
+    @app.get("/healthz", tags=["system"])
+    async def healthz() -> dict[str, str]:
+        """Liveness probe — process is running."""
+        return {"status": "ok", "version": VERSION}
+
+    @app.get("/readyz", tags=["system"])
+    async def readyz(request: Request) -> dict[str, Any]:
+        """Readiness probe — all dependencies are reachable."""
+        checks: dict[str, str] = {}
+        healthy = True
+
+        try:
+            sf = request.app.state.session_factory
+            async with sf() as session:
+                await session.execute(text("SELECT 1"))
+            checks["database"] = "ok"
+        except Exception as e:
+            checks["database"] = f"error: {e}"
+            healthy = False
+
+        try:
+            rc = request.app.state.redis_client
+            await rc.ping()
+            checks["redis"] = "ok"
+        except Exception as e:
+            checks["redis"] = f"error: {e}"
+            healthy = False
+
+        pe = getattr(request.app.state, "policy_engine", None)
+        checks["policy_engine"] = "ok" if pe is not None else "missing"
+        if pe is None:
+            healthy = False
+
+        dl = getattr(request.app.state, "decision_ledger", None)
+        checks["decision_ledger"] = "ok" if dl is not None else "missing"
+        if dl is None:
+            healthy = False
+
+        rate_limit_ok = checks.get("redis") == "ok"
+        if rate_limit_ok:
+            checks["rate_limiting"] = "ok"
+        else:
+            checks["rate_limiting"] = "degraded (fail-open)"
+            settings = getattr(request.app.state, "settings", None)
+            if settings and getattr(settings, "rate_limit_strict", False):
+                checks["rate_limiting"] = "unavailable (strict mode)"
+                healthy = False
+
+        if not healthy:
+            from fastapi.responses import JSONResponse
+            return JSONResponse(
+                status_code=503,
+                content={"status": "degraded", "version": VERSION, "checks": checks},
+            )
+
+        return {"status": "ready", "version": VERSION, "checks": checks}
+
+    @app.get("/api/v1/info", tags=["system"])
+    async def info() -> dict[str, object]:
+        return {
+            "title": app.title,
+            "version": VERSION,
+            "python_version": sys.version,
+            "docs_url": app.docs_url or "/docs",
+        }
+
+    return app
+
+
+app = create_app()
