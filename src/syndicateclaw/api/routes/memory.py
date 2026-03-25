@@ -6,6 +6,7 @@ from typing import Any
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import (
     get_current_actor,
@@ -82,8 +83,8 @@ class MemoryLineageResponse(BaseModel):
 async def write_memory(
     body: WriteMemoryRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from datetime import UTC, timedelta
 
     from syndicateclaw.db.models import MemoryRecord as MRModel
@@ -117,8 +118,8 @@ async def read_memory(
     namespace: str,
     key: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import MemoryRecord as MRModel
@@ -152,8 +153,8 @@ async def search_memory(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import MemoryRecord as MRModel
@@ -182,8 +183,8 @@ async def update_memory(
     record_id: str,
     body: UpdateMemoryRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import MemoryRecord as MRModel
 
     record = await db.get(MRModel, record_id)
@@ -222,12 +223,16 @@ async def update_memory(
     return record
 
 
-@router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{record_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+)
 async def delete_memory(
     record_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> None:
     from datetime import UTC
 
     from syndicateclaw.db.models import MemoryRecord as MRModel
@@ -255,8 +260,8 @@ async def delete_memory(
 async def get_memory_lineage(
     record_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> MemoryLineageResponse:
     from syndicateclaw.db.models import MemoryRecord as MRModel
 
     record = await db.get(MRModel, record_id)

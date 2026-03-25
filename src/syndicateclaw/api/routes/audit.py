@@ -6,6 +6,7 @@ from typing import Any
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import get_current_actor, get_db_session
 
@@ -59,8 +60,8 @@ async def query_audit_events(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import AuditEvent as AEModel
@@ -85,8 +86,8 @@ async def query_audit_events(
 async def get_events_by_trace(
     trace_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import AuditEvent as AEModel
@@ -110,8 +111,8 @@ async def get_events_by_trace(
 async def get_run_timeline(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import AuditEvent as AEModel

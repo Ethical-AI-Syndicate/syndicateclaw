@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import (
     get_current_actor,
@@ -24,7 +25,10 @@ def _require_policy_admin(actor: str) -> None:
     if not any(actor.startswith(prefix) for prefix in POLICY_ADMIN_PREFIXES):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail=f"Actor '{actor}' lacks policy management permissions. Required role prefix: {POLICY_ADMIN_PREFIXES}",
+            detail=(
+                f"Actor '{actor}' lacks policy management permissions. "
+                f"Required role prefix: {POLICY_ADMIN_PREFIXES}"
+            ),
         )
 
 
@@ -102,8 +106,8 @@ class PolicyDecisionResponse(BaseModel):
 async def create_policy_rule(
     body: CreatePolicyRuleRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
 
@@ -131,8 +135,8 @@ async def list_policy_rules(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import PolicyRule as PRModel
@@ -151,8 +155,8 @@ async def list_policy_rules(
 async def get_policy_rule(
     rule_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import PolicyRule as PRModel
 
     rule = await db.get(PRModel, rule_id)
@@ -168,8 +172,8 @@ async def update_policy_rule(
     rule_id: str,
     body: UpdatePolicyRuleRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
 
@@ -186,7 +190,7 @@ async def update_policy_rule(
     if body.effect is not None:
         rule.effect = body.effect.value
     if body.conditions is not None:
-        rule.conditions = [c.model_dump() for c in body.conditions]
+        rule.conditions = cast(Any, [c.model_dump() for c in body.conditions])
     if body.priority is not None:
         rule.priority = body.priority
     if body.enabled is not None:
@@ -198,12 +202,16 @@ async def update_policy_rule(
     return rule
 
 
-@router.delete("/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{rule_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
+)
 async def delete_policy_rule(
     rule_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> None:
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
 
@@ -221,14 +229,14 @@ async def delete_policy_rule(
 async def evaluate_policy(
     body: EvaluatePolicyRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    policy_engine=DEP_POLICY_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    policy_engine: Any = DEP_POLICY_ENGINE,
+) -> PolicyDecisionResponse:
     if hasattr(policy_engine, "evaluate"):
         decision = await policy_engine.evaluate(
             body.resource_type, body.resource_id, body.action, body.actor, body.context
         )
-        return decision
+        return cast(PolicyDecisionResponse, decision)
 
     from sqlalchemy import select
 

@@ -6,6 +6,7 @@ from typing import Any
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import (
     get_current_actor,
@@ -73,8 +74,8 @@ async def list_tools(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import Tool as ToolModel
@@ -91,8 +92,8 @@ async def list_tools(
 async def get_tool(
     tool_name: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import Tool as ToolModel
@@ -110,8 +111,8 @@ async def execute_tool(
     tool_name: str,
     body: ExecuteToolRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    executor=DEP_TOOL_EXECUTOR,
-):
+    executor: Any = DEP_TOOL_EXECUTOR,
+) -> ExecuteToolResponse:
     import time
 
     from syndicateclaw.tools.executor import (
@@ -135,9 +136,13 @@ async def execute_tool(
             duration_ms=duration_ms,
         )
     except ToolNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found"
+        ) from None
     except ToolDeniedError as exc:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)
+        ) from exc
     except ToolTimeoutError as exc:
         duration_ms = int((time.monotonic() - t0) * 1000)
         return ExecuteToolResponse(

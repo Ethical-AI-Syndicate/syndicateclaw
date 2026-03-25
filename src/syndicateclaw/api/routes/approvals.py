@@ -6,6 +6,7 @@ from typing import Any
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import get_current_actor, get_db_session
 from syndicateclaw.models import ApprovalStatus
@@ -63,8 +64,8 @@ async def list_pending_approvals(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import ApprovalRequest as ARModel
@@ -88,8 +89,8 @@ async def list_pending_approvals(
 async def get_approval(
     approval_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
     approval = await db.get(ARModel, approval_id)
@@ -110,8 +111,8 @@ async def approve_request(
     approval_id: str,
     body: ApprovalDecisionRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
     approval = await db.get(ARModel, approval_id)
@@ -160,8 +161,8 @@ async def reject_request(
     approval_id: str,
     body: ApprovalDecisionRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
     approval = await db.get(ARModel, approval_id)
@@ -188,8 +189,8 @@ async def reject_request(
 async def get_approvals_for_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import ApprovalRequest as ARModel

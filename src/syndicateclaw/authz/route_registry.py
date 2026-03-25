@@ -11,8 +11,9 @@ They must not have side effects. A None return signals scope resolution failure.
 
 from __future__ import annotations
 
+from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
 
@@ -403,6 +404,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="platform",
         legacy_check="authenticated_only",
     ),
+    ("POST", "/api/v1/providers/catalog/sync-models-dev"): RouteAuthzSpec(
+        permission="catalog:sync_models_dev",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Pull models.dev JSON (SSRF-hardened); merge into ModelCatalog only.",
+    ),
 
     # ── Tools ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/tools/"): RouteAuthzSpec(
@@ -494,7 +501,9 @@ def is_public_route(method: str, path_template: str) -> bool:
     return (method.upper(), path_template) in PUBLIC_ROUTES
 
 
-def get_scope_resolver(name: str):
+def get_scope_resolver(
+    name: str,
+) -> Callable[[Request, AsyncSession], Coroutine[Any, Any, Scope | None]]:
     """Return the scope resolver function by name.
 
     Raises KeyError if the resolver is not registered.

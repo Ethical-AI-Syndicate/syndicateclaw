@@ -4,11 +4,12 @@ import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from syndicateclaw.api.middleware import AuditMiddleware, RequestIDMiddleware
@@ -67,6 +68,7 @@ def _configure_otel(app: FastAPI, endpoint: str) -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     import redis.asyncio as aioredis
+    from redis.asyncio import Redis
 
     from syndicateclaw.approval.service import ApprovalService
     from syndicateclaw.audit.service import AuditService
@@ -84,7 +86,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     engine = get_engine(settings.database_url)
     session_factory = get_session_factory(engine)
-    redis_client = aioredis.from_url(settings.redis_url, decode_responses=True)
+    redis_client = cast(
+        Redis,
+        aioredis.from_url(settings.redis_url, decode_responses=True),  # type: ignore[no-untyped-call]
+    )
 
     from syndicateclaw.security.signing import derive_signing_key
 
@@ -260,8 +265,8 @@ def create_app() -> FastAPI:
         """Liveness probe — process is running."""
         return {"status": "ok", "version": VERSION}
 
-    @app.get("/readyz", tags=["system"])
-    async def readyz(request: Request) -> dict[str, Any]:
+    @app.get("/readyz", tags=["system"], response_model=None)
+    async def readyz(request: Request) -> dict[str, Any] | JSONResponse:
         """Readiness probe — all dependencies are reachable."""
         checks: dict[str, str] = {}
         healthy = True
@@ -304,7 +309,6 @@ def create_app() -> FastAPI:
                 healthy = False
 
         if not healthy:
-            from fastapi.responses import JSONResponse
             return JSONResponse(
                 status_code=503,
                 content={"status": "degraded", "version": VERSION, "checks": checks},

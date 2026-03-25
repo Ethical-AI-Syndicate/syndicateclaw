@@ -7,6 +7,7 @@ import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.api.dependencies import (
     get_audit_service,
@@ -138,9 +139,9 @@ class AuditTimelineEntry(BaseModel):
 async def create_workflow(
     body: CreateWorkflowRequest,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    audit=DEP_AUDIT_SERVICE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    audit: Any = DEP_AUDIT_SERVICE,
+) -> Any:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
     workflow = WFModel(
@@ -165,8 +166,8 @@ async def list_workflows(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
@@ -182,8 +183,8 @@ async def list_runs(
     offset: int = Q_OFFSET,
     limit: int = Q_LIMIT,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[WorkflowRunResponse]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import WorkflowRun as RunModel
@@ -201,8 +202,8 @@ async def list_runs(
 async def get_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
@@ -215,9 +216,9 @@ async def get_run(
 async def pause_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    engine=DEP_WORKFLOW_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    engine: Any = DEP_WORKFLOW_ENGINE,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
@@ -238,9 +239,9 @@ async def pause_run(
 async def resume_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    engine=DEP_WORKFLOW_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    engine: Any = DEP_WORKFLOW_ENGINE,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
@@ -261,9 +262,9 @@ async def resume_run(
 async def cancel_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    engine=DEP_WORKFLOW_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    engine: Any = DEP_WORKFLOW_ENGINE,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
@@ -285,9 +286,9 @@ async def cancel_run(
 async def replay_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    engine=DEP_WORKFLOW_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    engine: Any = DEP_WORKFLOW_ENGINE,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
@@ -315,8 +316,8 @@ async def replay_run(
 async def get_node_executions(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import NodeExecution as NEModel
@@ -337,8 +338,8 @@ async def get_node_executions(
 async def get_workflow(
     workflow_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> Any:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
     wf = await db.get(WFModel, workflow_id)
@@ -357,9 +358,9 @@ async def start_run(
     body: StartRunRequest,
     request: Request,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-    engine=DEP_WORKFLOW_ENGINE,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+    engine: Any = DEP_WORKFLOW_ENGINE,
+) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
     wf = await db.get(WFModel, workflow_id)
@@ -384,7 +385,10 @@ async def start_run(
         )
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=f"Concurrent run limit reached ({active_count}/{settings.max_concurrent_runs}). Retry later.",
+            detail=(
+                f"Concurrent run limit reached "
+                f"({active_count}/{settings.max_concurrent_runs}). Retry later."
+            ),
         )
 
     run = RunModel(
@@ -406,8 +410,8 @@ async def start_run(
 async def get_run_timeline(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
-    db=DEP_DB_SESSION,
-):
+    db: AsyncSession = DEP_DB_SESSION,
+) -> list[Any]:
     from sqlalchemy import select
 
     from syndicateclaw.db.models import AuditEvent as AEModel

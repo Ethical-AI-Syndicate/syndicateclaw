@@ -51,7 +51,7 @@ class EmbeddingApiRequest(BaseModel):
 async def inference_chat(
     body: ChatApiRequest,
     actor: str = Depends(get_current_actor),  # noqa: B008
-    svc=Depends(get_provider_service),  # noqa: B008
+    svc: Any = Depends(get_provider_service),  # noqa: B008
 ) -> dict[str, Any]:
     try:
         req = ChatInferenceRequest(
@@ -82,7 +82,7 @@ async def inference_chat(
 async def inference_embedding(
     body: EmbeddingApiRequest,
     actor: str = Depends(get_current_actor),  # noqa: B008
-    svc=Depends(get_provider_service),  # noqa: B008
+    svc: Any = Depends(get_provider_service),  # noqa: B008
 ) -> dict[str, Any]:
     try:
         req = EmbeddingInferenceRequest(
@@ -110,7 +110,7 @@ async def inference_embedding(
 async def inference_chat_stream(
     body: ChatApiRequest,
     actor: str = Depends(get_current_actor),  # noqa: B008
-    svc=Depends(get_provider_service),  # noqa: B008
+    svc: Any = Depends(get_provider_service),  # noqa: B008
 ) -> StreamingResponse | Response:
     """Streaming: no idempotency in Phase 1.
 
