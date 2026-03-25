@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from typing import Any
 
 import structlog
 
@@ -18,7 +19,9 @@ class ConsoleChannel:
 
     channel_name: str = "console"
 
-    async def send(self, message: str, recipient: str, metadata: dict | None = None) -> bool:
+    async def send(
+        self, message: str, recipient: str, metadata: dict[str, Any] | None = None
+    ) -> bool:
         metadata = metadata or {}
         logger.info(
             "console_channel_send",

@@ -5,12 +5,12 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import structlog
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import AuditEvent as DBAuditEvent
 from syndicateclaw.db.models import MemoryRecord as DBMemoryRecord
 from syndicateclaw.db.repository import AuditEventRepository, MemoryRecordRepository
 from syndicateclaw.models import (
-    AuditEvent,
     AuditEventType,
     MemoryDeletionStatus,
     MemoryLineage,
@@ -19,7 +19,6 @@ from syndicateclaw.models import (
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
-    from sqlalchemy.ext.asyncio import async_sessionmaker
 
     from syndicateclaw.memory.schema import NamespaceSchemaRegistry
 
@@ -44,7 +43,7 @@ class MemoryService:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
         redis_client: Redis | None = None,
         *,
         max_value_bytes: int = 1_048_576,

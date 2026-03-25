@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import asyncio
 from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import DeadLetterRecord as DBDeadLetterRecord
 from syndicateclaw.models import AuditEvent, DeadLetterStatus
@@ -34,7 +33,7 @@ class DeadLetterQueue:
     determines retry eligibility.
     """
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
     async def enqueue(self, event: AuditEvent, error: str) -> str:
@@ -43,7 +42,11 @@ class DeadLetterQueue:
 
         async with self._session_factory() as session, session.begin():
             row = DBDeadLetterRecord(
-                event_type=event.event_type.value if hasattr(event.event_type, 'value') else str(event.event_type),
+                event_type=(
+                    event.event_type.value
+                    if hasattr(event.event_type, "value")
+                    else str(event.event_type)
+                ),
                 event_payload=event.model_dump(mode="json"),
                 error_message=error,
                 error_category=category,
@@ -58,7 +61,11 @@ class DeadLetterQueue:
         logger.warning(
             "dead_letter_enqueued",
             event_id=event.id,
-            event_type=event.event_type.value if hasattr(event.event_type, 'value') else str(event.event_type),
+            event_type=(
+                event.event_type.value
+                if hasattr(event.event_type, "value")
+                else str(event.event_type)
+            ),
             error=error,
             category=category,
             dlq_record_id=record_id,

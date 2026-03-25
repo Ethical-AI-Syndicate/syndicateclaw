@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import DecisionRecord as DecisionRecordRow
 from syndicateclaw.db.repository import DecisionRecordRepository
@@ -33,7 +32,11 @@ class DecisionLedger:
     - A content hash for tamper detection
     """
 
-    def __init__(self, session_factory: async_sessionmaker, signing_key: bytes | None = None) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        signing_key: bytes | None = None,
+    ) -> None:
         self._session_factory = session_factory
         self._signing_key = signing_key
 

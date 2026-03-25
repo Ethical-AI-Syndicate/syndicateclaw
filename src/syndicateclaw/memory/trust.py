@@ -1,16 +1,14 @@
 from __future__ import annotations
 
-import math
 from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import MemoryRecord as DBMemoryRecord
 from syndicateclaw.models import (
-    AuditEventType,
     MemoryDeletionStatus,
     MemorySourceType,
 )
@@ -39,7 +37,7 @@ class MemoryTrustService:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
         *,
         min_usable_trust: float = 0.3,
     ) -> None:
@@ -85,7 +83,11 @@ class MemoryTrustService:
             now = datetime.now(UTC)
             for rec in records:
                 elapsed_days = (now - rec.last_validated_at).total_seconds() / 86400
-                new_score = max(0.0, (rec.trust_score or 1.0) - ((rec.decay_rate or 0.01) * elapsed_days))
+                new_score = max(
+                    0.0,
+                    (rec.trust_score or 1.0)
+                    - ((rec.decay_rate or 0.01) * elapsed_days),
+                )
                 if new_score != rec.trust_score:
                     rec.trust_score = new_score
                     rec.updated_at = now
@@ -206,7 +208,11 @@ class MemoryTrustService:
                 "effective_trust": round(effective, 4),
                 "usable": self.is_usable(effective),
                 "frozen": rec.trust_frozen,
-                "last_validated_at": rec.last_validated_at.isoformat() if rec.last_validated_at else None,
+                "last_validated_at": (
+                    rec.last_validated_at.isoformat()
+                    if rec.last_validated_at
+                    else None
+                ),
                 "conflict_set_id": rec.conflict_set_id,
             })
         return report

@@ -6,14 +6,19 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import (
-    AuditEvent as DBAuditEvent,
     DecisionRecord as DBDecisionRecord,
+)
+from syndicateclaw.db.models import (
     InputSnapshot as DBInputSnapshot,
+)
+from syndicateclaw.db.models import (
     ToolExecution as DBToolExecution,
+)
+from syndicateclaw.db.models import (
     WorkflowRun as DBWorkflowRun,
 )
 
@@ -32,7 +37,7 @@ class IntegrityVerifier:
     - Policy/tool/version drift between runs
     """
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
     async def verify_decision_hashes(self, limit: int = 1000) -> list[dict[str, Any]]:

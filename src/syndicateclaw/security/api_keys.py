@@ -15,8 +15,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import ApiKey as ApiKeyRow
 
@@ -33,7 +33,7 @@ def _hash_key(raw_key: str) -> str:
 class ApiKeyService:
     """Manages API key lifecycle: create, verify, revoke, expire."""
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
     async def create_key(

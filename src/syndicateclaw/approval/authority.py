@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.models import ToolRiskLevel
 
@@ -38,7 +38,7 @@ class ApprovalAuthorityResolver:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker | None = None,
+        session_factory: async_sessionmaker[AsyncSession] | None = None,
         authority_overrides: dict[ToolRiskLevel, list[str]] | None = None,
     ) -> None:
         self._session_factory = session_factory

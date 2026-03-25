@@ -7,15 +7,27 @@ from typing import Any
 
 import structlog
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import (
     ApprovalRequest as DBApprovalRequest,
+)
+from syndicateclaw.db.models import (
     AuditEvent as DBAuditEvent,
+)
+from syndicateclaw.db.models import (
     DecisionRecord as DBDecisionRecord,
+)
+from syndicateclaw.db.models import (
     InputSnapshot as DBInputSnapshot,
+)
+from syndicateclaw.db.models import (
     NodeExecution as DBNodeExecution,
+)
+from syndicateclaw.db.models import (
     ToolExecution as DBToolExecution,
+)
+from syndicateclaw.db.models import (
     WorkflowRun as DBWorkflowRun,
 )
 
@@ -39,7 +51,11 @@ class RunExporter:
     The bundle itself is hashed for chain-of-custody.
     """
 
-    def __init__(self, session_factory: async_sessionmaker, signing_key: bytes | None = None) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        signing_key: bytes | None = None,
+    ) -> None:
         self._session_factory = session_factory
         self._signing_key = signing_key
 

@@ -6,7 +6,7 @@ from fnmatch import fnmatch
 from typing import Any
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.audit.service import AuditService
 from syndicateclaw.db.models import PolicyDecision as PolicyDecisionRow
@@ -28,7 +28,7 @@ _DENY_RULE_ID = "__default_deny__"
 class PolicyEngine:
     """Evaluates policy rules against resource actions using a fail-closed model."""
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
         self._audit = AuditService(session_factory)
 
@@ -66,7 +66,11 @@ class PolicyEngine:
                 all_match = True
 
                 for cond_data in conditions:
-                    cond = PolicyCondition(**cond_data) if isinstance(cond_data, dict) else cond_data
+                    cond = (
+                        PolicyCondition(**cond_data)
+                        if isinstance(cond_data, dict)
+                        else cond_data
+                    )
                     result = self._evaluate_condition(cond, context)
                     condition_results.append({
                         "field": cond.field,

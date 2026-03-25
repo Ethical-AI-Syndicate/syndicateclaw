@@ -6,11 +6,11 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import InputSnapshot as InputSnapshotRow
 from syndicateclaw.db.repository import InputSnapshotRepository
-from syndicateclaw.models import InputSnapshot, ReplayMode
+from syndicateclaw.models import InputSnapshot
 
 logger = structlog.get_logger(__name__)
 
@@ -27,7 +27,7 @@ class InputSnapshotStore:
     During DETERMINISTIC mode: serves frozen snapshots instead of making live calls.
     """
 
-    def __init__(self, session_factory: async_sessionmaker) -> None:
+    def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
     async def capture(

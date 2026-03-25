@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from syndicateclaw.inference.types import ChatInferenceRequest, EmbeddingInferenceRequest
 
 
-def fingerprint_chat(req: ChatInferenceRequest) -> dict:
+def fingerprint_chat(req: ChatInferenceRequest) -> dict[str, Any]:
     """Canonical dict for chat idempotency (same logical request → same hash)."""
     return {
         "actor": req.actor,
@@ -26,7 +28,7 @@ def fingerprint_chat(req: ChatInferenceRequest) -> dict:
     }
 
 
-def fingerprint_embedding(req: EmbeddingInferenceRequest) -> dict:
+def fingerprint_embedding(req: EmbeddingInferenceRequest) -> dict[str, Any]:
     return {
         "actor": req.actor,
         "capability": req.capability,

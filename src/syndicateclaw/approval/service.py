@@ -5,12 +5,12 @@ from datetime import UTC, datetime
 from typing import Any
 
 import structlog
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from syndicateclaw.approval.authority import ApprovalAuthorityResolver
 from syndicateclaw.audit.service import AuditService
 from syndicateclaw.db.models import ApprovalRequest as ApprovalRequestRow
 from syndicateclaw.db.repository import ApprovalRequestRepository
-from syndicateclaw.approval.authority import ApprovalAuthorityResolver
 from syndicateclaw.models import ApprovalRequest, ApprovalStatus, AuditEventType
 
 logger = structlog.get_logger(__name__)
@@ -23,7 +23,7 @@ class ApprovalService:
 
     def __init__(
         self,
-        session_factory: async_sessionmaker,
+        session_factory: async_sessionmaker[AsyncSession],
         notification_callback: NotificationCallback | None = None,
         authority_resolver: ApprovalAuthorityResolver | None = None,
     ) -> None:
@@ -230,7 +230,11 @@ class ApprovalService:
             details={
                 "run_id": request.run_id,
                 "tool_name": request.tool_name,
-                "status": request.status.value if isinstance(request.status, ApprovalStatus) else request.status,
+                "status": (
+                    request.status.value
+                    if isinstance(request.status, ApprovalStatus)
+                    else request.status
+                ),
                 **(details or {}),
             },
         )

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 from ipaddress import ip_address
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
@@ -64,7 +65,9 @@ class WebhookChannel:
         retry=retry_if_exception_type(httpx.TransportError),
         reraise=True,
     )
-    async def send(self, message: str, recipient: str, metadata: dict | None = None) -> bool:
+    async def send(
+        self, message: str, recipient: str, metadata: dict[str, Any] | None = None
+    ) -> bool:
         metadata = metadata or {}
         url = f"{self._base_url}/{recipient}"
         _validate_url(url)

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, UTC
 from typing import Any
 
 import structlog
@@ -62,7 +61,11 @@ async def _resolve_resource_scope(
 class AuditService:
     """Centralised, append-only audit logging service."""
 
-    def __init__(self, session_factory: async_sessionmaker, signing_key: bytes | None = None) -> None:
+    def __init__(
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        signing_key: bytes | None = None,
+    ) -> None:
         self._session_factory = session_factory
         self._signing_key = signing_key
 
