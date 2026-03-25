@@ -5,10 +5,7 @@ These tests verify the three final residual controls before release readiness.
 
 from __future__ import annotations
 
-import asyncio
-import json
-from datetime import UTC, datetime, timedelta
-from typing import Any
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -452,7 +449,6 @@ class TestOwnershipFiltering:
 
     def test_workflow_list_query_filters_by_owner(self):
         """The list_workflows endpoint should filter by WFModel.owner == actor."""
-        import ast
         import inspect
 
         from syndicateclaw.api.routes.workflows import list_workflows
