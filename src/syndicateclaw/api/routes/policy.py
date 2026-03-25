@@ -30,6 +30,14 @@ def _require_policy_admin(actor: str) -> None:
 
 router = APIRouter(prefix="/api/v1/policies", tags=["policies"])
 
+Q_RESOURCE_TYPE = Query(None)
+Q_ENABLED = Query(None)
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=200)
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+DEP_POLICY_ENGINE = Depends(get_policy_engine)
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
@@ -93,8 +101,8 @@ class PolicyDecisionResponse(BaseModel):
 @router.post("/", response_model=PolicyRuleResponse, status_code=status.HTTP_201_CREATED)
 async def create_policy_rule(
     body: CreatePolicyRuleRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
@@ -118,12 +126,12 @@ async def create_policy_rule(
 
 @router.get("/", response_model=list[PolicyRuleResponse])
 async def list_policy_rules(
-    resource_type: str | None = Query(None),
-    enabled: bool | None = Query(None),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    resource_type: str | None = Q_RESOURCE_TYPE,
+    enabled: bool | None = Q_ENABLED,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -142,8 +150,8 @@ async def list_policy_rules(
 @router.get("/{rule_id}", response_model=PolicyRuleResponse)
 async def get_policy_rule(
     rule_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import PolicyRule as PRModel
 
@@ -159,8 +167,8 @@ async def get_policy_rule(
 async def update_policy_rule(
     rule_id: str,
     body: UpdatePolicyRuleRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
@@ -193,8 +201,8 @@ async def update_policy_rule(
 @router.delete("/{rule_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_policy_rule(
     rule_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     _require_policy_admin(actor)
     from syndicateclaw.db.models import PolicyRule as PRModel
@@ -212,9 +220,9 @@ async def delete_policy_rule(
 @router.post("/evaluate", response_model=PolicyDecisionResponse)
 async def evaluate_policy(
     body: EvaluatePolicyRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    policy_engine=Depends(get_policy_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    policy_engine=DEP_POLICY_ENGINE,
 ):
     if hasattr(policy_engine, "evaluate"):
         decision = await policy_engine.evaluate(

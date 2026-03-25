@@ -17,6 +17,13 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/tools", tags=["tools"])
 
+Q_RISK_LEVEL = Query(None)
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=200)
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+DEP_TOOL_EXECUTOR = Depends(get_tool_executor)
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
@@ -62,11 +69,11 @@ class ExecuteToolResponse(BaseModel):
 
 @router.get("/", response_model=list[ToolResponse])
 async def list_tools(
-    risk_level: str | None = Query(None),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    risk_level: str | None = Q_RISK_LEVEL,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -83,8 +90,8 @@ async def list_tools(
 @router.get("/{tool_name}", response_model=ToolResponse)
 async def get_tool(
     tool_name: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -102,8 +109,8 @@ async def get_tool(
 async def execute_tool(
     tool_name: str,
     body: ExecuteToolRequest,
-    actor: str = Depends(get_current_actor),
-    executor=Depends(get_tool_executor),
+    actor: str = DEP_CURRENT_ACTOR,
+    executor=DEP_TOOL_EXECUTOR,
 ):
     import time
 

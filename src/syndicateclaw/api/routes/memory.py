@@ -17,6 +17,12 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/memory", tags=["memory"])
 
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+Q_MEMORY_TYPE = Query(None)
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=200)
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
@@ -75,8 +81,8 @@ class MemoryLineageResponse(BaseModel):
 @router.post("/", response_model=MemoryResponse, status_code=status.HTTP_201_CREATED)
 async def write_memory(
     body: WriteMemoryRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from datetime import UTC, timedelta
 
@@ -110,8 +116,8 @@ async def write_memory(
 async def read_memory(
     namespace: str,
     key: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -142,11 +148,11 @@ async def read_memory(
 @router.get("/{namespace}", response_model=list[MemoryResponse])
 async def search_memory(
     namespace: str,
-    memory_type: str | None = Query(None),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    memory_type: str | None = Q_MEMORY_TYPE,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -175,8 +181,8 @@ async def search_memory(
 async def update_memory(
     record_id: str,
     body: UpdateMemoryRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import MemoryRecord as MRModel
 
@@ -219,8 +225,8 @@ async def update_memory(
 @router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_memory(
     record_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from datetime import UTC
 
@@ -248,8 +254,8 @@ async def delete_memory(
 @router.get("/{record_id}/lineage", response_model=MemoryLineageResponse)
 async def get_memory_lineage(
     record_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import MemoryRecord as MRModel
 

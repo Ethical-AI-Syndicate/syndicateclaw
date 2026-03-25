@@ -14,6 +14,13 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/approvals", tags=["approvals"])
 
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+Q_ASSIGNEE = Query(None)
+Q_STATUS_FILTER = Query(None, alias="status")
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=200)
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
@@ -51,12 +58,12 @@ class ApprovalDecisionRequest(BaseModel):
 
 @router.get("/", response_model=list[ApprovalResponse])
 async def list_pending_approvals(
-    assignee: str | None = Query(None),
-    status_filter: str | None = Query(None, alias="status"),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    assignee: str | None = Q_ASSIGNEE,
+    status_filter: str | None = Q_STATUS_FILTER,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -80,8 +87,8 @@ async def list_pending_approvals(
 @router.get("/{approval_id}", response_model=ApprovalResponse)
 async def get_approval(
     approval_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
@@ -102,8 +109,8 @@ async def get_approval(
 async def approve_request(
     approval_id: str,
     body: ApprovalDecisionRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
@@ -152,8 +159,8 @@ async def approve_request(
 async def reject_request(
     approval_id: str,
     body: ApprovalDecisionRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import ApprovalRequest as ARModel
 
@@ -180,8 +187,8 @@ async def reject_request(
 @router.get("/runs/{run_id}", response_model=list[ApprovalResponse])
 async def get_approvals_for_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 

@@ -25,6 +25,14 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/workflows", tags=["workflows"])
 
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+DEP_AUDIT_SERVICE = Depends(get_audit_service)
+DEP_WORKFLOW_ENGINE = Depends(get_workflow_engine)
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=200)
+Q_RUN_STATUS = Query(None, alias="status")
+
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
@@ -129,9 +137,9 @@ class AuditTimelineEntry(BaseModel):
 @router.post("/", response_model=WorkflowResponse, status_code=status.HTTP_201_CREATED)
 async def create_workflow(
     body: CreateWorkflowRequest,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    audit=Depends(get_audit_service),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    audit=DEP_AUDIT_SERVICE,
 ):
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -154,10 +162,10 @@ async def create_workflow(
 
 @router.get("/", response_model=list[WorkflowResponse])
 async def list_workflows(
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -170,11 +178,11 @@ async def list_workflows(
 
 @router.get("/runs", response_model=list[WorkflowRunResponse])
 async def list_runs(
-    status_filter: WorkflowRunStatus | None = Query(None, alias="status"),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=200),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    status_filter: WorkflowRunStatus | None = Q_RUN_STATUS,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -192,8 +200,8 @@ async def list_runs(
 @router.get("/runs/{run_id}", response_model=WorkflowRunResponse)
 async def get_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
@@ -206,9 +214,9 @@ async def get_run(
 @router.post("/runs/{run_id}/pause", response_model=WorkflowRunResponse)
 async def pause_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    engine=Depends(get_workflow_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    engine=DEP_WORKFLOW_ENGINE,
 ):
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
@@ -229,9 +237,9 @@ async def pause_run(
 @router.post("/runs/{run_id}/resume", response_model=WorkflowRunResponse)
 async def resume_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    engine=Depends(get_workflow_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    engine=DEP_WORKFLOW_ENGINE,
 ):
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
@@ -252,9 +260,9 @@ async def resume_run(
 @router.post("/runs/{run_id}/cancel", response_model=WorkflowRunResponse)
 async def cancel_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    engine=Depends(get_workflow_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    engine=DEP_WORKFLOW_ENGINE,
 ):
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
@@ -276,9 +284,9 @@ async def cancel_run(
 @router.post("/runs/{run_id}/replay", response_model=WorkflowRunResponse)
 async def replay_run(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    engine=Depends(get_workflow_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    engine=DEP_WORKFLOW_ENGINE,
 ):
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
@@ -306,8 +314,8 @@ async def replay_run(
 @router.get("/runs/{run_id}/nodes", response_model=list[NodeExecutionResponse])
 async def get_node_executions(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -328,8 +336,8 @@ async def get_node_executions(
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(
     workflow_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -348,9 +356,9 @@ async def start_run(
     workflow_id: str,
     body: StartRunRequest,
     request: Request,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
-    engine=Depends(get_workflow_engine),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
+    engine=DEP_WORKFLOW_ENGINE,
 ):
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -397,8 +405,8 @@ async def start_run(
 @router.get("/runs/{run_id}/timeline", response_model=list[AuditTimelineEntry])
 async def get_run_timeline(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 

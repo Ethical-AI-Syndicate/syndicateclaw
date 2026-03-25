@@ -13,6 +13,16 @@ logger = structlog.get_logger(__name__)
 
 router = APIRouter(prefix="/api/v1/audit", tags=["audit"])
 
+Q_EVENT_TYPE = Query(None)
+Q_ACTOR_FILTER = Query(None, alias="actor")
+Q_RESOURCE_TYPE = Query(None)
+Q_START_TIME = Query(None)
+Q_END_TIME = Query(None)
+Q_OFFSET = Query(0, ge=0)
+Q_LIMIT = Query(50, ge=1, le=500)
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_DB_SESSION = Depends(get_db_session)
+
 # ---------------------------------------------------------------------------
 # Response schemas
 # ---------------------------------------------------------------------------
@@ -41,15 +51,15 @@ class AuditEventResponse(BaseModel):
 
 @router.get("/", response_model=list[AuditEventResponse])
 async def query_audit_events(
-    event_type: str | None = Query(None),
-    actor_filter: str | None = Query(None, alias="actor"),
-    resource_type: str | None = Query(None),
-    start_time: datetime | None = Query(None),
-    end_time: datetime | None = Query(None),
-    offset: int = Query(0, ge=0),
-    limit: int = Query(50, ge=1, le=500),
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    event_type: str | None = Q_EVENT_TYPE,
+    actor_filter: str | None = Q_ACTOR_FILTER,
+    resource_type: str | None = Q_RESOURCE_TYPE,
+    start_time: datetime | None = Q_START_TIME,
+    end_time: datetime | None = Q_END_TIME,
+    offset: int = Q_OFFSET,
+    limit: int = Q_LIMIT,
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -74,8 +84,8 @@ async def query_audit_events(
 @router.get("/trace/{trace_id}", response_model=list[AuditEventResponse])
 async def get_events_by_trace(
     trace_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
@@ -99,8 +109,8 @@ async def get_events_by_trace(
 @router.get("/runs/{run_id}/timeline", response_model=list[AuditEventResponse])
 async def get_run_timeline(
     run_id: str,
-    actor: str = Depends(get_current_actor),
-    db=Depends(get_db_session),
+    actor: str = DEP_CURRENT_ACTOR,
+    db=DEP_DB_SESSION,
 ):
     from sqlalchemy import select
 
