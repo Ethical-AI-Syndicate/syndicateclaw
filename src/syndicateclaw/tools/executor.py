@@ -100,7 +100,8 @@ def _validate_schema(data: dict[str, Any], schema: dict[str, Any], label: str) -
         expected_type = type_map.get(prop.get("type", ""))
         if expected_type and not isinstance(data[key], expected_type):
             raise ValueError(
-                f"{label}: field '{key}' expected type {prop['type']}, got {type(data[key]).__name__}"
+                f"{label}: field '{key}' expected type {prop['type']}, "
+                f"got {type(data[key]).__name__}"
             )
 
 
@@ -114,7 +115,10 @@ def enforce_sandbox(tool_name: str, input_data: dict[str, Any], policy: ToolSand
     if policy.network_isolation:
         url = input_data.get("url")
         if url:
-            raise SandboxViolationError(tool_name, "network access denied: tool has network_isolation=True")
+            raise SandboxViolationError(
+                tool_name,
+                "network access denied: tool has network_isolation=True",
+            )
 
     url = input_data.get("url")
     if url and isinstance(url, str):
@@ -122,13 +126,15 @@ def enforce_sandbox(tool_name: str, input_data: dict[str, Any], policy: ToolSand
 
         if parsed.scheme and parsed.scheme not in policy.allowed_protocols:
             raise SandboxViolationError(
-                tool_name, f"protocol '{parsed.scheme}' not in allowed: {policy.allowed_protocols}"
+                tool_name,
+                f"protocol '{parsed.scheme}' not in allowed: {policy.allowed_protocols}",
             )
 
         if policy.allowed_domains and parsed.hostname:
             if parsed.hostname not in policy.allowed_domains:
                 raise SandboxViolationError(
-                    tool_name, f"domain '{parsed.hostname}' not in allowlist: {policy.allowed_domains}"
+                    tool_name,
+                    f"domain '{parsed.hostname}' not in allowlist: {policy.allowed_domains}",
                 )
 
     body = input_data.get("body")
@@ -136,7 +142,8 @@ def enforce_sandbox(tool_name: str, input_data: dict[str, Any], policy: ToolSand
         size = len(body.encode() if isinstance(body, str) else body)
         if size > policy.max_request_bytes:
             raise SandboxViolationError(
-                tool_name, f"request payload {size} bytes exceeds limit {policy.max_request_bytes}"
+                tool_name,
+                f"request payload {size} bytes exceeds limit {policy.max_request_bytes}",
             )
 
     if not policy.subprocess_allowed and input_data.get("subprocess"):
@@ -146,12 +153,15 @@ def enforce_sandbox(tool_name: str, input_data: dict[str, Any], policy: ToolSand
         raise SandboxViolationError(tool_name, "filesystem read denied")
 
 
-def enforce_response_limits(tool_name: str, output: dict[str, Any], policy: ToolSandboxPolicy) -> None:
+def enforce_response_limits(
+    tool_name: str, output: dict[str, Any], policy: ToolSandboxPolicy
+) -> None:
     """Enforce response payload limits AFTER execution."""
     serialized = json.dumps(output, default=str)
     if len(serialized.encode()) > policy.max_response_bytes:
         raise SandboxViolationError(
-            tool_name, f"response payload exceeds limit {policy.max_response_bytes}"
+            tool_name,
+            f"response payload exceeds limit {policy.max_response_bytes}",
         )
 
 

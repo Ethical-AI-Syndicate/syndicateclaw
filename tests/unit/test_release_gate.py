@@ -29,7 +29,6 @@ from syndicateclaw.security.signing import (
     verify_signature,
 )
 
-
 # =====================================================================
 # 1. HMAC Signing
 # =====================================================================
@@ -191,7 +190,12 @@ class TestDecisionLedgerSigning:
         session_mock = AsyncMock()
         session_mock.__aenter__ = AsyncMock(return_value=session_mock)
         session_mock.__aexit__ = AsyncMock(return_value=False)
-        session_mock.begin = MagicMock(return_value=AsyncMock(__aenter__=AsyncMock(), __aexit__=AsyncMock(return_value=False)))
+        session_mock.begin = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(),
+                __aexit__=AsyncMock(return_value=False),
+            ),
+        )
         factory = MagicMock(return_value=session_mock)
 
         ledger = DecisionLedger(factory, signing_key=key)
@@ -221,7 +225,12 @@ class TestDecisionLedgerSigning:
         session_mock = AsyncMock()
         session_mock.__aenter__ = AsyncMock(return_value=session_mock)
         session_mock.__aexit__ = AsyncMock(return_value=False)
-        session_mock.begin = MagicMock(return_value=AsyncMock(__aenter__=AsyncMock(), __aexit__=AsyncMock(return_value=False)))
+        session_mock.begin = MagicMock(
+            return_value=AsyncMock(
+                __aenter__=AsyncMock(),
+                __aexit__=AsyncMock(return_value=False),
+            ),
+        )
         factory = MagicMock(return_value=session_mock)
 
         ledger = DecisionLedger(factory)
@@ -530,6 +539,7 @@ class TestSigningKeyWiring:
     def _get_lifespan_source(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         return inspect.getsource(main_mod.lifespan)

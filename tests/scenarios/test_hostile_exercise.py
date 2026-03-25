@@ -23,6 +23,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from syndicateclaw.audit.dead_letter import DeadLetterQueue, _classify_error
+from syndicateclaw.audit.ledger import _hash_inputs
+from syndicateclaw.memory.service import MemoryService
 from syndicateclaw.models import (
     ApprovalRequest,
     ApprovalScope,
@@ -45,6 +48,7 @@ from syndicateclaw.models import (
     ToolRiskLevel,
     ToolSandboxPolicy,
 )
+from syndicateclaw.orchestrator.engine import ExecutionContext
 from syndicateclaw.tools.executor import (
     SandboxViolationError,
     ToolDeniedError,
@@ -52,11 +56,6 @@ from syndicateclaw.tools.executor import (
     ToolExecutor,
 )
 from syndicateclaw.tools.registry import ToolRegistry
-from syndicateclaw.orchestrator.engine import ExecutionContext
-from syndicateclaw.memory.service import MemoryService
-from syndicateclaw.audit.dead_letter import DeadLetterQueue, _classify_error
-from syndicateclaw.audit.ledger import _hash_inputs
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -124,8 +123,9 @@ class TestScenario_UnauthorizedPolicyModification:
     All three operations must be blocked with 403."""
 
     def test_regular_user_cannot_create_policy_rule(self):
-        from syndicateclaw.api.routes.policy import _require_policy_admin
         from fastapi import HTTPException
+
+        from syndicateclaw.api.routes.policy import _require_policy_admin
 
         for actor in ["user:eve", "agent:bot", "anonymous", "attacker"]:
             with pytest.raises(HTTPException) as exc_info:
@@ -140,8 +140,9 @@ class TestScenario_UnauthorizedPolicyModification:
 
     def test_privilege_escalation_via_similar_prefix_blocked(self):
         """Actor names containing 'admin' but not starting with 'admin:' are blocked."""
-        from syndicateclaw.api.routes.policy import _require_policy_admin
         from fastapi import HTTPException
+
+        from syndicateclaw.api.routes.policy import _require_policy_admin
 
         for actor in ["user:admin", "admins:team", "superadmin", "admin"]:
             with pytest.raises(HTTPException) as exc_info:
@@ -457,7 +458,10 @@ class TestScenario_SelfApproval:
         service._notify = None
         service._audit = AsyncMock()
 
-        with patch('syndicateclaw.approval.service.ApprovalRequestRepository', return_value=mock_repo):
+        with patch(
+            'syndicateclaw.approval.service.ApprovalRequestRepository',
+            return_value=mock_repo,
+        ):
             with pytest.raises(PermissionError, match="Self-approval prohibited"):
                 await service._decide(
                     "req-attack", "user:mallory", "I approve myself",
@@ -499,7 +503,10 @@ class TestScenario_SelfApproval:
         service._audit = AsyncMock()
         service._audit.emit = AsyncMock()
 
-        with patch('syndicateclaw.approval.service.ApprovalRequestRepository', return_value=mock_repo):
+        with patch(
+            'syndicateclaw.approval.service.ApprovalRequestRepository',
+            return_value=mock_repo,
+        ):
             with patch('syndicateclaw.approval.service.ApprovalRequest') as mock_ar:
                 mock_ar.model_validate = MagicMock(return_value=MagicMock(
                     id="req-1", run_id="run-1", tool_name="test",
