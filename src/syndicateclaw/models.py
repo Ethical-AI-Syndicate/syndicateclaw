@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Self
 
 from pydantic import BaseModel, Field
 from ulid import ULID
@@ -149,6 +149,12 @@ class AuditEventType(str, enum.Enum):
     INFERENCE_STREAM_COMPLETED = "INFERENCE_STREAM_COMPLETED"
     INFERENCE_STREAM_FAILED = "INFERENCE_STREAM_FAILED"
 
+    # Catalog sync (models.dev enrichment)
+    CATALOG_SYNC_STARTED = "CATALOG_SYNC_STARTED"
+    CATALOG_SYNC_COMPLETED = "CATALOG_SYNC_COMPLETED"
+    CATALOG_SYNC_FAILED = "CATALOG_SYNC_FAILED"
+    CATALOG_SYNC_ANOMALY_ABORTED = "CATALOG_SYNC_ANOMALY_ABORTED"
+
 
 class MemorySourceType(str, enum.Enum):
     HUMAN = "HUMAN"
@@ -184,6 +190,7 @@ class DeadLetterStatus(str, enum.Enum):
     RETRIED = "RETRIED"
     FAILED_PERMANENT = "FAILED_PERMANENT"
     DISCARDED = "DISCARDED"
+    RESOLVED = "RESOLVED"
 
 
 # ---------------------------------------------------------------------------
@@ -207,7 +214,7 @@ class BaseEntity(BaseModel):
     model_config = {"from_attributes": True}
 
     @classmethod
-    def new(cls, **kwargs: Any) -> BaseEntity:
+    def new(cls, **kwargs: Any) -> Self:
         """Factory that generates a fresh ULID and sets timestamps."""
         now = _utcnow()
         return cls(id=str(ULID()), created_at=now, updated_at=now, **kwargs)
@@ -255,7 +262,10 @@ class VersionManifest(BaseModel):
     policy_version: str = Field(default="", description="Policy ruleset hash or version identifier")
     memory_schema_version: str = Field(default="", description="Memory schema version")
     platform_version: str = Field(default="0.1.0", description="SyndicateClaw platform version")
-    captured_at: datetime = Field(default_factory=_utcnow, description="When the manifest was frozen")
+    captured_at: datetime = Field(
+        default_factory=_utcnow,
+        description="When the manifest was frozen",
+    )
 
 
 class ToolSandboxPolicy(BaseModel):
@@ -268,14 +278,25 @@ class ToolSandboxPolicy(BaseModel):
     allowed_protocols: list[str] = Field(
         default_factory=lambda: ["https"], description="Allowed URL schemes"
     )
-    max_request_bytes: int = Field(default=1_048_576, ge=0, description="Max outbound payload size (1MB)")
-    max_response_bytes: int = Field(default=10_485_760, ge=0, description="Max inbound payload size (10MB)")
+    max_request_bytes: int = Field(
+        default=1_048_576,
+        ge=0,
+        description="Max outbound payload size (1MB)",
+    )
+    max_response_bytes: int = Field(
+        default=10_485_760,
+        ge=0,
+        description="Max inbound payload size (10MB)",
+    )
     network_isolation: bool = Field(
         default=False, description="If True, tool runs with no network access"
     )
     filesystem_read: bool = Field(default=False, description="Whether tool may read filesystem")
     filesystem_write: bool = Field(default=False, description="Whether tool may write filesystem")
-    subprocess_allowed: bool = Field(default=False, description="Whether tool may spawn subprocesses")
+    subprocess_allowed: bool = Field(
+        default=False,
+        description="Whether tool may spawn subprocesses",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -505,7 +526,10 @@ class ApprovalScope(BaseModel):
     )
     allowed_actions: list[str] = Field(
         default_factory=list,
-        description="Specific action identifiers this approval covers (empty = the one requested action)",
+        description=(
+            "Specific action identifiers this approval covers "
+            "(empty = the one requested action)"
+        ),
     )
     time_window_seconds: int | None = Field(
         default=None, ge=1,
@@ -559,7 +583,10 @@ class PolicyDecision(BaseEntity):
     )
     all_rules_considered: list[dict[str, Any]] = Field(
         default_factory=list,
-        description="Every rule that was evaluated, including non-matching, with reasons for non-match",
+        description=(
+            "Every rule that was evaluated, including non-matching, "
+            "with reasons for non-match"
+        ),
     )
     input_attributes: dict[str, Any] = Field(
         default_factory=dict,
@@ -648,24 +675,49 @@ class DecisionRecord(BaseEntity):
     """Structured, immutable record of every consequential decision."""
 
     domain: DecisionDomain = Field(..., description="Which subsystem produced this decision")
-    decision_type: str = Field(..., description="Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')")
+    decision_type: str = Field(
+        ...,
+        description=(
+            "Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')"
+        ),
+    )
     actor: str = Field(..., description="Identity of the actor")
     run_id: str | None = Field(default=None, description="Associated workflow run")
     node_execution_id: str | None = Field(default=None, description="Associated node execution")
 
-    inputs: dict[str, Any] = Field(default_factory=dict, description="Frozen snapshot of decision inputs")
+    inputs: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Frozen snapshot of decision inputs",
+    )
     rules_evaluated: list[dict[str, Any]] = Field(
         default_factory=list,
-        description="All rules evaluated, not just the match — includes why others didn't match",
+        description=(
+            "All rules evaluated, not just the match — includes why others didn't match"
+        ),
     )
-    matched_rule: str | None = Field(default=None, description="ID of the rule that produced the outcome")
+    matched_rule: str | None = Field(
+        default=None,
+        description="ID of the rule that produced the outcome",
+    )
     effect: str = Field(..., description="Outcome (allow, deny, require_approval, etc.)")
-    justification: str = Field(..., description="Human-readable explanation of why this decision was reached")
-    confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Decision confidence score")
-    side_effects: list[str] = Field(
-        default_factory=list, description="Declared side effects that will/did result from this decision"
+    justification: str = Field(
+        ...,
+        description="Human-readable explanation of why this decision was reached",
     )
-    context_hash: str = Field(default="", description="SHA-256 of serialized inputs for integrity verification")
+    confidence: float = Field(
+        default=1.0,
+        ge=0.0,
+        le=1.0,
+        description="Decision confidence score",
+    )
+    side_effects: list[str] = Field(
+        default_factory=list,
+        description="Declared side effects that will/did result from this decision",
+    )
+    context_hash: str = Field(
+        default="",
+        description="SHA-256 of serialized inputs for integrity verification",
+    )
     trace_id: str | None = Field(default=None, description="OpenTelemetry trace ID for correlation")
 
 
@@ -680,15 +732,25 @@ class InputSnapshot(BaseEntity):
     run_id: str = Field(..., description="Associated workflow run")
     node_execution_id: str = Field(..., description="Node that produced/consumed these inputs")
     snapshot_type: str = Field(
-        ..., description="What was captured: 'tool_response', 'memory_read', 'external_api', 'llm_response'"
+        ...,
+        description=(
+            "What was captured: 'tool_response', 'memory_read', "
+            "'external_api', 'llm_response'"
+        ),
     )
     source_identifier: str = Field(
         ..., description="Tool name, memory key, API URL, etc."
     )
     request_data: dict[str, Any] = Field(default_factory=dict, description="What was requested")
     response_data: dict[str, Any] = Field(default_factory=dict, description="What was received")
-    content_hash: str = Field(default="", description="SHA-256 of response_data for integrity check")
-    captured_at: datetime = Field(default_factory=_utcnow, description="When the snapshot was taken")
+    content_hash: str = Field(
+        default="",
+        description="SHA-256 of response_data for integrity check",
+    )
+    captured_at: datetime = Field(
+        default_factory=_utcnow,
+        description="When the snapshot was taken",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -708,7 +770,11 @@ class DeadLetterRecord(BaseEntity):
     )
     status: DeadLetterStatus = Field(default=DeadLetterStatus.PENDING)
     retry_count: int = Field(default=0, ge=0, description="Number of retry attempts")
-    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts before permanent failure")
+    max_retries: int = Field(
+        default=3,
+        ge=0,
+        description="Maximum retry attempts before permanent failure",
+    )
     last_retry_at: datetime | None = Field(default=None)
     resolved_at: datetime | None = Field(default=None)
     resolved_by: str | None = Field(default=None, description="Actor who resolved this")

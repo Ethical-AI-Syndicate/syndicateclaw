@@ -36,7 +36,7 @@ class ModelProvider(Protocol):
         bearer_token: str | None,
     ) -> EmbeddingInferenceResponse: ...
 
-    async def stream_chat(
+    def stream_chat(
         self,
         cfg: ProviderConfig,
         req: ChatInferenceRequest,

@@ -93,7 +93,7 @@ class DeadLetterQueue:
                 async with self._session_factory() as session, session.begin():
                     row = await session.get(DBDeadLetterRecord, rec.id)
                     if row:
-                        row.status = DeadLetterStatus.FAILED.value
+                        row.status = DeadLetterStatus.FAILED_PERMANENT.value
                         row.error_message = f"{row.error_message} | max retries exhausted"
                 continue
 

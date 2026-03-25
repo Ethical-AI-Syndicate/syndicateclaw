@@ -22,6 +22,7 @@ class EventBus:
     """
 
     _instance: EventBus | None = None
+    _subscribers: dict[str, list[Callable[..., Any]]]
     _lock: asyncio.Lock
 
     def __new__(cls) -> EventBus:
