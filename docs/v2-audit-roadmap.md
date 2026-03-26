@@ -252,3 +252,14 @@ SyndicateClaw competes in the **enterprise agent orchestration** space, differen
 ---
 
 *Audit generated: 2026-03-26*
+
+## Spec Documents
+
+Detailed specifications for each sprint:
+
+- [v1.1.0 — Hardened Foundations](specs/v1.1.0-hardened-foundations.md) — RBAC enforcement, quality debt, integration tests
+- [v1.2.0 — LLM Ready](specs/v1.2.0-llm-ready.md) — Provider abstraction, LLM node handler, streaming
+- [v1.3.0 — Agent Mesh](specs/v1.3.0-agent-mesh.md) — Agent registry, messaging protocol, workflow versioning
+- [v1.4.0 — Enterprise Runtime](specs/v1.4.0-enterprise-runtime.md) — Scheduling, multi-tenancy, performance
+- [v1.5.0 — Developer Experience](specs/v1.5.0-developer-experience.md) — SDK, visual builder, plugins
+- [v2.0.0 — Stable Enterprise](specs/v2.0.0-stable-enterprise.md) — Security audit, chaos testing, release
