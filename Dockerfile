@@ -2,7 +2,8 @@
 FROM python:3.12-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/src
 
 RUN groupadd --gid 1000 app && \
     useradd --uid 1000 --gid app --create-home app
