@@ -1,80 +1,93 @@
-# On-Demand Environments
+# Ephemeral Review Environments
 
-SyndicateClaw supports four isolated environments on a shared PostgreSQL cluster:
+SyndicateClaw creates on-demand environments per merge request using SSH reverse tunnels + Nginx reverse proxy on a GCP ingress host.
 
-| Environment | Port | DB | Redis DB | RBAC | Deploy Trigger |
-|-------------|------|-----|----------|------|----------------|
-| **dev** | 8001 | `syndicateclaw_dev` | 1 | Shadow (off) | Auto on `main` push |
-| **qa** | 8002 | `syndicateclaw_qa` | 2 | Shadow (off) | Auto on `main` push + seed |
-| **perf** | 8003 | `syndicateclaw_perf` | 3 | Enforced | Manual |
-| **staging** | 8004 | `syndicateclaw_staging` | 4 | Enforced | Manual on tag (`v*`) |
-
-## Quick Start
-
-```bash
-# Start all environments
-docker compose -f docker-compose.env.yml up -d
-
-# Or start a specific one
-docker compose -f docker-compose.env.yml up -d syndicateclaw-dev
-
-# Seed QA with test data
-docker compose -f docker-compose.env.yml exec syndicateclaw-qa python /scripts/seed-qa.py
-
-# Run perf load tests
-docker compose -f docker-compose.env.yml up -d locust
-# Open http://localhost:8089
-
-# Tear down
-docker compose -f docker-compose.env.yml down
-```
-
-## Registry
-
-All images are pushed to `registry.mikeholownych.com/ai-syndicate/syndicateclaw`:
+## How It Works
 
 ```
-registry.mikeholownych.com/ai-syndicate/syndicateclaw:<tag>
+MR opened → CI spins up:
+  pr-123.syndicateclaw.mikeholownych.com
+  ├── syndicateclaw-pr-123 (container on Proxmox)
+  ├── postgres-pr-123 (shared Postgres, new DB)
+  ├── SSH reverse tunnel (Proxmox → GCP)
+  ├── Nginx config (GCP, routes hostname → tunnel port)
+  └── Cloudflare DNS CNAME (DNS-only, no proxy)
 
-Tags:
-  - latest              → latest main build
-  - main                → latest main build
-  - <commit-sha>        → exact commit
-  - mr-<number>         → merge request build
-  - v*                  → release tag
+MR merged/closed → CI tears down:
+  → Kill tunnel → Remove Nginx config → Remove DNS → Stop container → Drop DB
 ```
 
-## CI/CD Flow
+## Flow
 
 ```
-MR → lint → test → build (mr-N) → deploy dev → smoke test
-                    ↓
-main → lint → test → build (latest) → deploy dev → deploy qa
-                                                    ↓
-                                               smoke test
-                                                    ↓
-tag v* → lint → test → build (tag) → deploy staging → smoke test
+MR Event          CI Job              What Happens
+───────────       ────────            ──────────────────────────
+MR opened    →    build_mr()     →    Build & push image
+                create_review() →    Provision env (DB, container, tunnel, DNS)
+
+MR updated   →    build_mr()     →    Rebuild & push
+                create_review() →    Replace container (same tunnel/DNS)
+
+MR closed    →    destroy_review() →  Tear down everything
+MR merged    →    destroy_review() →  Tear down everything
+
+Manual       →    destroy_review() →  Teardown button in GitLab UI
 ```
 
-## Perf Environment
+## URL Pattern
 
-The perf environment includes resource constraints (1 CPU, 512MB RAM) and a Locust load testing companion:
-
-```bash
-# Start perf stack
-docker compose -f docker-compose.env.yml up -d syndicateclaw-perf locust
-
-# Run load tests
-curl -X POST http://localhost:8089/swarm \
-  -d "user_count=100&spawn_rate=10"
+```
+pr-<MR_IID>.syndicateclaw.mikeholownych.com
 ```
 
-## Environment Variables (CI)
+Each environment gets:
+- An isolated PostgreSQL database: `review_pr_<iid>`
+- Its own Redis DB (5-54 reserved for review envs)
+- A free port in the 8010-8099 range
+- An SSH reverse tunnel to the GCP host
+- A Cloudflare DNS-only CNAME record
 
-Set these in GitLab CI/CD settings:
+## Required CI Variables
 
-| Variable | Required For | Description |
-|----------|-------------|-------------|
-| `REGISTRY_USER` | Build | Docker registry username |
-| `REGISTRY_PASSWORD` | Build | Docker registry password |
-| `STAGING_SECRET_KEY` | Staging | Production-grade secret for staging |
+| Variable | Description |
+|----------|-------------|
+| `REGISTRY_USER` | Container registry username |
+| `REGISTRY_PASSWORD` | Container registry token |
+| `GCP_HOST` | GCP ingress host address |
+| `GCP_USER` | SSH user on GCP (default: root) |
+| `GCP_SSH_KEY` | SSH private key for GCP (set as protected/masked) |
+| `CLOUDFLARE_ZONE_ID` | Cloudflare DNS zone ID |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token (DNS write scope) |
+| `STAGING_SECRET_KEY` | Secret for staging environment |
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/env-provision.sh <mr-iid> <sha>` | Create review env |
+| `scripts/env-teardown.sh <mr-iid>` | Destroy review env |
+| `scripts/env-sweep.sh` | Clean stale envs (>24h) |
+
+## GCP Host Requirements
+
+The GCP host needs:
+
+1. **Nginx** with Let's Encrypt certs for `*.syndicateclaw.mikeholownych.com`
+2. **SSH access** from GitLab CI runner (via `GCP_SSH_KEY`)
+3. **`GatewayPorts yes`** in sshd_config (to allow reverse tunnels)
+
+## DNS Setup
+
+Create a wildcard CNAME in Cloudflare (DNS-only, gray cloud):
+
+```
+*.syndicateclaw.mikeholownych.com  →  <GCP_HOST>  (A record)
+```
+
+Or individual records created dynamically by the provisioning script.
+
+## Cleanup
+
+Stale environments (>24h) are cleaned up via:
+- GitLab scheduled pipeline (recommended: every 4 hours)
+- Manual: `scripts/env-sweep.sh` or `scripts/env-sweep.sh --dry-run`
