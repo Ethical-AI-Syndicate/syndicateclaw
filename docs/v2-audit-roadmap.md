@@ -1,4 +1,4 @@
-# SyndicateClaw v2.0.0 Strategic Audit & Roadmap
+# SyndicateClaw Strategic Audit & Versioned Roadmap
 
 ## Executive Summary
 
@@ -10,7 +10,7 @@ SyndicateClaw v1.0.0 is a **production-grade agent orchestration platform** with
 
 ## Part 1: Gap Analysis
 
-### 🔴 Critical Gaps (Must Fix for v2)
+### 🔴 Critical Gaps (Must Fix)
 
 | Gap | Severity | Current State | Impact |
 |-----|----------|---------------|--------|
@@ -77,76 +77,168 @@ SyndicateClaw competes in the **enterprise agent orchestration** space, differen
 
 ---
 
-## Part 3: v2.0.0 Roadmap
+## Part 3: Versioned Sprint Roadmap
 
-### Theme: "Enterprise Grade & Multi-Agent"
+### v1.1.0 — "Hardened Foundations"
+**Theme:** Governance enforcement + code quality
+**Sprint:** ~3 weeks
 
-#### Phase 1: Foundations (Weeks 1-4)
-
-**P0: RBAC Enforcement**
+**RBAC Enforcement**
 - [ ] Promote RBAC from shadow to enforcement mode
 - [ ] Add per-API-key OAuth-style scopes (`read:workflows`, `write:workflows`, `admin:approvals`)
-- [ ] Update ADR with rollout checklist
+- [ ] Update ADR with rollout checklist and rollback plan
 
-**P0: Quality Debt Elimination**
+**Quality Debt Elimination**
 - [ ] Execute `docs/superpowers/plans/2026-03-25-quality-debt-elimination.md`
 - [ ] Target: `ruff check src tests` and `mypy src` pass cleanly
 
-**P1: Integration Test Suite**
+**Integration Test Suite**
 - [ ] Add pytest integration markers for governance modules (policy, audit, approval, authz)
 - [ ] Ensure 80%+ coverage on critical paths
 
-#### Phase 2: Multi-Agent Core (Weeks 5-10)
-
-**P0: LLM Native Integration**
-- [ ] Implement `llm` node handler with actual model invocation
-- [ ] Add provider abstraction (OpenAI, Anthropic, Azure, Ollama)
-- [ ] Support streaming for chat responses
-
-**P1: Agent Messaging Protocol**
-- [ ] Define `AgentMessage` model (request, response, broadcast, relay)
-- [ ] Add `/api/v1/agents` endpoints for agent registration
-- [ ] Implement message routing (direct, broadcast, topic-based)
-- [ ] Add agent-to-agent capability in workflow nodes
-
-**P2: Workflow Versioning**
-- [ ] Add `workflow_versions` table with diff tracking
-- [ ] API: `GET /workflows/{id}/versions`, `POST /workflows/{id}/rollback`
-- [ ] Enforce version pinning on runs
-
-#### Phase 3: Enterprise Features (Weeks 11-16)
-
-**P1: Streaming & WebSockets**
-- [ ] Add `/api/v1/runs/{id}/stream` endpoint (Server-Sent Events)
-- [ ] WebSocket for real-time workflow progress
-- [ ] Progress callbacks for long-running nodes
-
-**P1: Scheduled Workflows**
-- [ ] Add `workflow_schedules` table (cron, interval, one-time)
-- [ ] Background scheduler service
-- [ ] API: `POST /workflows/{id}/schedule`
-
-**P2: Visual Workflow Builder (MVP)**
-- [ ] React component library for workflow rendering
-- [ ] JSON schema for visual definitions
-- [ ] Export/import between code and visual
-
-**P2: Multi-tenancy**
-- [ ] Add `organizations` table with isolated namespaces
-- [ ] Organization-scoped RBAC
-- [ ] API: `X-Organization-Id` header routing
-
-#### Phase 4: Polish & Stabilization (Weeks 17-20)
-
-- [ ] Performance benchmarking (workflow throughput, memory usage)
-- [ ] Load testing with realistic workflows
-- [ ] Documentation refresh for v2.0
-- [ ] Upgrade guide for v1.0 → v2.0 migrations
-- [ ] Release v2.0.0
+**Release criteria:** RBAC enforced, clean lint/mypy, integration tests passing
 
 ---
 
-## Summary
+### v1.2.0 — "LLM Ready"
+**Theme:** Native model invocation + streaming
+**Sprint:** ~4 weeks
+
+**LLM Native Integration**
+- [ ] Implement `llm` node handler with actual model invocation
+- [ ] Provider abstraction layer (OpenAI, Anthropic, Azure, Ollama)
+- [ ] YAML provider config for model selection and routing
+- [ ] Idempotency for LLM calls (dedup on request hash)
+
+**Streaming Support**
+- [ ] SSE endpoint: `GET /api/v1/runs/{id}/stream`
+- [ ] Stream LLM responses from `llm` node handlers
+- [ ] Progress callbacks for long-running nodes
+
+**Observability**
+- [ ] Add LLM-specific metrics (token usage, latency, error rate)
+- [ ] OpenTelemetry spans for model calls with provider/model attributes
+
+**Release criteria:** Can define and run workflows that invoke real LLMs with streaming output
+
+---
+
+### v1.3.0 — "Agent Mesh"
+**Theme:** Multi-agent coordination
+**Sprint:** ~4 weeks
+
+**Agent Registry**
+- [ ] Add `/api/v1/agents` endpoints (register, list, get, update)
+- [ ] `Agent` model with name, capabilities, namespace, metadata
+- [ ] Agent-scoped memory isolation
+
+**Messaging Protocol**
+- [ ] `AgentMessage` model (request, response, broadcast, relay)
+- [ ] Message routing: direct, broadcast, topic-based
+- [ ] Workflow nodes that send messages to other agents
+- [ ] Message queue with delivery guarantees (at-least-once)
+
+**Workflow Versioning**
+- [ ] `workflow_versions` table with diff tracking
+- [ ] API: `GET /workflows/{id}/versions`, `POST /workflows/{id}/rollback`
+- [ ] Enforce version pinning on runs
+
+**Release criteria:** Two agents can communicate via workflows, workflow versions are managed
+
+---
+
+### v1.4.0 — "Enterprise Runtime"
+**Theme:** Scheduling, multi-tenancy, stability
+**Sprint:** ~3 weeks
+
+**Scheduled Workflows**
+- [ ] `workflow_schedules` table (cron, interval, one-time)
+- [ ] Background scheduler service (asyncio-based)
+- [ ] API: `POST /workflows/{id}/schedule`, `DELETE /workflows/{id}/schedule`
+- [ ] Schedule management (pause, resume, edit)
+
+**Multi-tenancy**
+- [ ] `organizations` table with isolated namespaces
+- [ ] Organization-scoped RBAC and memory
+- [ ] API: `X-Organization-Id` header routing
+- [ ] Organization-level quotas (rate limits, storage)
+
+**Stability & Performance**
+- [ ] Connection pool tuning (asyncpg, redis)
+- [ ] Workflow state caching (Redis-backed)
+- [ ] Dead letter queue retry improvements
+- [ ] Load testing suite (locust or similar)
+
+**Release criteria:** Multi-org deployment with scheduled workflows
+
+---
+
+### v1.5.0 — "Developer Experience"
+**Theme:** SDK, visual builder, ecosystem
+**Sprint:** ~3 weeks
+
+**Python SDK**
+- [ ] `pip install syndicateclaw-sdk`
+- [ ] Typed client for all API endpoints
+- [ ] Workflow definition builder (fluent API)
+- [ ] Local development mode (in-memory, no Postgres needed)
+
+**Visual Workflow Builder (MVP)**
+- [ ] React component library for workflow rendering
+- [ ] JSON schema for visual definitions
+- [ ] Import/export between code and visual representations
+- [ ] Embedded builder iframe endpoint
+
+**Plugin System**
+- [ ] Plugin registration API (register/unregister/list)
+- [ ] Plugin lifecycle hooks (on_workflow_start, on_node_execute, on_error)
+- [ ] Plugin isolation (sandboxed execution)
+
+**Release criteria:** Can build and run workflows from both code and UI, SDK available on PyPI
+
+---
+
+### v2.0.0 — "Stable Enterprise"
+**Theme:** Production hardening + release
+**Sprint:** ~3 weeks
+
+**Hardening**
+- [ ] Performance benchmarking (workflow throughput, memory usage, p95 latency)
+- [ ] Security audit of all endpoints (OWASP Top 10)
+- [ ] Chaos testing (DB failure, Redis failure, network partition)
+- [ ] Upgrade guide for v1.0 → v2.0 migrations
+
+**Documentation**
+- [ ] Full API documentation refresh
+- [ ] Architecture decision records (ADRs) for all major choices
+- [ ] Deployment guide (single-node, multi-node, Kubernetes)
+- [ ] Troubleshooting guide
+
+**Release**
+- [ ] Version 2.0.0 tag
+- [ ] Migration guide
+- [ ] Changelog with all changes since v1.0.0
+
+**Release criteria:** All critical gaps closed, documentation complete, upgrade path tested
+
+---
+
+## Sprint Summary
+
+| Version | Theme | Duration | Key Deliverable |
+|---------|-------|----------|-----------------|
+| **v1.1.0** | Hardened Foundations | 3 weeks | RBAC enforced, clean codebase |
+| **v1.2.0** | LLM Ready | 4 weeks | Real LLM invocation with streaming |
+| **v1.3.0** | Agent Mesh | 4 weeks | Multi-agent messaging + versioning |
+| **v1.4.0** | Enterprise Runtime | 3 weeks | Scheduling + multi-tenancy |
+| **v1.5.0** | Developer Experience | 3 weeks | SDK + visual builder |
+| **v2.0.0** | Stable Enterprise | 3 weeks | Production hardening + release |
+
+**Total estimated timeline:** ~20 weeks (5 months)
+
+---
+
+## Dimension Summary
 
 | Dimension | v1.0 State | v2.0 Target |
 |-----------|------------|--------------|
@@ -156,8 +248,6 @@ SyndicateClaw competes in the **enterprise agent orchestration** space, differen
 | **Enterprise** | Basic | Versioning, scheduling, multi-tenancy |
 | **Developer Experience** | Code-only | Visual builder option, SDK |
 | **Code Quality** | Debt present | Clean lint/mypy, high coverage |
-
-**Risk mitigation:** Prioritize RBAC enforcement and quality debt — these are table-stakes for enterprise trust. Multi-agent can proceed in parallel once LLM integration lands.
 
 ---
 
