@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 import jwt
 import structlog
@@ -40,6 +41,7 @@ def create_access_token(
         "permissions": permissions,
         "iat": now,
         "exp": now + expires_delta,
+        "jti": str(uuid.uuid4()),
     }
     alg = algorithm or "HS256"
     if alg == "EdDSA" and private_key is not None:
@@ -52,16 +54,25 @@ def decode_access_token(
     token: str,
     *,
     secret_key: str | None = None,
+    secondary_secret_key: str | None = None,
     algorithm: str | None = None,
     public_key: Any = None,
+    audience: str | None = None,
 ) -> dict[str, Any]:
     """Decode and verify a JWT, returning its claims.
 
     Supports HS256 (symmetric) and EdDSA (asymmetric). When both keys are
     provided, tries EdDSA first (preferred), then falls back to HS256.
+    Algorithms are fixed allowlists per attempt — never taken from the token header.
 
     Raises ``JWTError`` on invalid / expired tokens.
     """
+    decode_options = {
+        "verify_signature": True,
+        "verify_exp": True,
+        "verify_nbf": True,
+        "require": ["exp"],
+    }
     alg = algorithm or "HS256"
     algorithms_to_try: list[tuple[str, Any]] = []
 
@@ -70,11 +81,19 @@ def decode_access_token(
     if alg != "EdDSA" or public_key is None:
         key = secret_key or _get_secret_key()
         algorithms_to_try.append(("HS256", key))
+        if secondary_secret_key:
+            algorithms_to_try.append(("HS256", secondary_secret_key))
 
     last_error: Exception | None = None
     for try_alg, try_key in algorithms_to_try:
         try:
-            return jwt.decode(token, try_key, algorithms=[try_alg])
+            kw: dict[str, Any] = {
+                "algorithms": [try_alg],
+                "options": decode_options,
+            }
+            if audience:
+                kw["audience"] = audience
+            return cast(dict[str, Any], jwt.decode(token, try_key, **kw))
         except jwt.exceptions.PyJWTError as exc:
             last_error = exc
             continue

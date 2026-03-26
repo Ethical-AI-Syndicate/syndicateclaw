@@ -200,9 +200,10 @@ class IntegrityVerifier:
             },
         }
 
+        violation_count = len(decision_violations) + len(snapshot_violations)
         logger.info(
             "integrity.full_check_complete",
             healthy=report["healthy"],
-            violations=report["decision_hash_violations"] + report["snapshot_hash_violations"],
+            violations=violation_count,
         )
         return report

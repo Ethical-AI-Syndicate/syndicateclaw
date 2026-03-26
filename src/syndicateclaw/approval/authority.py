@@ -112,7 +112,13 @@ class ApprovalAuthorityResolver:
                     from fnmatch import fnmatch
                     if not fnmatch(tool_name, rule.resource_pattern):
                         continue
-                    conditions = rule.conditions or []
+                    raw_co: Any = rule.conditions
+                    if isinstance(raw_co, list):
+                        conditions: list[Any] = raw_co
+                    elif isinstance(raw_co, dict):
+                        conditions = [raw_co]
+                    else:
+                        conditions = []
                     for cond in conditions:
                         if isinstance(cond, dict) and cond.get("field") == "approval_authorities":
                             authorities = cond.get("value", [])

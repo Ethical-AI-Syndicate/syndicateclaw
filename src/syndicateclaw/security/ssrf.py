@@ -65,7 +65,7 @@ def validate_url(url: str) -> bool:
     except socket.gaierror as exc:
         raise SSRFError(url, f"DNS resolution failed: {exc}") from exc
 
-    for family, _, _, _, sockaddr in addrinfos:
+    for _family, _, _, _, sockaddr in addrinfos:
         ip_str = sockaddr[0]
         addr = ipaddress.ip_address(ip_str)
         if _is_private(addr):

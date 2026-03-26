@@ -1,15 +1,14 @@
-"""Shadow-mode RBAC middleware.
+"""RBAC middleware (shadow or enforcement).
 
-Runs the RBAC evaluator on every authenticated request, compares the result
-with the legacy authorization decision, and records disagreements. Never
-enforces — legacy remains authoritative throughout Phase 1.
-
-The middleware executes RBAC evaluation as a background task after the
-response is sent, so it adds zero observable latency to the request.
+By default runs RBAC after the response, compares to legacy, and records
+disagreements. When ``Settings.rbac_enforcement_enabled`` is True, RBAC may
+deny before the route runs (403).
 """
 
 from __future__ import annotations
 
+import contextlib
+import json
 import time
 from typing import Any
 
@@ -17,7 +16,7 @@ import structlog
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 from starlette.routing import Match
 
 from syndicateclaw.authz.evaluator import (
@@ -58,6 +57,9 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
     """
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        blocked = await self._enforce_rbac_if_enabled(request)
+        if blocked is not None:
+            return blocked
         try:
             response = await call_next(request)
         except Exception:
@@ -70,6 +72,75 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
 
         await self._try_shadow(request, response)
         return response
+
+    async def _enforce_rbac_if_enabled(self, request: Request) -> Response | None:
+        """When ``rbac_enforcement_enabled``, deny before the handler if RBAC says DENY."""
+        settings = getattr(request.app.state, "settings", None)
+        if settings is None or not getattr(settings, "rbac_enforcement_enabled", False):
+            return None
+        actor = getattr(request.state, "actor", None)
+        if actor is None or actor == "anonymous":
+            return None
+        route_path = self._resolve_route_template(request)
+        method = request.method.upper()
+        if is_public_route(method, route_path):
+            return None
+        spec = get_route_spec(method, route_path)
+        if spec is None:
+            return None
+        session_factory = getattr(request.app.state, "session_factory", None)
+        if session_factory is None:
+            return None
+        team_context = request.headers.get("X-Team-Context")
+        async with session_factory() as session:
+            principal_id = await resolve_principal_id(session, actor)
+            if principal_id is None:
+                logger.warning("rbac.enforce.principal_not_found", actor=actor, path=route_path)
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Forbidden", "reason": "principal_not_found"},
+                )
+            validator = TeamContextValidator(session)
+            tc_valid, tc_error = await validator.validate(principal_id, team_context)
+            resolver_fn = SCOPE_RESOLVERS.get(spec.scope_resolver)
+            resource_scope = None
+            scope_failed = False
+            if resolver_fn is not None:
+                try:
+                    resource_scope = await resolver_fn(request, session)
+                except Exception:
+                    logger.warning("rbac.enforce.scope_resolution_error", exc_info=True)
+                    scope_failed = True
+            if scope_failed:
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Forbidden", "reason": "scope_resolution_failed"},
+                )
+            if not tc_valid and tc_error == "principal_has_multiple_teams":
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Forbidden", "reason": "team_context_required"},
+                )
+            if not tc_valid and tc_error == "team_not_in_memberships":
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Forbidden", "reason": "invalid_team_context"},
+                )
+            redis_client = getattr(request.app.state, "redis_client", None)
+            evaluator = RBACEvaluator(session, redis_client=redis_client)
+            rbac_result = await evaluator.evaluate(principal_id, spec.permission, resource_scope)
+            if rbac_result.decision == Decision.DENY:
+                logger.warning(
+                    "rbac.enforce.deny",
+                    actor=actor,
+                    path=route_path,
+                    permission=spec.permission,
+                )
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Forbidden", "reason": "rbac_deny"},
+                )
+        return None
 
     async def _try_shadow(self, request: Request, response: Response) -> None:
         """Attempt shadow evaluation if the request is authenticated and non-public."""
@@ -88,7 +159,11 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
         try:
             await self._shadow_evaluate(request, response, method, route_path, actor)
         except Exception as exc:
-            logger.warning("rbac.shadow.evaluation_error", error=str(exc), error_type=type(exc).__name__)
+            logger.warning(
+                "rbac.shadow.evaluation_error",
+                error=str(exc),
+                error_type=type(exc).__name__,
+            )
             await self._incr_metric(request, "rbac.shadow.dropped")
 
     async def _shadow_evaluate(
@@ -284,7 +359,7 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
             return str(request.url.path)
         # Prefer the route with fewest path parameters (most static segments)
         candidates.sort(key=lambda p: p.count("{"))
-        return candidates[0]
+        return str(candidates[0])
 
     async def _record_evaluation(
         self,
@@ -316,7 +391,11 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
             "principal_id": principal_id,
             "permission": required_permission,
             "rbac_decision": rbac_result.decision.value if rbac_result else None,
-            "legacy_decision": legacy_decision.value if isinstance(legacy_decision, Decision) else legacy_decision,
+            "legacy_decision": (
+                legacy_decision.value
+                if isinstance(legacy_decision, Decision)
+                else legacy_decision
+            ),
             "agreement": agreement,
             "disagreement_type": disagreement_type,
             "cache_hit": rbac_result.cache_hit if rbac_result else False,
@@ -375,11 +454,19 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
                         "scope_type": resolved_scope_type,
                         "scope_id": resolved_scope_id,
                         "rbac_decision": rbac_result.decision.value if rbac_result else None,
-                        "rbac_deny_reason": rbac_result.deny_reason.value if rbac_result and rbac_result.deny_reason else None,
+                        "rbac_deny_reason": (
+                            rbac_result.deny_reason.value
+                            if rbac_result and rbac_result.deny_reason
+                            else None
+                        ),
                         "rbac_assignments": _serialize_assignments(rbac_result),
                         "rbac_denies": _serialize_denies(rbac_result),
                         "rbac_perm_source": rbac_result.permission_source if rbac_result else None,
-                        "legacy_decision": legacy_decision.value if isinstance(legacy_decision, Decision) else str(legacy_decision),
+                        "legacy_decision": (
+                            legacy_decision.value
+                            if isinstance(legacy_decision, Decision)
+                            else str(legacy_decision)
+                        ),
                         "legacy_deny_reason": legacy_deny_reason,
                         "agreement": agreement,
                         "disagreement_type": disagreement_type,
@@ -435,22 +522,20 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
         redis = getattr(request.app.state, "redis_client", None)
         if redis is None:
             return
-        try:
+        with contextlib.suppress(Exception):
             await redis.incr(key)
-        except Exception:
-            pass
 
 
 def _serialize_assignments(result: AuthzResult | None) -> str:
     if result is None:
         return "[]"
-    return __import__("json").dumps([a.to_dict() for a in result.matched_assignments])
+    return json.dumps([a.to_dict() for a in result.matched_assignments])
 
 
 def _serialize_denies(result: AuthzResult | None) -> str:
     if result is None:
         return "[]"
-    return __import__("json").dumps([d.to_dict() for d in result.matched_denies])
+    return json.dumps([d.to_dict() for d in result.matched_denies])
 
 
 def _elapsed_us(t0: float) -> int:

@@ -43,8 +43,8 @@ class CreateWorkflowRequest(BaseModel):
     name: str
     version: str
     description: str = ""
-    nodes: list[NodeDefinition] = Field(default_factory=list)
-    edges: list[EdgeDefinition] = Field(default_factory=list)
+    nodes: list[NodeDefinition] = Field(default_factory=lambda: [])
+    edges: list[EdgeDefinition] = Field(default_factory=lambda: [])
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -55,8 +55,8 @@ class WorkflowResponse(BaseModel):
     name: str
     version: str
     description: str | None = None
-    nodes: Any = Field(default_factory=list)
-    edges: Any = Field(default_factory=list)
+    nodes: Any = Field(default_factory=lambda: [])
+    edges: Any = Field(default_factory=lambda: [])
     owner: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict, alias="metadata_")
     created_at: datetime

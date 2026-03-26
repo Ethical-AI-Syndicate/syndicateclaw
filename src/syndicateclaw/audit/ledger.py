@@ -226,8 +226,6 @@ class DecisionLedger:
     async def verify_integrity(self, decision_id: str) -> bool:
         """Re-hash inputs and compare to stored hash for tamper detection."""
         async with self._session_factory() as session:
-            repo = DecisionRecordRepository(session)
-            rows = await repo.get_by_run("")  # need to get by id
             row = await session.get(DecisionRecordRow, decision_id)
             if row is None:
                 return False

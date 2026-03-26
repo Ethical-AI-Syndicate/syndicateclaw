@@ -40,6 +40,29 @@ def test_full_json_parse_failure_raises() -> None:
         parse_models_dev_json("not json")
 
 
+def test_rollback_to_snapshot_restores_yaml_catalog() -> None:
+    sys = minimal_system(provider("p"), static=(static_chat_row("p", "a"),))
+    cat = ModelCatalog()
+    cat.replace_from_yaml_static(sys, snapshot_version="v0")
+    sync = ModelsDevCatalogSync(
+        base_system_config=sys,
+        allowed_provider_ids=frozenset({"p"}),
+        catalog=cat,
+        yaml_static_rows=sys.static_catalog,
+    )
+    res = sync.sync_from_parsed_records(
+        [{"provider_id": "p", "model_id": "from_md", "capability": "chat", "name": "X"}],
+        snapshot_version="v1",
+        previous_count=1,
+    )
+    assert res.applied is True
+    assert cat.get("p", "from_md") is not None
+    ok = sync.rollback_to_snapshot("v1")
+    assert ok is True
+    assert cat.get("p", "from_md") is None
+    assert cat.get("p", "a") is not None
+
+
 def test_anomaly_aborts_when_drop_too_large() -> None:
     rows = (static_chat_row("p", "a"), static_chat_row("p", "b"))
     sys = minimal_system(provider("p"), static=rows)

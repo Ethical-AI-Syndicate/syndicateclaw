@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-import hashlib
-import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
+from syndicateclaw.audit.ledger import _hash_inputs
+from syndicateclaw.memory.trust import MemoryTrustService
 from syndicateclaw.models import (
-    ApprovalRequest,
     ApprovalScope,
     ApprovalScopeType,
     DecisionDomain,
@@ -32,19 +31,15 @@ from syndicateclaw.models import (
     WorkflowRun,
     WorkflowRunStatus,
 )
+from syndicateclaw.orchestrator.engine import ExecutionContext, WorkflowEngine
+from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
 from syndicateclaw.tools.executor import (
     SandboxViolationError,
     ToolDeniedError,
     ToolExecutor,
-    ToolNotFoundError,
     enforce_sandbox,
 )
 from syndicateclaw.tools.registry import ToolRegistry
-from syndicateclaw.orchestrator.engine import ExecutionContext, WorkflowEngine
-from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
-from syndicateclaw.memory.trust import MemoryTrustService
-from syndicateclaw.audit.ledger import _hash_inputs
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -267,7 +262,10 @@ class TestMemoryTrustEnforcement:
         from syndicateclaw.memory.trust import _SOURCE_TRUST_CEILING
         assert _SOURCE_TRUST_CEILING[MemorySourceType.HUMAN.value] == 1.0
         assert _SOURCE_TRUST_CEILING[MemorySourceType.LLM.value] < 1.0
-        assert _SOURCE_TRUST_CEILING[MemorySourceType.DERIVED.value] < _SOURCE_TRUST_CEILING[MemorySourceType.LLM.value]
+        assert (
+            _SOURCE_TRUST_CEILING[MemorySourceType.DERIVED.value]
+            < _SOURCE_TRUST_CEILING[MemorySourceType.LLM.value]
+        )
 
     def test_frozen_record_requires_explicit_creation(self):
         """Frozen trust cannot be set at creation via default — requires explicit field."""

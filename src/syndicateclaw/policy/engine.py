@@ -19,6 +19,7 @@ from syndicateclaw.models import (
     PolicyEffect,
     PolicyRule,
 )
+from syndicateclaw.observability.metrics import record_policy_evaluation
 
 logger = structlog.get_logger(__name__)
 
@@ -48,79 +49,135 @@ class PolicyEngine:
 
         First matching rule (sorted by priority desc) wins.
         If nothing matches the default is DENY (fail-closed).
+        Any exception in the evaluation path returns DENY (fail-closed).
         """
-        async with self._session_factory() as session, session.begin():
-            rule_repo = PolicyRuleRepository(session)
-            decision_repo = PolicyDecisionRepository(session)
+        decision: PolicyDecision | None = None
+        try:
+            async with self._session_factory() as session, session.begin():
+                rule_repo = PolicyRuleRepository(session)
+                decision_repo = PolicyDecisionRepository(session)
 
-            rules = await rule_repo.get_enabled_by_resource_type(resource_type)
+                rules = await rule_repo.get_enabled_by_resource_type(resource_type)
 
-            matching_rules = [
-                r for r in rules if self._match_resource(r.resource_pattern, resource_id)
-            ]
+                matching_rules = [
+                    r for r in rules if self._match_resource(r.resource_pattern, resource_id)
+                ]
 
-            decision: PolicyDecision | None = None
-            for rule_row in matching_rules:
-                conditions = rule_row.conditions or []
-                condition_results: list[dict[str, Any]] = []
-                all_match = True
+                for rule_row in matching_rules:
+                    raw_conds: Any = rule_row.conditions
+                    if raw_conds is None:
+                        conditions_list: list[Any] = []
+                    elif isinstance(raw_conds, list):
+                        conditions_list = raw_conds
+                    else:
+                        conditions_list = []
+                    condition_results: list[dict[str, Any]] = []
+                    all_match = True
 
-                for cond_data in conditions:
-                    cond = (
-                        PolicyCondition(**cond_data)
-                        if isinstance(cond_data, dict)
-                        else cond_data
-                    )
-                    result = self._evaluate_condition(cond, context)
-                    condition_results.append({
-                        "field": cond.field,
-                        "operator": cond.operator,
-                        "expected": cond.value,
-                        "actual": _resolve_field(context, cond.field),
-                        "matched": result,
-                    })
-                    if not result:
-                        all_match = False
+                    for cond_data in conditions_list:
+                        if isinstance(cond_data, PolicyCondition):
+                            cond = cond_data
+                        elif isinstance(cond_data, dict):
+                            cond = PolicyCondition(**cond_data)
+                        else:
+                            continue
+                        result = self._evaluate_condition(cond, context)
+                        condition_results.append({
+                            "field": cond.field,
+                            "operator": cond.operator,
+                            "expected": cond.value,
+                            "actual": _resolve_field(context, cond.field),
+                            "matched": result,
+                        })
+                        if not result:
+                            all_match = False
+                            break
+
+                    if all_match:
+                        decision = PolicyDecision.new(
+                            rule_id=rule_row.id,
+                            rule_name=rule_row.name,
+                            effect=PolicyEffect(rule_row.effect),
+                            resource_type=resource_type,
+                            resource_id=resource_id,
+                            actor=actor,
+                            reason=f"Matched rule '{rule_row.name}' (priority {rule_row.priority})",
+                            conditions_evaluated=condition_results,
+                        )
                         break
 
-                if all_match:
+                if decision is None:
                     decision = PolicyDecision.new(
-                        rule_id=rule_row.id,
-                        rule_name=rule_row.name,
-                        effect=PolicyEffect(rule_row.effect),
+                        rule_id=_DENY_RULE_ID,
+                        rule_name="default_deny",
+                        effect=PolicyEffect.DENY,
                         resource_type=resource_type,
                         resource_id=resource_id,
                         actor=actor,
-                        reason=f"Matched rule '{rule_row.name}' (priority {rule_row.priority})",
-                        conditions_evaluated=condition_results,
+                        reason="No matching policy rule found — default DENY",
+                        conditions_evaluated=[],
                     )
-                    break
 
-            if decision is None:
-                decision = PolicyDecision.new(
-                    rule_id=_DENY_RULE_ID,
-                    rule_name="default_deny",
-                    effect=PolicyEffect.DENY,
-                    resource_type=resource_type,
-                    resource_id=resource_id,
-                    actor=actor,
-                    reason="No matching policy rule found — default DENY",
-                    conditions_evaluated=[],
+                row = PolicyDecisionRow(
+                    id=decision.id,
+                    rule_id=decision.rule_id,
+                    rule_name=decision.rule_name,
+                    effect=decision.effect.value,
+                    resource_type=decision.resource_type,
+                    resource_id=decision.resource_id,
+                    actor=decision.actor,
+                    reason=decision.reason,
+                    conditions_evaluated=decision.conditions_evaluated,
+                    timestamp=decision.timestamp,
                 )
+                await decision_repo.create(row)
 
-            row = PolicyDecisionRow(
-                id=decision.id,
-                rule_id=decision.rule_id,
-                rule_name=decision.rule_name,
-                effect=decision.effect.value,
-                resource_type=decision.resource_type,
-                resource_id=decision.resource_id,
-                actor=decision.actor,
-                reason=decision.reason,
-                conditions_evaluated=decision.conditions_evaluated,
-                timestamp=decision.timestamp,
+        except Exception as exc:
+            logger.exception(
+                "policy_engine.evaluate_failed",
+                resource_type=resource_type,
+                resource_id=resource_id,
+                action=action,
+                actor=actor,
             )
-            await decision_repo.create(row)
+            decision = PolicyDecision.new(
+                rule_id="__evaluation_error__",
+                rule_name="evaluation_error",
+                effect=PolicyEffect.DENY,
+                resource_type=resource_type,
+                resource_id=resource_id,
+                actor=actor,
+                reason=f"Policy evaluation failed (fail-closed): {exc}",
+                conditions_evaluated=[{"error": "evaluation_exception", "detail": str(exc)}],
+            )
+            try:
+                await self._emit_audit(
+                    AuditEventType.POLICY_DENIED,
+                    actor,
+                    {
+                        "resource_type": resource_type,
+                        "resource_id": resource_id,
+                        "action": action,
+                        "effect": PolicyEffect.DENY.value,
+                        "rule_id": decision.rule_id,
+                        "rule_name": decision.rule_name,
+                        "reason": decision.reason,
+                        "fail_closed": True,
+                    },
+                )
+            except Exception:
+                logger.exception("policy_engine.audit_emit_failed_after_eval_error")
+            record_policy_evaluation("error")
+            logger.info(
+                "policy_evaluated",
+                resource_type=resource_type,
+                resource_id=resource_id,
+                action=action,
+                effect=decision.effect.value,
+                rule=decision.rule_name,
+                status="failure",
+            )
+            return decision
 
         await self._emit_audit(
             AuditEventType.POLICY_EVALUATED,
@@ -136,6 +193,9 @@ class PolicyEngine:
             },
         )
 
+        record_policy_evaluation(
+            "allow" if decision.effect == PolicyEffect.ALLOW else "deny",
+        )
         logger.info(
             "policy_evaluated",
             resource_type=resource_type,
@@ -143,6 +203,7 @@ class PolicyEngine:
             action=action,
             effect=decision.effect.value,
             rule=decision.rule_name,
+            status="success",
         )
         return decision
 
@@ -245,21 +306,21 @@ class PolicyEngine:
 
         try:
             if op == "eq":
-                return actual == expected
+                return bool(actual == expected)
             if op == "neq":
-                return actual != expected
+                return bool(actual != expected)
             if op == "in":
-                return actual in expected
+                return bool(actual in expected)
             if op == "not_in":
-                return actual not in expected
+                return bool(actual not in expected)
             if op == "gt":
-                return actual > expected
+                return bool(actual > expected)
             if op == "lt":
-                return actual < expected
+                return bool(actual < expected)
             if op == "gte":
-                return actual >= expected
+                return bool(actual >= expected)
             if op == "lte":
-                return actual <= expected
+                return bool(actual <= expected)
             if op == "matches":
                 return bool(re.search(str(expected), str(actual)))
         except (TypeError, ValueError):

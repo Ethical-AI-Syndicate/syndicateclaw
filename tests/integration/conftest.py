@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import importlib
 import os
 
 import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
 
@@ -25,7 +28,38 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
         "SYNDICATECLAW_SECRET_KEY",
         os.environ.get("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production"),
     )
+    monkeypatch.setenv(
+        "SYNDICATECLAW_REDIS_URL",
+        os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0"),
+    )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
+    monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
+
+
+@pytest.fixture()
+async def session_factory(_integration_env: None) -> async_sessionmaker[AsyncSession]:
+    """Real ``session_factory`` from the app (Postgres). Skips if DB unavailable."""
+    import syndicateclaw.api.main as main_mod
+
+    importlib.reload(main_mod)
+    app = main_mod.create_app()
+    try:
+        async with LifespanManager(app):
+            # LifespanManager wraps the ASGI app; session_factory lives on the real app.
+            sf = app.state.session_factory
+            async with sf() as session:
+                await session.execute(text("SELECT 1"))
+            yield sf
+    except OSError as exc:
+        pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+    except Exception as exc:
+        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+            pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+        if "password authentication failed" in str(exc).lower():
+            pytest.skip(f"Integration test database auth failed: {exc}")
+        if "does not exist" in str(exc).lower() and "database" in str(exc).lower():
+            pytest.skip(f"Integration test database missing: {exc}")
+        raise
 
 
 @pytest.fixture()
@@ -75,3 +109,25 @@ async def client(_integration_env: None) -> AsyncClient:
         if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
         raise
+
+
+@pytest.fixture(autouse=True)
+async def _cancel_stale_runs(_integration_env: None) -> None:
+    """Cancel stale PENDING/RUNNING runs before each test (avoids concurrency limit)."""
+    import os
+
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import create_async_engine
+    url = os.environ.get("SYNDICATECLAW_DATABASE_URL", "")
+    if not url:
+        return
+    try:
+        engine = create_async_engine(url)
+        async with engine.begin() as conn:
+            await conn.execute(text(
+                "UPDATE workflow_runs SET status='CANCELLED' "
+                "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL')"
+            ))
+        await engine.dispose()
+    except Exception:
+        pass  # DB not available — integration tests will skip anyway

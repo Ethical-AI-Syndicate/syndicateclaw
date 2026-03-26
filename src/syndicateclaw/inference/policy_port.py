@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from syndicateclaw.inference.policy_gates import BoundedPolicyCache
 from syndicateclaw.inference.types import InferenceCapability
 from syndicateclaw.models import PolicyEffect
@@ -21,7 +23,7 @@ class PolicyEngineRoutingPort:
         actor: str,
         scope_type: str,
         scope_id: str,
-    ) -> str:
+    ) -> Literal["allow", "deny"]:
         resource_id = "chat" if capability == InferenceCapability.CHAT else "embedding"
         try:
             d = await self._pe.evaluate(
@@ -50,7 +52,7 @@ class PolicyEngineRoutingPort:
         scope_type: str,
         scope_id: str,
         cache: BoundedPolicyCache,
-    ) -> str:
+    ) -> Literal["allow", "deny"]:
         rid = f"{provider_id}:{model_id}"
         try:
             d = await self._pe.evaluate(

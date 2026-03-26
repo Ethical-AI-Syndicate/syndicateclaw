@@ -1,0 +1,73 @@
+{
+  "$defs": {
+    "ToolInvocationStatus": {
+      "enum": [
+        "success",
+        "retryable_failure",
+        "terminal_failure"
+      ],
+      "title": "ToolInvocationStatus",
+      "type": "string"
+    },
+    "ToolValidation": {
+      "additionalProperties": false,
+      "properties": {
+        "safety_valid": {
+          "default": false,
+          "title": "Safety Valid",
+          "type": "boolean"
+        },
+        "schema_valid": {
+          "default": false,
+          "title": "Schema Valid",
+          "type": "boolean"
+        }
+      },
+      "title": "ToolValidation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "errors": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Errors",
+      "type": "array"
+    },
+    "normalized_output": {
+      "additionalProperties": true,
+      "title": "Normalized Output",
+      "type": "object"
+    },
+    "raw_reference": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Raw Reference"
+    },
+    "status": {
+      "$ref": "#/$defs/ToolInvocationStatus"
+    },
+    "tool_name": {
+      "title": "Tool Name",
+      "type": "string"
+    },
+    "validation": {
+      "$ref": "#/$defs/ToolValidation"
+    }
+  },
+  "required": [
+    "tool_name",
+    "status"
+  ],
+  "title": "ToolResponse",
+  "type": "object"
+}

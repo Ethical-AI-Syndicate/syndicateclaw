@@ -1,0 +1,26 @@
+skill_id: blocked_sample
+version: "1.0.0"
+description: Should never match when goal mentions legal
+triggers:
+  - type: intent
+    match:
+      - sample
+non_triggers:
+  - type: intent
+    match:
+      - legal advice
+risk_level: low
+determinism_target: high
+allowed_tools: []
+denied_tools: []
+memory_access:
+  read: []
+  write: []
+  persistent: false
+input_schema:
+  type: object
+  additionalProperties: true
+output_schema:
+  type: object
+  additionalProperties: true
+failure_modes: []

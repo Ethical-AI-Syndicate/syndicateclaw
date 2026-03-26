@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 import structlog
+from opentelemetry import trace
 from ulid import ULID
 
 from syndicateclaw.audit.service import AuditService
@@ -42,6 +43,7 @@ from syndicateclaw.models import AuditEvent, AuditEventType
 from syndicateclaw.policy.engine import PolicyEngine
 
 logger = structlog.get_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 def _resolve_auth(cfg: Any) -> tuple[str | None, str | None]:
@@ -198,7 +200,14 @@ class ProviderService:
         req = req.model_copy(update={"trace_id": req.trace_id or inference_id})
 
         try:
-            return await self._infer_chat_execute(req, binding, inference_id, idem_finalize)
+            with tracer.start_as_current_span(
+                "inference.chat",
+                attributes={
+                    "actor.id": req.actor,
+                    "inference.inference_id": inference_id,
+                },
+            ):
+                return await self._infer_chat_execute(req, binding, inference_id, idem_finalize)
         except Exception as exc:
             if idem_finalize and self._idempotency:
                 await self._idempotency.update_failed(

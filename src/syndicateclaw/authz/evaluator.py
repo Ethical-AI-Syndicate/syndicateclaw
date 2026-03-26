@@ -14,7 +14,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from sqlalchemy import text
@@ -100,8 +100,16 @@ def _scope_contains(outer: Scope, inner: Scope) -> bool:
     """
     if outer.scope_type == "PLATFORM":
         return True
-    outer_idx = SCOPE_CONTAINMENT_ORDER.index(outer.scope_type) if outer.scope_type in SCOPE_CONTAINMENT_ORDER else -1
-    inner_idx = SCOPE_CONTAINMENT_ORDER.index(inner.scope_type) if inner.scope_type in SCOPE_CONTAINMENT_ORDER else -1
+    outer_idx = (
+        SCOPE_CONTAINMENT_ORDER.index(outer.scope_type)
+        if outer.scope_type in SCOPE_CONTAINMENT_ORDER
+        else -1
+    )
+    inner_idx = (
+        SCOPE_CONTAINMENT_ORDER.index(inner.scope_type)
+        if inner.scope_type in SCOPE_CONTAINMENT_ORDER
+        else -1
+    )
 
     if outer_idx < 0 or inner_idx < 0:
         return False
@@ -250,7 +258,9 @@ class RBACEvaluator:
                 )
                 matched.append(ma)
                 if permission_source is None:
-                    permission_source = f"{asgn['role_name']} @ {asgn['scope_type']}:{asgn['scope_id']}"
+                    permission_source = (
+                        f"{asgn['role_name']} @ {asgn['scope_type']}:{asgn['scope_id']}"
+                    )
 
         if matched:
             return AuthzResult(
@@ -261,7 +271,11 @@ class RBACEvaluator:
                 evaluation_latency_us=_elapsed_us(t0),
             )
 
-        deny_reason = DenyReason.EXPIRED_ASSIGNMENTS_ONLY if has_expired_match else DenyReason.NO_MATCHING_GRANT
+        deny_reason = (
+            DenyReason.EXPIRED_ASSIGNMENTS_ONLY
+            if has_expired_match
+            else DenyReason.NO_MATCHING_GRANT
+        )
         return AuthzResult(
             decision=Decision.DENY,
             deny_reason=deny_reason,
@@ -363,7 +377,7 @@ class RBACEvaluator:
             data = await self._redis.get(f"rbac:perms:{principal_id}:{version}")
             if data is None:
                 return None
-            return json.loads(data)
+            return cast(list[dict[str, Any]] | None, json.loads(data))
         except Exception:
             logger.warning("rbac.cache_get_error", principal_id=principal_id, exc_info=True)
             return None
@@ -380,7 +394,8 @@ class RBACEvaluator:
             for a in assignments:
                 entry = {k: v for k, v in a.items() if k != "expired"}
                 serializable.append(entry)
-            key = f"rbac:perms:{principal_id}:{version.decode() if isinstance(version, bytes) else version}"
+            decoded_ver = version.decode() if isinstance(version, bytes) else version
+            key = f"rbac:perms:{principal_id}:{decoded_ver}"
             await self._redis.set(key, json.dumps(serializable), ex=CACHE_TTL_SECONDS)
         except Exception:
             logger.warning("rbac.cache_set_error", principal_id=principal_id, exc_info=True)

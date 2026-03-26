@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Response
@@ -68,7 +68,7 @@ async def inference_chat(
             max_tokens=body.max_tokens,
         )
         out = await svc.infer_chat(req)
-        return out.model_dump(mode="json")
+        return cast(dict[str, Any], out.model_dump(mode="json"))
     except ValidationError as exc:
         raise inference_error_to_http(exc) from exc
     except InferenceError as exc:
@@ -96,7 +96,7 @@ async def inference_embedding(
             scope_id=body.scope_id,
         )
         out = await svc.infer_embedding(req)
-        return out.model_dump(mode="json")
+        return cast(dict[str, Any], out.model_dump(mode="json"))
     except ValidationError as exc:
         raise inference_error_to_http(exc) from exc
     except InferenceError as exc:

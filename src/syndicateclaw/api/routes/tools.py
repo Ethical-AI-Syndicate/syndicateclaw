@@ -40,8 +40,8 @@ class ToolResponse(BaseModel):
     input_schema: dict[str, Any]
     output_schema: dict[str, Any]
     risk_level: str
-    required_permissions: list[str] | Any = Field(default_factory=list)
-    side_effects: list[str] | Any = Field(default_factory=list)
+    required_permissions: list[str] | Any = Field(default_factory=lambda: [])
+    side_effects: list[str] | Any = Field(default_factory=lambda: [])
     timeout_seconds: int
     max_retries: int
     idempotent: bool

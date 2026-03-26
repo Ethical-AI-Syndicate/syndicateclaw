@@ -125,9 +125,16 @@ syndicateclaw/
 │   │   ├── __init__.py         #   ChannelConnector protocol
 │   │   ├── webhook.py          #   Outbound HTTP with SSRF protection
 │   │   └── console.py          #   Local development logger
+│   ├── inference/              # Model catalog, provider routing, idempotency
+│   │   ├── service.py          #   ProviderService execution path
+│   │   └── catalog_sync/       #   models.dev-style feed fetch (SSRF-checked)
+│   ├── observability/          # Prometheus metric definitions
+│   ├── authz/                  # RBAC evaluator, route registry, shadow middleware
+│   ├── runtime/                # Phase 1 skill/runtime contracts (experimental)
 │   ├── security/               # Auth & SSRF protection
 │   │   ├── auth.py             #   JWT creation/verification, API keys
-│   │   └── ssrf.py             #   URL validation against private IPs
+│   │   ├── ssrf.py             #   URL validation (DNS + blocklist)
+│   │   └── revocation.py     #   Optional Redis JWT revocation check
 │   ├── db/                     # Database layer
 │   │   ├── base.py             #   SQLAlchemy engine, session factory
 │   │   ├── models.py           #   ORM table definitions (10 tables)

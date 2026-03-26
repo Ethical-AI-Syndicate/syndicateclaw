@@ -5,7 +5,6 @@ API key lifecycle, and memory write guardrails.
 from __future__ import annotations
 
 import hashlib
-import json
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -18,7 +17,6 @@ from syndicateclaw.models import (
     MemoryRecord,
     MemoryType,
 )
-
 
 # =====================================================================
 # 1. Readyz Rate Limiting Status
@@ -36,6 +34,7 @@ class TestReadyzRateLimitStatus:
     def test_readyz_includes_rate_limiting_check(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.create_app)
@@ -82,6 +81,7 @@ class TestAsymmetricSigningGate:
     def test_lifespan_enforces_key_requirement(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.lifespan)
@@ -159,7 +159,7 @@ class TestApiKeyServiceVerify:
 
     @pytest.mark.asyncio
     async def test_verify_returns_actor_for_valid_key(self):
-        from syndicateclaw.security.api_keys import ApiKeyService, _hash_key
+        from syndicateclaw.security.api_keys import ApiKeyService
 
         row = MagicMock()
         row.actor = "user:bob"
@@ -392,6 +392,7 @@ class TestMemoryWriteGuardrails:
     def test_write_calls_guardrails(self):
         """Verify that write() calls _validate_write_guardrails."""
         import inspect
+
         from syndicateclaw.memory.service import MemoryService
         source = inspect.getsource(MemoryService.write)
         assert "_validate_write_guardrails" in source
@@ -414,6 +415,7 @@ class TestAuthDependencyWiring:
 
     def test_dependency_checks_api_key_service(self):
         import inspect
+
         from syndicateclaw.api.dependencies import get_current_actor
         source = inspect.getsource(get_current_actor)
         assert "api_key_service" in source

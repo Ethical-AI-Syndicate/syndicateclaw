@@ -1,0 +1,24 @@
+{
+  "skill_id": "echo_json",
+  "version": "1.0.0",
+  "description": "JSON manifest parity with YAML",
+  "triggers": [{ "type": "intent", "match": ["echo_json"] }],
+  "non_triggers": [],
+  "risk_level": "low",
+  "determinism_target": "high",
+  "tool_policy": "explicit_allowlist",
+  "allowed_tools": [],
+  "denied_tools": [],
+  "memory_access": { "read": [], "write": [], "persistent": false },
+  "input_schema": {
+    "type": "object",
+    "properties": { "message": { "type": "string" } },
+    "required": ["message"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": { "message": { "type": "string" } },
+    "required": ["message"]
+  },
+  "failure_modes": []
+}

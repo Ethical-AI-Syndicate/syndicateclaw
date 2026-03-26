@@ -9,20 +9,16 @@ These tests verify the four final controls before release readiness:
 
 from __future__ import annotations
 
-import asyncio
 import json
 from datetime import UTC, datetime, timedelta
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
 from syndicateclaw.models import (
     ApprovalRequest,
-    ApprovalStatus,
     ToolRiskLevel,
 )
-
 
 # =====================================================================
 # 1. Rate Limiting
@@ -130,7 +126,6 @@ class TestApprovalAuthorityResolver:
     async def test_requester_excluded_from_approvers(self):
         from syndicateclaw.approval.authority import (
             ApprovalAuthorityResolver,
-            DEFAULT_APPROVAL_AUTHORITIES,
         )
 
         overrides = {ToolRiskLevel.LOW: ["admin:ops", "user:alice"]}
@@ -509,6 +504,7 @@ class TestAppWiring:
     def test_lifespan_creates_authority_resolver(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.lifespan)
@@ -518,6 +514,7 @@ class TestAppWiring:
     def test_create_app_has_rate_limit_middleware(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.create_app)

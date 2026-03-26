@@ -152,7 +152,15 @@ class TestPolicyCondition:
 
 class TestWorkflowRunStatus:
     def test_workflow_run_status_transitions(self):
-        expected = {"PENDING", "RUNNING", "PAUSED", "WAITING_APPROVAL", "COMPLETED", "FAILED", "CANCELLED"}
+        expected = {
+            "PENDING",
+            "RUNNING",
+            "PAUSED",
+            "WAITING_APPROVAL",
+            "COMPLETED",
+            "FAILED",
+            "CANCELLED",
+        }
         actual = {s.value for s in WorkflowRunStatus}
         assert actual == expected
 
@@ -178,6 +186,8 @@ class TestAuditEventType:
             "INPUT_SNAPSHOT_CAPTURED", "REPLAY_STARTED", "REPLAY_DIVERGENCE_DETECTED",
             "INFERENCE_STARTED", "INFERENCE_COMPLETED", "INFERENCE_FAILED",
             "INFERENCE_STREAM_STARTED", "INFERENCE_STREAM_COMPLETED", "INFERENCE_STREAM_FAILED",
+            "CATALOG_SYNC_STARTED", "CATALOG_SYNC_COMPLETED", "CATALOG_SYNC_FAILED",
+            "CATALOG_SYNC_ANOMALY_ABORTED",
         }
         actual = {e.value for e in AuditEventType}
         assert expected_prefixes == actual

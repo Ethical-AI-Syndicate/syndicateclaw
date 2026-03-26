@@ -4,10 +4,11 @@ import asyncio
 import json
 import time
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 from urllib.parse import urlparse
 
 import structlog
+from opentelemetry import trace
 from ulid import ULID
 
 from syndicateclaw.models import (
@@ -25,6 +26,7 @@ from syndicateclaw.orchestrator.engine import ExecutionContext
 from syndicateclaw.tools.registry import ToolRegistry
 
 logger = structlog.get_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 def _utcnow() -> datetime:
@@ -130,15 +132,18 @@ def enforce_sandbox(tool_name: str, input_data: dict[str, Any], policy: ToolSand
                 f"protocol '{parsed.scheme}' not in allowed: {policy.allowed_protocols}",
             )
 
-        if policy.allowed_domains and parsed.hostname:
-            if parsed.hostname not in policy.allowed_domains:
-                raise SandboxViolationError(
-                    tool_name,
-                    f"domain '{parsed.hostname}' not in allowlist: {policy.allowed_domains}",
-                )
+        if (
+            policy.allowed_domains
+            and parsed.hostname
+            and parsed.hostname not in policy.allowed_domains
+        ):
+            raise SandboxViolationError(
+                tool_name,
+                f"domain '{parsed.hostname}' not in allowlist: {policy.allowed_domains}",
+            )
 
     body = input_data.get("body")
-    if body and isinstance(body, (str, bytes)):
+    if body and isinstance(body, str | bytes):
         size = len(body.encode() if isinstance(body, str) else body)
         if size > policy.max_request_bytes:
             raise SandboxViolationError(
@@ -270,10 +275,18 @@ class ToolExecutor:
         t0 = time.monotonic()
 
         try:
-            output = await asyncio.wait_for(
-                tool_def.handler(input_data),
-                timeout=tool_meta.timeout_seconds,
-            )
+            with tracer.start_as_current_span(
+                "tool.execute",
+                attributes={
+                    "tool.name": tool_name,
+                    "tool.actor_id": self._policy_actor(context),
+                    "tool.policy_result": "allow",
+                },
+            ):
+                output = await asyncio.wait_for(
+                    tool_def.handler(input_data),
+                    timeout=tool_meta.timeout_seconds,
+                )
         except TimeoutError:
             record.status = ToolExecutionStatus.TIMED_OUT
             record.error = f"Timed out after {tool_meta.timeout_seconds}s"
@@ -374,8 +387,8 @@ class ToolExecutor:
             logger.exception("policy_engine.evaluate_failed", tool=tool_name)
             return PolicyEffect.DENY
         if hasattr(result, "effect"):
-            return result.effect  # PolicyDecision
-        return result  # tests may return PolicyEffect directly
+            return cast(PolicyEffect, result.effect)
+        return cast(PolicyEffect, result)
 
     async def _record_decision(
         self,

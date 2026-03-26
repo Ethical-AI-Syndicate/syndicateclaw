@@ -111,7 +111,7 @@ def _mock_ledger() -> AsyncMock:
 # ===========================================================================
 
 
-class TestScenario_UnauthorizedPolicyModification:
+class TestScenario_UnauthorizedPolicyModification:  # noqa: N801
     """A regular user actor attempts to create, modify, and delete policy rules.
     All three operations must be blocked with 403."""
 
@@ -148,7 +148,7 @@ class TestScenario_UnauthorizedPolicyModification:
 # ===========================================================================
 
 
-class TestScenario_StaleApprovalReplay:
+class TestScenario_StaleApprovalReplay:  # noqa: N801
     """An approval was granted for context A. The context has since drifted
     to context B. The system must detect the mismatch."""
 
@@ -213,7 +213,7 @@ class TestScenario_StaleApprovalReplay:
 # ===========================================================================
 
 
-class TestScenario_PoisonedMemoryRetrieval:
+class TestScenario_PoisonedMemoryRetrieval:  # noqa: N801
     """An attacker injects a record into a namespace. A different actor
     attempts to read it. The access policy must block retrieval."""
 
@@ -279,7 +279,7 @@ class TestScenario_PoisonedMemoryRetrieval:
 # ===========================================================================
 
 
-class TestScenario_DependencyOutage:
+class TestScenario_DependencyOutage:  # noqa: N801
     """When critical dependencies are unavailable, the readiness probe
     must report degraded status."""
 
@@ -321,7 +321,7 @@ class TestScenario_DependencyOutage:
 # ===========================================================================
 
 
-class TestScenario_DbOutageDuringWrites:
+class TestScenario_DbOutageDuringWrites:  # noqa: N801
     """When the database is down, the system must not silently proceed."""
 
     @pytest.mark.asyncio
@@ -393,7 +393,7 @@ class TestScenario_DbOutageDuringWrites:
 # ===========================================================================
 
 
-class TestScenario_ConcurrentRunFlood:
+class TestScenario_ConcurrentRunFlood:  # noqa: N801
     """An attacker attempts to launch many runs simultaneously.
     The admission control must reject runs above the limit."""
 
@@ -420,7 +420,7 @@ class TestScenario_ConcurrentRunFlood:
 # ===========================================================================
 
 
-class TestScenario_SelfApproval:
+class TestScenario_SelfApproval:  # noqa: N801
     """An actor creates an approval request and tries to approve it themselves."""
 
     @pytest.mark.asyncio
@@ -451,15 +451,17 @@ class TestScenario_SelfApproval:
         service._notify = None
         service._audit = AsyncMock()
 
-        with patch(
-            'syndicateclaw.approval.service.ApprovalRequestRepository',
-            return_value=mock_repo,
+        with (
+            patch(
+                "syndicateclaw.approval.service.ApprovalRequestRepository",
+                return_value=mock_repo,
+            ),
+            pytest.raises(PermissionError, match="Self-approval prohibited"),
         ):
-            with pytest.raises(PermissionError, match="Self-approval prohibited"):
-                await service._decide(
-                    "req-attack", "user:mallory", "I approve myself",
-                    ApprovalStatus.APPROVED,
-                )
+            await service._decide(
+                "req-attack", "user:mallory", "I approve myself",
+                ApprovalStatus.APPROVED,
+            )
 
     @pytest.mark.asyncio
     async def test_legitimate_cross_approval_succeeds(self):
@@ -496,20 +498,22 @@ class TestScenario_SelfApproval:
         service._audit = AsyncMock()
         service._audit.emit = AsyncMock()
 
-        with patch(
-            'syndicateclaw.approval.service.ApprovalRequestRepository',
-            return_value=mock_repo,
+        with (
+            patch(
+                "syndicateclaw.approval.service.ApprovalRequestRepository",
+                return_value=mock_repo,
+            ),
+            patch("syndicateclaw.approval.service.ApprovalRequest") as mock_ar,
         ):
-            with patch('syndicateclaw.approval.service.ApprovalRequest') as mock_ar:
-                mock_ar.model_validate = MagicMock(return_value=MagicMock(
-                    id="req-1", run_id="run-1", tool_name="test",
-                    status=ApprovalStatus.APPROVED,
-                ))
-                result = await service._decide(
-                    "req-1", "user:bob", "looks good",
-                    ApprovalStatus.APPROVED,
-                )
-                assert result is not None
+            mock_ar.model_validate = MagicMock(return_value=MagicMock(
+                id="req-1", run_id="run-1", tool_name="test",
+                status=ApprovalStatus.APPROVED,
+            ))
+            result = await service._decide(
+                "req-1", "user:bob", "looks good",
+                ApprovalStatus.APPROVED,
+            )
+            assert result is not None
 
 
 # ===========================================================================
@@ -517,7 +521,7 @@ class TestScenario_SelfApproval:
 # ===========================================================================
 
 
-class TestScenario_FullToolExecutionCascade:
+class TestScenario_FullToolExecutionCascade:  # noqa: N801
     """Run a tool through the full pipeline with all controls active."""
 
     @pytest.mark.asyncio
@@ -628,7 +632,7 @@ class TestScenario_FullToolExecutionCascade:
 # ===========================================================================
 
 
-class TestScenario_DeadLetterAdversarial:
+class TestScenario_DeadLetterAdversarial:  # noqa: N801
     """Verify that DLQ classification prevents retry of permanent errors
     and correctly handles transient errors."""
 

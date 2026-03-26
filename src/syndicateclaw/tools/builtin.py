@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import ipaddress
-import socket
 from typing import Any
 from urllib.parse import urlparse
 
@@ -9,40 +7,9 @@ import httpx
 import structlog
 
 from syndicateclaw.models import Tool, ToolRiskLevel
+from syndicateclaw.security.ssrf import SSRFError, validate_url
 
 logger = structlog.get_logger(__name__)
-
-
-# ---------------------------------------------------------------------------
-# SSRF protection
-# ---------------------------------------------------------------------------
-
-_BLOCKED_NETWORKS = [
-    ipaddress.ip_network("10.0.0.0/8"),
-    ipaddress.ip_network("172.16.0.0/12"),
-    ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("127.0.0.0/8"),
-    ipaddress.ip_network("169.254.0.0/16"),
-    ipaddress.ip_network("0.0.0.0/8"),
-    ipaddress.ip_network("::1/128"),
-    ipaddress.ip_network("fc00::/7"),
-    ipaddress.ip_network("fe80::/10"),
-]
-
-
-def _is_private_ip(host: str) -> bool:
-    """Return True if *host* resolves to any private/internal IP."""
-    try:
-        addr_infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
-    except socket.gaierror:
-        return True
-
-    for _, _, _, _, sockaddr in addr_infos:
-        ip = ipaddress.ip_address(sockaddr[0])
-        for network in _BLOCKED_NETWORKS:
-            if ip in network:
-                return True
-    return False
 
 
 # ---------------------------------------------------------------------------
@@ -88,10 +55,11 @@ async def http_request_handler(input_data: dict[str, Any]) -> dict[str, Any]:
     if not parsed.hostname:
         raise ValueError(f"Invalid URL: {url}")
 
-    if _is_private_ip(parsed.hostname):
-        raise PermissionError(
-            f"SSRF blocked: {parsed.hostname} resolves to a private IP"
-        )
+    # SSRF-hardened: DNS resolution + blocklist via security.ssrf.validate_url
+    try:
+        validate_url(url)
+    except SSRFError as exc:
+        raise PermissionError(str(exc)) from exc
 
     async with httpx.AsyncClient(timeout=25.0) as client:
         response = await client.request(

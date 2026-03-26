@@ -20,7 +20,6 @@ from syndicateclaw.orchestrator.engine import (
 )
 from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
 
-
 # ---------------------------------------------------------------------------
 # safe_eval_condition tests
 # ---------------------------------------------------------------------------
@@ -121,7 +120,11 @@ class TestWorkflowEngine:
                     name="Decide",
                     node_type=NodeType.DECISION,
                     handler="decision",
-                    config={"condition": "state.route == 'a'", "true_node": "end_a", "false_node": "end_b"},
+                    config={
+                        "condition": "state.route == 'a'",
+                        "true_node": "end_a",
+                        "false_node": "end_b",
+                    },
                 ),
                 NodeDefinition(id="end_a", name="End A", node_type=NodeType.END, handler="end"),
                 NodeDefinition(id="end_b", name="End B", node_type=NodeType.END, handler="end"),

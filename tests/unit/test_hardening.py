@@ -12,41 +12,29 @@ Each test class targets a specific gap closed in the hardening round:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from syndicateclaw.audit.dead_letter import _classify_error
+from syndicateclaw.memory.service import MemoryService
 from syndicateclaw.models import (
-    ApprovalRequest,
-    ApprovalScope,
-    ApprovalScopeType,
-    AuditEvent,
-    AuditEventType,
     DecisionDomain,
     DecisionRecord,
-    MemoryDeletionStatus,
-    MemoryLineage,
     MemoryRecord,
-    MemorySourceType,
-    MemoryTrustMetadata,
     MemoryType,
     PolicyEffect,
     Tool,
     ToolRiskLevel,
     ToolSandboxPolicy,
 )
+from syndicateclaw.orchestrator.engine import ExecutionContext
 from syndicateclaw.tools.executor import (
     ToolDeniedError,
     ToolExecutor,
-    enforce_sandbox,
 )
 from syndicateclaw.tools.registry import ToolRegistry
-from syndicateclaw.orchestrator.engine import ExecutionContext
-from syndicateclaw.memory.service import MemoryService
-from syndicateclaw.audit.dead_letter import DeadLetterQueue, _classify_error
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -265,9 +253,14 @@ class TestSelfApprovalPrevention:
         service._notify = None
         service._audit = AsyncMock()
 
-        with patch('syndicateclaw.approval.service.ApprovalRequestRepository', return_value=mock_repo_instance):
-            with pytest.raises(PermissionError, match="Self-approval prohibited"):
-                await service._decide("req-1", "user:alice", "I want to", ApprovalStatus.APPROVED)
+        with (
+            patch(
+                "syndicateclaw.approval.service.ApprovalRequestRepository",
+                return_value=mock_repo_instance,
+            ),
+            pytest.raises(PermissionError, match="Self-approval prohibited"),
+        ):
+            await service._decide("req-1", "user:alice", "I want to", ApprovalStatus.APPROVED)
 
 
 # ===========================================================================
@@ -291,22 +284,25 @@ class TestPolicyRBAC:
         _require_policy_admin("system:bootstrap")
 
     def test_require_policy_admin_blocks_regular_user(self):
-        from syndicateclaw.api.routes.policy import _require_policy_admin
         from fastapi import HTTPException
+
+        from syndicateclaw.api.routes.policy import _require_policy_admin
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("user:alice")
         assert exc_info.value.status_code == 403
 
     def test_require_policy_admin_blocks_anonymous(self):
-        from syndicateclaw.api.routes.policy import _require_policy_admin
         from fastapi import HTTPException
+
+        from syndicateclaw.api.routes.policy import _require_policy_admin
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("anonymous")
         assert exc_info.value.status_code == 403
 
     def test_require_policy_admin_blocks_agent(self):
-        from syndicateclaw.api.routes.policy import _require_policy_admin
         from fastapi import HTTPException
+
+        from syndicateclaw.api.routes.policy import _require_policy_admin
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("agent:workflow-bot")
         assert exc_info.value.status_code == 403
@@ -367,6 +363,7 @@ class TestReadinessProbeDesign:
         }
         with patch.dict(os.environ, env_overrides):
             from importlib import reload
+
             import syndicateclaw.api.main as main_mod
             reload(main_mod)
             app = main_mod.create_app()

@@ -6,9 +6,7 @@ import pytest
 
 from syndicateclaw.models import (
     ApprovalRequest,
-    ApprovalStatus,
     EdgeDefinition,
-    MemoryDeletionStatus,
     MemoryLineage,
     MemoryRecord,
     MemoryType,

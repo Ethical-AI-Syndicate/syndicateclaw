@@ -1,46 +1,24 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from ipaddress import ip_address
 from typing import Any
-from urllib.parse import urlparse
 
 import httpx
 import structlog
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
 
 from syndicateclaw.channels import ChannelMessage
+from syndicateclaw.security.ssrf import SSRFError, validate_url
 
 logger = structlog.get_logger(__name__)
 
-_BLOCKED_NETWORKS = ("127.", "10.", "172.16.", "172.17.", "172.18.", "172.19.",
-                     "172.20.", "172.21.", "172.22.", "172.23.", "172.24.",
-                     "172.25.", "172.26.", "172.27.", "172.28.", "172.29.",
-                     "172.30.", "172.31.", "192.168.", "0.", "169.254.")
-
 
 def _validate_url(url: str) -> None:
-    """Raise ValueError if the URL targets a private/loopback address (SSRF protection)."""
-    parsed = urlparse(url)
-    hostname = parsed.hostname or ""
-
-    if not parsed.scheme or parsed.scheme not in ("http", "https"):
-        raise ValueError(f"Unsupported URL scheme: {parsed.scheme!r}")
-
-    if hostname in ("localhost", ""):
-        raise ValueError(f"Blocked hostname: {hostname!r}")
-
+    """SSRF-hardened: delegate to ``security.ssrf.validate_url`` (DNS + blocklist)."""
     try:
-        addr = ip_address(hostname)
-        if addr.is_private or addr.is_loopback or addr.is_reserved or addr.is_link_local:
-            raise ValueError(f"Blocked private/reserved IP: {addr}")
-    except ValueError as exc:
-        if "Blocked" in str(exc):
-            raise
-        # hostname is not a raw IP — check common prefixes
-        for prefix in _BLOCKED_NETWORKS:
-            if hostname.startswith(prefix):
-                raise ValueError(f"Blocked hostname prefix: {hostname!r}") from None
+        validate_url(url)
+    except SSRFError as exc:
+        raise ValueError(str(exc)) from exc
 
 
 class WebhookChannel:

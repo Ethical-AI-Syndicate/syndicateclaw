@@ -1,0 +1,258 @@
+{
+  "$defs": {
+    "ApprovalRequirements": {
+      "additionalProperties": false,
+      "properties": {
+        "state_mutations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "State Mutations",
+          "type": "array"
+        },
+        "tool_actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tool Actions",
+          "type": "array"
+        }
+      },
+      "title": "ApprovalRequirements",
+      "type": "object"
+    },
+    "DeterminismTarget": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "DeterminismTarget",
+      "type": "string"
+    },
+    "IntentTrigger": {
+      "additionalProperties": false,
+      "properties": {
+        "match": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Match",
+          "type": "array"
+        },
+        "type": {
+          "$ref": "#/$defs/TriggerType"
+        }
+      },
+      "required": [
+        "type",
+        "match"
+      ],
+      "title": "IntentTrigger",
+      "type": "object"
+    },
+    "MemoryAccess": {
+      "additionalProperties": false,
+      "properties": {
+        "persistent": {
+          "default": false,
+          "title": "Persistent",
+          "type": "boolean"
+        },
+        "read": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Read",
+          "type": "array"
+        },
+        "write": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Write",
+          "type": "array"
+        }
+      },
+      "title": "MemoryAccess",
+      "type": "object"
+    },
+    "RiskLevel": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "title": "RiskLevel",
+      "type": "string"
+    },
+    "SkillProvenance": {
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Author"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "validation_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation Status"
+        }
+      },
+      "title": "SkillProvenance",
+      "type": "object"
+    },
+    "ToolPolicy": {
+      "description": "How tool authorization is interpreted for audit and enforcement.",
+      "enum": [
+        "explicit_allowlist",
+        "deny_all"
+      ],
+      "title": "ToolPolicy",
+      "type": "string"
+    },
+    "TriggerType": {
+      "enum": [
+        "intent"
+      ],
+      "title": "TriggerType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Authoritative skill definition loaded from disk.",
+  "properties": {
+    "allowed_tools": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Tools",
+      "type": "array"
+    },
+    "approval_requirements": {
+      "$ref": "#/$defs/ApprovalRequirements"
+    },
+    "denied_tools": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Denied Tools",
+      "type": "array"
+    },
+    "deprecated": {
+      "default": false,
+      "title": "Deprecated",
+      "type": "boolean"
+    },
+    "description": {
+      "minLength": 1,
+      "title": "Description",
+      "type": "string"
+    },
+    "determinism_target": {
+      "$ref": "#/$defs/DeterminismTarget",
+      "default": "medium"
+    },
+    "failure_modes": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Failure Modes",
+      "type": "array"
+    },
+    "input_schema": {
+      "additionalProperties": true,
+      "title": "Input Schema",
+      "type": "object"
+    },
+    "memory_access": {
+      "$ref": "#/$defs/MemoryAccess"
+    },
+    "non_triggers": {
+      "items": {
+        "$ref": "#/$defs/IntentTrigger"
+      },
+      "title": "Non Triggers",
+      "type": "array"
+    },
+    "output_schema": {
+      "additionalProperties": true,
+      "title": "Output Schema",
+      "type": "object"
+    },
+    "provenance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SkillProvenance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "risk_level": {
+      "$ref": "#/$defs/RiskLevel",
+      "default": "medium"
+    },
+    "skill_id": {
+      "minLength": 1,
+      "title": "Skill Id",
+      "type": "string"
+    },
+    "tool_policy": {
+      "$ref": "#/$defs/ToolPolicy",
+      "default": "explicit_allowlist"
+    },
+    "triggers": {
+      "items": {
+        "$ref": "#/$defs/IntentTrigger"
+      },
+      "minItems": 1,
+      "title": "Triggers",
+      "type": "array"
+    },
+    "version": {
+      "minLength": 1,
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "skill_id",
+    "version",
+    "description",
+    "triggers"
+  ],
+  "title": "SkillManifest",
+  "type": "object"
+}

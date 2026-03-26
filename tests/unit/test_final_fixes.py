@@ -12,9 +12,9 @@ import hashlib
 import hmac
 import json
 import os
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -32,6 +32,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_get_workflow_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import get_workflow
 
         src = inspect.getsource(get_workflow)
@@ -41,6 +42,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_get_run_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import get_run
 
         src = inspect.getsource(get_run)
@@ -48,6 +50,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_pause_run_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import pause_run
 
         src = inspect.getsource(pause_run)
@@ -55,6 +58,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_resume_run_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import resume_run
 
         src = inspect.getsource(resume_run)
@@ -62,6 +66,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_cancel_run_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import cancel_run
 
         src = inspect.getsource(cancel_run)
@@ -69,6 +74,7 @@ class TestWorkflowGetByIdOwnership:
 
     def test_replay_run_source_has_ownership_check(self):
         import inspect
+
         from syndicateclaw.api.routes.workflows import replay_run
 
         src = inspect.getsource(replay_run)
@@ -80,6 +86,7 @@ class TestApprovalGetByIdOwnership:
 
     def test_get_approval_source_checks_actor_in_assigned_or_requester(self):
         import inspect
+
         from syndicateclaw.api.routes.approvals import get_approval
 
         src = inspect.getsource(get_approval)
@@ -87,6 +94,7 @@ class TestApprovalGetByIdOwnership:
 
     def test_get_approvals_for_run_source_scopes_by_actor(self):
         import inspect
+
         from syndicateclaw.api.routes.approvals import get_approvals_for_run
 
         src = inspect.getsource(get_approvals_for_run)
@@ -98,6 +106,7 @@ class TestMemoryGetByIdOwnership:
 
     def test_update_memory_checks_access_policy(self):
         import inspect
+
         from syndicateclaw.api.routes.memory import update_memory
 
         src = inspect.getsource(update_memory)
@@ -105,6 +114,7 @@ class TestMemoryGetByIdOwnership:
 
     def test_delete_memory_checks_access_policy(self):
         import inspect
+
         from syndicateclaw.api.routes.memory import delete_memory
 
         src = inspect.getsource(delete_memory)
@@ -112,6 +122,7 @@ class TestMemoryGetByIdOwnership:
 
     def test_lineage_checks_access_policy(self):
         import inspect
+
         from syndicateclaw.api.routes.memory import get_memory_lineage
 
         src = inspect.getsource(get_memory_lineage)
@@ -202,6 +213,7 @@ class TestDependenciesEdDSA:
 
     def test_dependencies_imports_jwt_error_from_auth(self):
         import inspect
+
         from syndicateclaw.api import dependencies
 
         src = inspect.getsource(dependencies)
@@ -210,6 +222,7 @@ class TestDependenciesEdDSA:
 
     def test_get_current_actor_passes_public_key(self):
         import inspect
+
         from syndicateclaw.api.dependencies import get_current_actor
 
         src = inspect.getsource(get_current_actor)
@@ -317,8 +330,9 @@ class TestCheckpointSigning:
 
     def test_engine_signing_key_wired_in_main(self):
         """Verify main.py passes signing_key to WorkflowEngine."""
-        import inspect
         import importlib
+        import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         src = inspect.getsource(main_mod.lifespan)
@@ -466,12 +480,14 @@ class TestMemoryServiceSchemaIntegration:
 
     def test_validate_namespace_schema_is_called_on_write(self):
         import inspect
+
         from syndicateclaw.memory.service import MemoryService
         src = inspect.getsource(MemoryService.write)
         assert "_validate_namespace_schema" in src
 
     def test_validate_namespace_schema_is_called_on_update(self):
         import inspect
+
         from syndicateclaw.memory.service import MemoryService
         src = inspect.getsource(MemoryService.update)
         assert "_validate_namespace_schema" in src
@@ -523,6 +539,7 @@ class TestMainWiring:
     def test_main_passes_signing_key_to_workflow_engine(self):
         import importlib
         import inspect
+
         import syndicateclaw.api.main as main_mod
         importlib.reload(main_mod)
         src = inspect.getsource(main_mod.lifespan)

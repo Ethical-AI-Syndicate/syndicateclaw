@@ -73,7 +73,7 @@ class EventBus:
 
     async def publish_and_persist(self, event: AuditEvent, audit_service: Any) -> AuditEvent:
         """Persist the event to the database then notify subscribers."""
-        persisted: AuditEvent = await audit_service.create(event)
+        persisted: AuditEvent = await audit_service.emit(event)
         await self.publish(persisted)
         return persisted
 

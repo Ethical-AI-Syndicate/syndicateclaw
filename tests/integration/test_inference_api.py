@@ -9,13 +9,15 @@ from __future__ import annotations
 
 import importlib
 from collections.abc import AsyncIterator
+from typing import Any
 
 import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 
-from syndicateclaw.api.dependencies import get_provider_service
+from syndicateclaw.api.dependencies import get_provider_loader, get_provider_service
 from syndicateclaw.authz.route_registry import get_route_spec
+from syndicateclaw.inference.catalog_sync.modelsdev import ModelsDevSyncResult
 from syndicateclaw.inference.errors import (
     IdempotencyConflictError,
     InferenceApprovalRequiredError,
@@ -40,6 +42,7 @@ INFERENCE_HTTP_ROUTES: frozenset[tuple[str, str]] = frozenset(
         ("POST", "/api/v1/inference/embedding"),
         ("POST", "/api/v1/inference/chat/stream"),
         ("GET", "/api/v1/providers/"),
+        ("POST", "/api/v1/providers/catalog/sync-models-dev"),
     }
 )
 
@@ -149,6 +152,8 @@ class TestInferenceAuthzRegistryAlignment:
         assert emb is not None and emb.permission == "inference:invoke_embedding"
         prov = get_route_spec("GET", "/api/v1/providers/")
         assert prov is not None and prov.permission == "provider:read"
+        sync_md = get_route_spec("POST", "/api/v1/providers/catalog/sync-models-dev")
+        assert sync_md is not None and sync_md.permission == "catalog:sync_models_dev"
 
 
 class TestInferenceHttpWithMockedService:
@@ -391,3 +396,191 @@ class TestInferenceOpenApiSurface:
         paths = resp.json().get("paths", {})
         for _, path in INFERENCE_HTTP_ROUTES:
             assert path in paths, f"missing OpenAPI path {path}"
+
+
+@pytest.fixture()
+async def sync_models_dev_patched_client(
+    _integration_env: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> AsyncIterator[tuple[AsyncClient, list[ModelsDevSyncResult], Any]]:
+    """ASGI client with ``run_models_dev_catalog_sync`` patched to dequeue canned results."""
+    import syndicateclaw.api.main as main_mod
+    import syndicateclaw.api.routes.providers_ops as providers_ops
+
+    importlib.reload(main_mod)
+    app = main_mod.create_app()
+    pending: list[ModelsDevSyncResult] = []
+
+    async def fake_runner(**_kwargs: object) -> ModelsDevSyncResult:
+        return pending.pop(0)
+
+    monkeypatch.setattr(providers_ops, "run_models_dev_catalog_sync", fake_runner)
+
+    try:
+        async with LifespanManager(app) as manager, AsyncClient(
+            transport=ASGITransport(app=manager.app), base_url="http://test"
+        ) as ac:
+            yield ac, pending, app
+    except OSError as exc:
+        pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+    except Exception as exc:
+        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+            pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+        raise
+
+
+class TestSyncModelsDevCatalogHttpContract:
+    """Route-level HTTP mapping with runner patched; pins status codes + JSON body shape."""
+
+    SYNC_PATH = "/api/v1/providers/catalog/sync-models-dev"
+
+    def test_route_registry_permission_catalog_sync(self, _integration_env: None) -> None:
+        spec = get_route_spec("POST", self.SYNC_PATH)
+        assert spec is not None
+        assert spec.permission == "catalog:sync_models_dev"
+        assert spec.scope_resolver == "platform"
+
+    async def test_post_returns_200_when_applied(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, _app = sync_models_dev_patched_client
+        pending.append(
+            ModelsDevSyncResult(
+                applied=True,
+                snapshot_version="snap-integ-1",
+                records_accepted=2,
+                records_skipped=1,
+                previous_snapshot_version="prev",
+            )
+        )
+        resp = await client.post(
+            self.SYNC_PATH,
+            json={"feed_url": "https://cdn.models.dev/catalog.json"},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["applied"] is True
+        assert data["snapshot_version"] == "snap-integ-1"
+        assert data["records_accepted"] == 2
+        assert data["records_skipped"] == 1
+
+    async def test_post_returns_403_when_ssrf_blocked(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, _app = sync_models_dev_patched_client
+        pending.append(
+            ModelsDevSyncResult(
+                applied=False,
+                snapshot_version="v0",
+                records_accepted=0,
+                records_skipped=0,
+                aborted_reason="ssrf_blocked",
+            )
+        )
+        resp = await client.post(
+            self.SYNC_PATH,
+            json={"feed_url": "https://cdn.models.dev/x"},
+        )
+        assert resp.status_code == 403
+        assert resp.json()["aborted_reason"] == "ssrf_blocked"
+
+    async def test_post_returns_422_when_parse_failed(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, _app = sync_models_dev_patched_client
+        pending.append(
+            ModelsDevSyncResult(
+                applied=False,
+                snapshot_version="v0",
+                records_accepted=0,
+                records_skipped=0,
+                aborted_reason="parse_failed",
+            )
+        )
+        resp = await client.post(
+            self.SYNC_PATH,
+            json={"feed_url": "https://cdn.models.dev/x"},
+        )
+        assert resp.status_code == 422
+        assert resp.json()["aborted_reason"] == "parse_failed"
+
+    async def test_post_returns_503_when_fetch_failed(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, _app = sync_models_dev_patched_client
+        pending.append(
+            ModelsDevSyncResult(
+                applied=False,
+                snapshot_version="v0",
+                records_accepted=0,
+                records_skipped=0,
+                aborted_reason="fetch_failed",
+            )
+        )
+        resp = await client.post(
+            self.SYNC_PATH,
+            json={"feed_url": "https://cdn.models.dev/x"},
+        )
+        assert resp.status_code == 503
+        assert resp.json()["aborted_reason"] == "fetch_failed"
+
+    async def test_post_returns_503_when_systemic_anomaly(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, _app = sync_models_dev_patched_client
+        pending.append(
+            ModelsDevSyncResult(
+                applied=False,
+                snapshot_version="v0",
+                records_accepted=0,
+                records_skipped=3,
+                aborted_reason="systemic_anomaly_drop",
+            )
+        )
+        resp = await client.post(
+            self.SYNC_PATH,
+            json={"feed_url": "https://cdn.models.dev/x"},
+        )
+        assert resp.status_code == 503
+        assert resp.json()["aborted_reason"] == "systemic_anomaly_drop"
+
+    async def test_post_returns_503_when_feed_url_not_configured(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, app = sync_models_dev_patched_client
+        assert not pending
+        app.state.settings = app.state.settings.model_copy(update={"models_dev_feed_url": None})
+        resp = await client.post(self.SYNC_PATH, json={})
+        assert resp.status_code == 503
+        detail = resp.json().get("detail", "")
+        assert "feed URL" in detail or "not configured" in detail
+        assert not pending
+
+    async def test_post_returns_503_when_provider_loader_unavailable(
+        self,
+        sync_models_dev_patched_client: tuple[AsyncClient, list[ModelsDevSyncResult], Any],
+    ) -> None:
+        client, pending, app = sync_models_dev_patched_client
+
+        class _BrokenLoader:
+            def current(self) -> tuple[object, str]:
+                raise RuntimeError("not loaded")
+
+        app.dependency_overrides[get_provider_loader] = lambda: _BrokenLoader()
+        try:
+            resp = await client.post(
+                self.SYNC_PATH,
+                json={"feed_url": "https://cdn.models.dev/x"},
+            )
+        finally:
+            app.dependency_overrides.pop(get_provider_loader, None)
+
+        assert resp.status_code == 503
+        assert resp.json()["detail"] == "provider config not loaded"
+        assert not pending

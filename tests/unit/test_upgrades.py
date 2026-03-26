@@ -5,18 +5,19 @@ import json
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from pydantic import ValidationError
 
+from syndicateclaw.audit.ledger import _hash_inputs
+from syndicateclaw.memory.trust import MemoryTrustService
 from syndicateclaw.models import (
     ApprovalRequest,
     ApprovalScope,
     ApprovalScopeType,
-    BaseEntity,
-    DecisionDomain,
-    DecisionRecord,
     DeadLetterRecord,
     DeadLetterStatus,
+    DecisionDomain,
+    DecisionRecord,
     InputSnapshot,
-    MemoryDeletionStatus,
     MemoryRecord,
     MemorySourceType,
     MemoryTrustMetadata,
@@ -30,11 +31,8 @@ from syndicateclaw.models import (
     ToolSandboxPolicy,
     VersionManifest,
     WorkflowRun,
-    WorkflowRunStatus,
 )
-from syndicateclaw.memory.trust import MemoryTrustService
 from syndicateclaw.orchestrator.snapshots import _hash_response
-from syndicateclaw.audit.ledger import _hash_inputs
 
 
 class TestDecisionLedger:
@@ -143,9 +141,9 @@ class TestMemoryTrust:
         assert record.trust.decay_rate == 0.05
 
     def test_trust_score_bounds(self):
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             MemoryTrustMetadata(trust_score=1.5)
-        with pytest.raises(Exception):
+        with pytest.raises(ValidationError):
             MemoryTrustMetadata(trust_score=-0.1)
 
     def test_trust_decay_computation(self):

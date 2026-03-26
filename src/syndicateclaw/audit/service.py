@@ -6,6 +6,7 @@ import structlog
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from syndicateclaw.audit.dead_letter import DeadLetterQueue
 from syndicateclaw.db.models import AuditEvent as AuditEventRow
 from syndicateclaw.db.repository import AuditEventRepository
 from syndicateclaw.models import AuditEvent, AuditEventType
@@ -65,9 +66,11 @@ class AuditService:
         self,
         session_factory: async_sessionmaker[AsyncSession],
         signing_key: bytes | None = None,
+        dead_letter_queue: DeadLetterQueue | None = None,
     ) -> None:
         self._session_factory = session_factory
         self._signing_key = signing_key
+        self._dead_letter_queue = dead_letter_queue
 
     async def emit(self, event: AuditEvent) -> AuditEvent:
         """Persist an audit event and log it. Signs event details if signing key is configured.
@@ -80,45 +83,56 @@ class AuditService:
             from syndicateclaw.security.signing import sign_record
             details = sign_record(details, self._signing_key)
 
-        async with self._session_factory() as session, session.begin():
-            principal_id = event.actor_principal_id
-            if principal_id is None:
-                principal_id = await _resolve_principal_id(session, event.actor)
+        try:
+            async with self._session_factory() as session, session.begin():
+                principal_id = event.actor_principal_id
+                if principal_id is None:
+                    principal_id = await _resolve_principal_id(session, event.actor)
 
-            scope_type = event.resource_scope_type
-            scope_id = event.resource_scope_id
-            if scope_type is None:
-                scope_type, scope_id = await _resolve_resource_scope(
-                    session, event.resource_type, event.resource_id,
+                scope_type = event.resource_scope_type
+                scope_id = event.resource_scope_id
+                if scope_type is None:
+                    scope_type, scope_id = await _resolve_resource_scope(
+                        session, event.resource_type, event.resource_id,
+                    )
+
+                repo = AuditEventRepository(session)
+                row = AuditEventRow(
+                    id=event.id,
+                    event_type=event.event_type.value,
+                    actor=event.actor,
+                    actor_principal_id=principal_id,
+                    resource_type=event.resource_type,
+                    resource_id=event.resource_id,
+                    action=event.action,
+                    details=details,
+                    parent_event_id=event.parent_event_id,
+                    trace_id=event.trace_id,
+                    span_id=event.span_id,
+                    real_actor=event.real_actor,
+                    impersonation_session_id=event.impersonation_session_id,
+                    resource_scope_type=scope_type,
+                    resource_scope_id=scope_id,
                 )
-
-            repo = AuditEventRepository(session)
-            row = AuditEventRow(
-                id=event.id,
-                event_type=event.event_type.value,
-                actor=event.actor,
-                actor_principal_id=principal_id,
-                resource_type=event.resource_type,
-                resource_id=event.resource_id,
-                action=event.action,
-                details=details,
-                parent_event_id=event.parent_event_id,
-                trace_id=event.trace_id,
-                span_id=event.span_id,
-                real_actor=event.real_actor,
-                impersonation_session_id=event.impersonation_session_id,
-                resource_scope_type=scope_type,
-                resource_scope_id=scope_id,
-            )
-            await repo.append(row)
-            logger.info(
-                "audit_event",
-                event_type=event.event_type.value,
-                actor=event.actor,
-                resource_type=event.resource_type,
-                resource_id=event.resource_id,
-                action=event.action,
-            )
+                await repo.append(row)
+                logger.info(
+                    "audit_event",
+                    event_type=event.event_type.value,
+                    actor=event.actor,
+                    resource_type=event.resource_type,
+                    resource_id=event.resource_id,
+                    action=event.action,
+                )
+        except Exception as exc:
+            if self._dead_letter_queue is not None:
+                await self._dead_letter_queue.enqueue(event, str(exc))
+                logger.warning(
+                    "audit.emit_failed_dead_letter",
+                    event_id=event.id,
+                    error=str(exc),
+                )
+                return event
+            raise
         return event
 
     async def query(

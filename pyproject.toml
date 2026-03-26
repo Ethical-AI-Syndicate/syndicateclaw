@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "syndicateclaw"
-version = "0.1.0"
+version = "1.0.0"
 description = "Production-oriented agent orchestration platform with stateful graph-based workflows"
 requires-python = ">=3.12"
 license = "MIT"
@@ -20,15 +20,20 @@ dependencies = [
     "opentelemetry-api==1.30.0",
     "opentelemetry-sdk==1.30.0",
     "opentelemetry-instrumentation-fastapi==0.51b0",
+    "opentelemetry-instrumentation-sqlalchemy==0.51b0",
+    "opentelemetry-instrumentation-httpx==0.51b0",
     "opentelemetry-exporter-otlp==1.30.0",
     "httpx==0.28.1",
     "structlog==25.1.0",
     "tenacity==9.0.0",
     "python-ulid==3.0.0",
     "pyyaml==6.0.2",
+    "jsonschema==4.23.0",
+    "packaging==24.2",
     "cryptography==44.0.2",
     "PyJWT[crypto]==2.10.1",
     "passlib[bcrypt]==1.7.4",
+    "prometheus-client==0.21.1",
 ]
 
 [project.optional-dependencies]
@@ -41,6 +46,8 @@ dev = [
     "factory-boy==3.3.1",
     "ruff==0.11.2",
     "mypy==1.15.0",
+    "types-jsonschema==4.23.0.20240813",
+    "types-PyYAML==6.0.12.20241230",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import (
@@ -11,12 +11,11 @@ from sqlalchemy import (
     LargeBinary,
     Text,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from .base import Base, _generate_ulid
+from .base import Base
 
 
 class WorkflowDefinition(Base):
@@ -72,8 +71,12 @@ class WorkflowRun(Base):
     replay_mode: Mapped[str] = mapped_column(Text, nullable=False, default="LIVE")
 
     workflow: Mapped[WorkflowDefinition] = relationship(back_populates="runs", lazy="selectin")
-    parent_run: Mapped[WorkflowRun | None] = relationship(remote_side="WorkflowRun.id", lazy="selectin")
-    node_executions: Mapped[list[NodeExecution]] = relationship(back_populates="run", lazy="selectin")
+    parent_run: Mapped[WorkflowRun | None] = relationship(
+        remote_side="WorkflowRun.id", lazy="selectin"
+    )
+    node_executions: Mapped[list[NodeExecution]] = relationship(
+        back_populates="run", lazy="selectin"
+    )
 
 
 class NodeExecution(Base):
@@ -228,7 +231,7 @@ class PolicyDecision(Base):
     input_attributes: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     decision_record_id: Mapped[str | None] = mapped_column(Text)
     timestamp: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
 
 
@@ -340,7 +343,7 @@ class InputSnapshot(Base):
     response_data: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     content_hash: Mapped[str] = mapped_column(Text, nullable=False, default="")
     captured_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
 
 
@@ -427,7 +430,7 @@ class TeamMembership(Base):
         ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
     )
     granted_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
 
@@ -472,7 +475,7 @@ class RoleAssignment(Base):
     scope_id: Mapped[str] = mapped_column(Text, nullable=False)
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
     granted_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        default=lambda: datetime.now(UTC),
     )
     expires_at: Mapped[datetime | None]
     revoked: Mapped[bool] = mapped_column(default=False)

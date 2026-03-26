@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import HTTPException, Request, status
+from opentelemetry import trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.config import Settings
 from syndicateclaw.security.auth import JWTError, decode_access_token, verify_api_key
+from syndicateclaw.security.revocation import is_token_revoked
 
 logger = structlog.get_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
@@ -27,7 +30,7 @@ async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]
 
 def get_settings(request: Request) -> Settings:
     """Return the Settings singleton stored on app state."""
-    return request.app.state.settings
+    return cast(Settings, request.app.state.settings)
 
 
 def _get_service(request: Request, attr: str) -> Any:
@@ -72,6 +75,11 @@ def get_provider_loader(request: Request) -> Any:
     return _get_service(request, "provider_config_loader")
 
 
+def get_inference_catalog(request: Request) -> Any:
+    """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
+    return _get_service(request, "inference_catalog")
+
+
 async def get_current_actor(request: Request) -> str:
     """Extract actor identity from JWT bearer token or X-API-Key header.
 
@@ -82,22 +90,37 @@ async def get_current_actor(request: Request) -> str:
     if auth_header and auth_header.startswith("Bearer "):
         token = auth_header.removeprefix("Bearer ").strip()
         try:
-            settings: Settings = request.app.state.settings
-            keypair = getattr(request.app.state, "asymmetric_keypair", None)
-            public_key = keypair._public_key if keypair else None
-            claims = decode_access_token(
-                token,
-                secret_key=settings.secret_key,
-                public_key=public_key,
-            )
-            actor = claims.get("sub")
-            if not actor:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Token missing 'sub' claim",
+            with tracer.start_as_current_span(
+                "auth.validate",
+                attributes={"auth.method": "jwt"},
+            ) as span:
+                settings: Settings = request.app.state.settings
+                keypair = getattr(request.app.state, "asymmetric_keypair", None)
+                public_key = keypair._public_key if keypair else None
+                claims = decode_access_token(
+                    token,
+                    secret_key=settings.secret_key,
+                    secondary_secret_key=getattr(settings, "jwt_secondary_secret_key", None),
+                    public_key=public_key,
+                    audience=getattr(settings, "jwt_audience", None),
                 )
-            request.state.actor = actor
-            return actor
+                jti = claims.get("jti")
+                if jti:
+                    redis = getattr(request.app.state, "redis_client", None)
+                    if await is_token_revoked(redis, str(jti)):
+                        raise HTTPException(
+                            status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Token has been revoked",
+                        )
+                actor = claims.get("sub")
+                if not actor:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Token missing 'sub' claim",
+                    )
+                span.set_attribute("actor.id", str(actor))
+                request.state.actor = actor
+                return cast(str, actor)
         except JWTError as err:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -106,21 +129,26 @@ async def get_current_actor(request: Request) -> str:
 
     api_key = request.headers.get("X-API-Key")
     if api_key:
-        api_key_service = getattr(request.app.state, "api_key_service", None)
-        if api_key_service is not None:
-            actor = await api_key_service.verify_key(api_key)
-        else:
-            actor = verify_api_key(api_key)
-        if actor is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid, revoked, or expired API key",
-            )
+        with tracer.start_as_current_span(
+            "auth.validate",
+            attributes={"auth.method": "api_key"},
+        ) as span:
+            api_key_service = getattr(request.app.state, "api_key_service", None)
+            if api_key_service is not None:
+                actor = await api_key_service.verify_key(api_key)
+            else:
+                actor = verify_api_key(api_key)
+            if actor is None:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid, revoked, or expired API key",
+                )
+            span.set_attribute("actor.id", str(actor))
         request.state.actor = actor
-        return actor
+        return cast(str, actor)
 
-    settings: Settings = request.app.state.settings
-    environment = getattr(settings, "environment", None) or "production"
+    app_settings: Settings = request.app.state.settings
+    environment = getattr(app_settings, "environment", None) or "production"
     if environment.lower() not in ("development", "dev", "test", "testing"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from httpx import AsyncClient
 
@@ -17,8 +19,9 @@ class TestHealthCheck:
 
 class TestWorkflowCRUD:
     async def test_create_workflow(self, client: AsyncClient):
+        wf_name = f"integration-test-wf-{uuid.uuid4().hex[:8]}"
         payload = {
-            "name": "integration-test-wf",
+            "name": wf_name,
             "version": "1.0.0",
             "description": "Created by integration test",
             "nodes": [
@@ -30,7 +33,7 @@ class TestWorkflowCRUD:
         resp = await client.post("/api/v1/workflows/", json=payload)
         assert resp.status_code == 201
         data = resp.json()
-        assert data["name"] == "integration-test-wf"
+        assert data["name"] == wf_name
         assert "id" in data
 
     async def test_list_workflows(self, client: AsyncClient):
@@ -41,20 +44,23 @@ class TestWorkflowCRUD:
 
 class TestMemoryCRUD:
     async def test_memory_crud(self, client: AsyncClient):
+        ns = f"test-ns-{uuid.uuid4().hex[:8]}"
+        key = f"test-key-{uuid.uuid4().hex[:8]}"
         create_payload = {
-            "namespace": "test-ns",
-            "key": "test-key",
+            "namespace": ns,
+            "key": key,
             "value": {"data": "integration-test"},
             "memory_type": "SEMANTIC",
             "source": "integration-test",
+            "access_policy": "default",
         }
         resp = await client.post("/api/v1/memory/", json=create_payload)
         assert resp.status_code == 201
         record = resp.json()
         record_id = record["id"]
-        assert record["namespace"] == "test-ns"
+        assert record["namespace"] == ns
 
-        resp = await client.get("/api/v1/memory/test-ns/test-key")
+        resp = await client.get(f"/api/v1/memory/{ns}/{key}")
         assert resp.status_code == 200
         assert resp.json()["id"] == record_id
 
@@ -69,7 +75,7 @@ class TestMemoryCRUD:
 class TestApprovalLifecycle:
     async def test_approval_lifecycle(self, client: AsyncClient):
         wf_payload = {
-            "name": "approval-test-wf",
+            "name": f"approval-test-wf-{uuid.uuid4().hex[:8]}",
             "version": "1.0.0",
             "nodes": [
                 {"id": "start", "name": "Start", "node_type": "START", "handler": "start"},

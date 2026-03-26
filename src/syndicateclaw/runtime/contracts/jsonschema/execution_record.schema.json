@@ -1,0 +1,191 @@
+{
+  "$defs": {
+    "PolicyDecisionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_type": {
+          "title": "Decision Type",
+          "type": "string"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        }
+      },
+      "required": [
+        "decision_type"
+      ],
+      "title": "PolicyDecisionRef",
+      "type": "object"
+    },
+    "ResultStatus": {
+      "enum": [
+        "success",
+        "partial",
+        "blocked",
+        "failed"
+      ],
+      "title": "ResultStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Structured audit record emitted for every execution attempt.",
+  "properties": {
+    "decisions": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Decisions",
+      "type": "array"
+    },
+    "end_time": {
+      "title": "End Time",
+      "type": "string"
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Code"
+    },
+    "error_message": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Message"
+    },
+    "execution_id": {
+      "title": "Execution Id",
+      "type": "string"
+    },
+    "failures_detected": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Failures Detected",
+      "type": "array"
+    },
+    "inputs_used": {
+      "items": {},
+      "title": "Inputs Used",
+      "type": "array"
+    },
+    "manifest_tool_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Manifest Tool Policy"
+    },
+    "memory_reads": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Memory Reads",
+      "type": "array"
+    },
+    "memory_writes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Memory Writes",
+      "type": "array"
+    },
+    "output": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Output"
+    },
+    "policy_decisions": {
+      "items": {
+        "$ref": "#/$defs/PolicyDecisionRef"
+      },
+      "title": "Policy Decisions",
+      "type": "array"
+    },
+    "result_status": {
+      "$ref": "#/$defs/ResultStatus"
+    },
+    "skill_id": {
+      "title": "Skill Id",
+      "type": "string"
+    },
+    "start_time": {
+      "title": "Start Time",
+      "type": "string"
+    },
+    "task_id": {
+      "title": "Task Id",
+      "type": "string"
+    },
+    "tools_invoked": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Tools Invoked",
+      "type": "array"
+    },
+    "trigger_reason": {
+      "title": "Trigger Reason",
+      "type": "string"
+    },
+    "uncertainties": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Uncertainties",
+      "type": "array"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "execution_id",
+    "task_id",
+    "skill_id",
+    "version",
+    "trigger_reason",
+    "result_status",
+    "start_time",
+    "end_time"
+  ],
+  "title": "ExecutionRecord",
+  "type": "object"
+}

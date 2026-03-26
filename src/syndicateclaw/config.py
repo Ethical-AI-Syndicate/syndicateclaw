@@ -111,5 +111,49 @@ class Settings(BaseSettings):
     )
     providers_yaml_path: str | None = Field(
         default=None,
-        description="Optional path to providers.yaml (Phase 1 provider topology; YAML authoritative).",
+        description=(
+            "Optional path to providers.yaml (Phase 1 provider topology; YAML authoritative)."
+        ),
+    )
+
+    models_dev_feed_url: str | None = Field(
+        default=None,
+        description="Optional HTTPS URL for models.dev-style catalog JSON (enriched merge only).",
+    )
+    models_dev_max_fetch_bytes: int = Field(
+        default=10_485_760,
+        ge=1024,
+        description="Hard cap on models.dev fetch body size (bytes).",
+    )
+    models_dev_fetch_timeout_seconds: float = Field(
+        default=60.0,
+        ge=1.0,
+        description="Connect+read timeout for models.dev HTTP fetch.",
+    )
+    models_dev_max_redirects: int = Field(
+        default=8,
+        ge=0,
+        le=32,
+        description="Maximum HTTP redirects; each target is SSRF-checked after redirect.",
+    )
+    models_dev_allowed_host_suffixes: list[str] = Field(
+        default_factory=lambda: ["models.dev"],
+        description="Only these host suffixes (e.g. models.dev, sub.models.dev) may be fetched.",
+    )
+    rbac_enforcement_enabled: bool = Field(
+        default=False,
+        description="When True, RBAC decisions deny before the route runs (403). "
+        "When False (default), RBAC runs in shadow mode only.",
+    )
+    runtime_enabled: bool = Field(
+        default=False,
+        description="When True, register experimental runtime/skill routes (Phase 1).",
+    )
+    jwt_audience: str | None = Field(
+        default=None,
+        description="If set, JWTs must include this aud claim.",
+    )
+    jwt_secondary_secret_key: str | None = Field(
+        default=None,
+        description="Optional second HS256 secret for key rotation (tried after primary).",
     )

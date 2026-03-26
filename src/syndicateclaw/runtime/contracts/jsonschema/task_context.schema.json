@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "ApprovalMode": {
+      "enum": [
+        "auto",
+        "human_required",
+        "policy_driven"
+      ],
+      "title": "ApprovalMode",
+      "type": "string"
+    },
+    "Requester": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/RequesterType"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "Requester",
+      "type": "object"
+    },
+    "RequesterType": {
+      "enum": [
+        "user",
+        "system",
+        "service"
+      ],
+      "title": "RequesterType",
+      "type": "string"
+    },
+    "TaskConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_data_scopes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Data Scopes",
+          "type": "array"
+        },
+        "approval_mode": {
+          "$ref": "#/$defs/ApprovalMode",
+          "default": "auto"
+        },
+        "cost_limit": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Limit"
+        },
+        "time_limit_ms": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Time Limit Ms"
+        }
+      },
+      "title": "TaskConstraints",
+      "type": "object"
+    },
+    "TaskContextPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Case Id"
+        },
+        "prior_execution_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Prior Execution Ids",
+          "type": "array"
+        },
+        "session_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Session Id"
+        },
+        "tenant_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tenant Id"
+        }
+      },
+      "title": "TaskContextPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Normalized task envelope passed to the router and planner.",
+  "properties": {
+    "constraints": {
+      "$ref": "#/$defs/TaskConstraints"
+    },
+    "context": {
+      "$ref": "#/$defs/TaskContextPayload"
+    },
+    "goal": {
+      "minLength": 1,
+      "title": "Goal",
+      "type": "string"
+    },
+    "inputs": {
+      "additionalProperties": true,
+      "title": "Inputs",
+      "type": "object"
+    },
+    "requested_capabilities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Requested Capabilities",
+      "type": "array"
+    },
+    "requester": {
+      "$ref": "#/$defs/Requester"
+    },
+    "task_id": {
+      "minLength": 1,
+      "title": "Task Id",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "RFC3339 timestamp when the task was recorded",
+      "title": "Timestamp",
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id",
+    "requester",
+    "goal",
+    "timestamp"
+  ],
+  "title": "TaskContext",
+  "type": "object"
+}

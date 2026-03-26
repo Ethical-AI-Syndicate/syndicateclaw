@@ -1,0 +1,22 @@
+{
+  "task_id": "t1",
+  "selected_skill": {
+    "skill_id": "echo",
+    "version": "1.0.0"
+  },
+  "candidates": [
+    {
+      "skill_id": "echo",
+      "version": "1.0.0",
+      "score": 4.0,
+      "reason": [
+        "intent match score=4",
+        "risk=low",
+        "determinism_target=high"
+      ]
+    }
+  ],
+  "routing_status": "selected",
+  "policy_notes": [],
+  "timestamp": "2025-03-24T12:00:01Z"
+}

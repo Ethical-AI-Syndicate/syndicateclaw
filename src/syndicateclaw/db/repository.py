@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Generic, TypeVar, get_args
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from .base import Base
 from .models import (
     ApprovalRequest,
     AuditEvent,
@@ -19,7 +20,6 @@ from .models import (
     ToolExecution,
     WorkflowRun,
 )
-from .base import Base
 
 T = TypeVar("T", bound=Base)
 
@@ -38,8 +38,8 @@ class BaseRepository(Generic[T]):
                 return args[0]  # type: ignore[return-value]
         raise TypeError("Could not resolve generic model type for repository")
 
-    async def get(self, id: str) -> T | None:
-        return await self.session.get(self._model_cls, id)
+    async def get(self, record_id: str) -> T | None:
+        return await self.session.get(self._model_cls, record_id)
 
     async def create(self, entity: T) -> T:
         self.session.add(entity)
@@ -53,8 +53,8 @@ class BaseRepository(Generic[T]):
         await self.session.refresh(merged)
         return merged
 
-    async def delete(self, id: str) -> None:
-        stmt = delete(self._model_cls).where(self._model_cls.id == id)
+    async def delete(self, record_id: str) -> None:
+        stmt = delete(self._model_cls).where(self._model_cls.id == record_id)
         await self.session.execute(stmt)
         await self.session.flush()
 
@@ -87,19 +87,19 @@ class WorkflowRunRepository(BaseRepository[WorkflowRun]):
         return list(result.scalars().all())
 
     async def update_status(
-        self, id: str, status: str, error: str | None = None
+        self, record_id: str, status: str, error: str | None = None
     ) -> None:
         values: dict[str, Any] = {
             "status": status,
-            "updated_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(UTC),
         }
         if error is not None:
             values["error"] = error
         if status == "running":
-            values["started_at"] = datetime.now(timezone.utc)
+            values["started_at"] = datetime.now(UTC)
         elif status in ("completed", "failed", "cancelled"):
-            values["completed_at"] = datetime.now(timezone.utc)
-        stmt = update(WorkflowRun).where(WorkflowRun.id == id).values(**values)
+            values["completed_at"] = datetime.now(UTC)
+        stmt = update(WorkflowRun).where(WorkflowRun.id == record_id).values(**values)
         await self.session.execute(stmt)
         await self.session.flush()
 
@@ -136,7 +136,7 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
     ) -> list[MemoryRecord]:
         stmt = select(MemoryRecord).where(MemoryRecord.namespace == namespace)
         if not include_expired:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             stmt = stmt.where(
                 (MemoryRecord.expires_at.is_(None)) | (MemoryRecord.expires_at > now)
             )
@@ -154,21 +154,21 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def mark_for_deletion(self, id: str) -> None:
+    async def mark_for_deletion(self, record_id: str) -> None:
         stmt = (
             update(MemoryRecord)
-            .where(MemoryRecord.id == id)
+            .where(MemoryRecord.id == record_id)
             .values(
                 deletion_status="pending_deletion",
-                deleted_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc),
+                deleted_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
         )
         await self.session.execute(stmt)
         await self.session.flush()
 
     async def purge_expired(self) -> int:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         stmt = (
             delete(MemoryRecord)
             .where(
@@ -392,40 +392,40 @@ class DeadLetterRecordRepository(BaseRepository[DeadLetterRecord]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def mark_resolved(self, id: str, resolved_by: str) -> None:
+    async def mark_resolved(self, record_id: str, resolved_by: str) -> None:
         stmt = (
             update(DeadLetterRecord)
-            .where(DeadLetterRecord.id == id)
+            .where(DeadLetterRecord.id == record_id)
             .values(
                 status="RETRIED",
-                resolved_at=datetime.now(timezone.utc),
+                resolved_at=datetime.now(UTC),
                 resolved_by=resolved_by,
-                updated_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(UTC),
             )
         )
         await self.session.execute(stmt)
         await self.session.flush()
 
-    async def mark_permanent_failure(self, id: str) -> None:
+    async def mark_permanent_failure(self, record_id: str) -> None:
         stmt = (
             update(DeadLetterRecord)
-            .where(DeadLetterRecord.id == id)
+            .where(DeadLetterRecord.id == record_id)
             .values(
                 status="FAILED_PERMANENT",
-                updated_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(UTC),
             )
         )
         await self.session.execute(stmt)
         await self.session.flush()
 
-    async def increment_retry(self, id: str) -> None:
+    async def increment_retry(self, record_id: str) -> None:
         stmt = (
             update(DeadLetterRecord)
-            .where(DeadLetterRecord.id == id)
+            .where(DeadLetterRecord.id == record_id)
             .values(
                 retry_count=DeadLetterRecord.retry_count + 1,
-                last_retry_at=datetime.now(timezone.utc),
-                updated_at=datetime.now(timezone.utc),
+                last_retry_at=datetime.now(UTC),
+                updated_at=datetime.now(UTC),
             )
         )
         await self.session.execute(stmt)

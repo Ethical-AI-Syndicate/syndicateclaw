@@ -10,9 +10,14 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from prometheus_client import make_asgi_app
 from sqlalchemy import text
 
-from syndicateclaw.api.middleware import AuditMiddleware, RequestIDMiddleware
+from syndicateclaw.api.middleware import (
+    AuditMiddleware,
+    PrometheusMetricsMiddleware,
+    RequestIDMiddleware,
+)
 from syndicateclaw.api.rate_limit import RateLimitMiddleware
 from syndicateclaw.api.routes import ALL_ROUTERS
 from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
@@ -85,6 +90,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     _configure_structlog()
 
     engine = get_engine(settings.database_url)
+    try:
+        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+
+        SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
+        logger.info("otel.sqlalchemy_instrumented")
+    except Exception:
+        logger.debug("otel.sqlalchemy_instrument_skipped", exc_info=True)
+    try:
+        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+
+        HTTPXClientInstrumentor().instrument()
+        logger.info("otel.httpx_instrumented")
+    except Exception:
+        logger.debug("otel.httpx_instrument_skipped", exc_info=True)
     session_factory = get_session_factory(engine)
     redis_client = cast(
         Redis,
@@ -243,6 +262,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    app.add_middleware(PrometheusMetricsMiddleware)
     app.add_middleware(AuditMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIDMiddleware)
@@ -259,6 +279,8 @@ def create_app() -> FastAPI:
 
     for router in ALL_ROUTERS:
         app.include_router(router)
+
+    app.mount("/metrics", make_asgi_app())
 
     @app.get("/healthz", tags=["system"])
     async def healthz() -> dict[str, str]:

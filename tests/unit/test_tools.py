@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from syndicateclaw.models import Tool, ToolRiskLevel
 from syndicateclaw.tools.registry import ToolDefinition, ToolRegistry
 

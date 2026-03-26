@@ -186,7 +186,10 @@ class ApprovalService:
                     f"Self-approval prohibited: {approver} cannot approve their own request"
                 )
 
-            assigned = row.assigned_to or []
+            at_raw: Any = row.assigned_to
+            assigned: list[str] = (
+                [str(x) for x in at_raw] if isinstance(at_raw, list) else []
+            )
             if approver not in assigned:
                 raise PermissionError(
                     f"{approver} is not in the assigned approvers list"

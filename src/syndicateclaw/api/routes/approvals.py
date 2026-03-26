@@ -38,7 +38,7 @@ class ApprovalResponse(BaseModel):
     risk_level: str
     status: str
     requested_by: str | None = None
-    assigned_to: list[str] | Any = Field(default_factory=list)
+    assigned_to: list[str] | Any = Field(default_factory=lambda: [])
     decided_by: str | None = None
     decided_at: datetime | None = None
     decision_reason: str | None = None
@@ -98,7 +98,8 @@ async def get_approval(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Approval request not found"
         )
-    assigned = approval.assigned_to or []
+    at_raw: Any = approval.assigned_to
+    assigned: list[str] = [str(x) for x in at_raw] if isinstance(at_raw, list) else []
     if actor != approval.requested_by and actor not in assigned:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Approval request not found"
@@ -132,7 +133,8 @@ async def approve_request(
             detail="Self-approval prohibited: requester cannot approve their own request",
         )
 
-    assigned = approval.assigned_to or []
+    at_raw: Any = approval.assigned_to
+    assigned: list[str] = [str(x) for x in at_raw] if isinstance(at_raw, list) else []
     if assigned and actor not in assigned:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

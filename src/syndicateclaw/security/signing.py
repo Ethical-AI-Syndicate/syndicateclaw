@@ -66,14 +66,18 @@ class SigningKeyPair:
     def __init__(self, private_key_bytes: bytes | None = None) -> None:
         from cryptography.hazmat.primitives.asymmetric.ed25519 import (
             Ed25519PrivateKey,
+            Ed25519PublicKey,
         )
+        from cryptography.hazmat.primitives.serialization import load_pem_private_key
 
         if private_key_bytes:
-            from cryptography.hazmat.primitives.serialization import load_pem_private_key
-            self._private_key = load_pem_private_key(private_key_bytes, password=None)
+            loaded = load_pem_private_key(private_key_bytes, password=None)
+            if not isinstance(loaded, Ed25519PrivateKey):
+                raise ValueError("SigningKeyPair requires an Ed25519 private key PEM")
+            self._private_key = loaded
         else:
             self._private_key = Ed25519PrivateKey.generate()
-        self._public_key = self._private_key.public_key()
+        self._public_key: Ed25519PublicKey = self._private_key.public_key()
 
     @property
     def public_key_pem(self) -> bytes:
@@ -119,8 +123,13 @@ class Ed25519Verifier:
     """Verify-only Ed25519 instance — holds only the public key."""
 
     def __init__(self, public_key_pem: bytes) -> None:
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
         from cryptography.hazmat.primitives.serialization import load_pem_public_key
-        self._public_key = load_pem_public_key(public_key_pem)
+
+        loaded = load_pem_public_key(public_key_pem)
+        if not isinstance(loaded, Ed25519PublicKey):
+            raise ValueError("Ed25519Verifier requires an Ed25519 public key PEM")
+        self._public_key = loaded
 
     def verify(self, payload: dict[str, Any], signature_hex: str) -> bool:
         try:

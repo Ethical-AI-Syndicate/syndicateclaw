@@ -1,0 +1,31 @@
+{
+  "execution_id": "golden_exec",
+  "task_id": "golden_task",
+  "skill_id": "echo",
+  "version": "1.0.0",
+  "manifest_tool_policy": "explicit_allowlist",
+  "trigger_reason": "golden",
+  "inputs_used": [
+    {
+      "message": "golden"
+    }
+  ],
+  "memory_reads": [],
+  "memory_writes": [],
+  "tools_invoked": [],
+  "decisions": [
+    "handler completed",
+    "manifest_tool_policy=explicit_allowlist; explicit_allowlist_empty_means_deny_all"
+  ],
+  "uncertainties": [],
+  "failures_detected": [],
+  "policy_decisions": [],
+  "result_status": "success",
+  "output": {
+    "message": "golden"
+  },
+  "error_code": null,
+  "error_message": null,
+  "start_time": "2025-03-24T12:00:00Z",
+  "end_time": "2025-03-24T12:00:01Z"
+}

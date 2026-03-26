@@ -37,6 +37,7 @@ class WriteMemoryRequest(BaseModel):
     source: str
     confidence: float = 1.0
     ttl_seconds: int | None = None
+    access_policy: str = "default"
     tags: dict[str, str] = Field(default_factory=dict)
     lineage: dict[str, Any] = Field(default_factory=dict)
 
@@ -104,6 +105,7 @@ async def write_memory(
         lineage=body.lineage,
         ttl_seconds=body.ttl_seconds,
         expires_at=expires_at,
+        access_policy=body.access_policy,
         tags=body.tags,
     )
     db.add(record)

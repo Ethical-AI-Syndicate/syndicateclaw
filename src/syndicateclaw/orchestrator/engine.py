@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from typing import Any, Protocol, runtime_checkable
 
 import structlog
+from opentelemetry import trace
 
 from syndicateclaw.models import (
     AuditEvent,
@@ -23,6 +24,7 @@ from syndicateclaw.models import (
 )
 
 logger = structlog.get_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -229,7 +231,8 @@ class _ConditionParser:
     def _list(self) -> list[Any]:
         self._expect("lbracket")
         items: list[Any] = []
-        if self._peek() and self._peek()[0] != "rbracket":  # type: ignore[union-attr]
+        peek = self._peek()
+        if peek is not None and peek[0] != "rbracket":
             items.append(self._primary())
             while self._peek() == ("comma", ","):
                 self._advance()
@@ -412,8 +415,8 @@ class WorkflowEngine:
             )
             return
 
-        import hmac as _hmac
         import hashlib as _hashlib
+        import hmac as _hmac
         expected = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
         if not _hmac.compare_digest(expected, stored_sig):
             raise ValueError(
@@ -487,7 +490,18 @@ class WorkflowEngine:
             execution.attempt = attempt
             context.attempt = attempt
             try:
-                result = await handler(run.state, context)
+                with tracer.start_as_current_span(
+                    "workflow.node.execute",
+                    attributes={
+                        "workflow.id": run.id,
+                        "workflow.node_id": node.id,
+                        "workflow.node_type": node.node_type.value
+                        if hasattr(node.node_type, "value")
+                        else str(node.node_type),
+                        "actor.id": run.initiated_by or "",
+                    },
+                ):
+                    result = await handler(run.state, context)
                 run.state.update(result.output_state)
                 execution.status = NodeExecutionStatus.COMPLETED
                 execution.output_state = dict(run.state)
@@ -577,8 +591,8 @@ class WorkflowEngine:
     async def _persist_checkpoint(self, run: WorkflowRun) -> None:
         serialized = json.dumps(run.state, default=str).encode()
         if self._signing_key:
-            import hmac as _hmac
             import hashlib as _hashlib
+            import hmac as _hmac
             sig = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
             envelope = json.dumps({
                 "data": json.loads(serialized),

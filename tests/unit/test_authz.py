@@ -6,18 +6,14 @@ database required. Tests the route registry for completeness and correctness.
 
 from __future__ import annotations
 
-import json
-from datetime import datetime, timezone, timedelta
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 from syndicateclaw.authz.evaluator import (
-    AuthzResult,
     Decision,
     DenyReason,
-    MatchedAssignment,
-    MatchedDeny,
     RBACEvaluator,
     TeamContextValidator,
     _scope_contains,
@@ -28,13 +24,10 @@ from syndicateclaw.authz.route_registry import (
     ROUTE_PERMISSION_MAP,
     SCOPE_RESOLVERS,
     Scope,
-    RouteAuthzSpec,
-    get_all_registered_routes,
     get_route_spec,
     get_scope_resolver,
     is_public_route,
 )
-
 
 # ---------------------------------------------------------------------------
 # Scope containment tests
@@ -76,7 +69,9 @@ class TestRouteRegistry:
     def test_all_routes_have_permissions(self):
         for (method, path), spec in ROUTE_PERMISSION_MAP.items():
             assert spec.permission, f"Route {method} {path} has no permission"
-            assert ":" in spec.permission, f"Permission '{spec.permission}' must be resource:action format"
+            assert ":" in spec.permission, (
+                f"Permission '{spec.permission}' must be resource:action format"
+            )
 
     def test_all_routes_have_scope_resolvers(self):
         for (method, path), spec in ROUTE_PERMISSION_MAP.items():
@@ -277,7 +272,7 @@ class TestRBACEvaluator:
 
     @pytest.mark.asyncio
     async def test_expired_deny_ignored(self):
-        past = datetime.now(timezone.utc) - timedelta(hours=1)
+        past = datetime.now(UTC) - timedelta(hours=1)
         assignments = [
             ("asgn-1", "role-1", "admin", '["policy:manage"]', "operator",
              "PLATFORM", "platform", "direct", None),
@@ -317,7 +312,7 @@ class TestRBACEvaluator:
 
     @pytest.mark.asyncio
     async def test_expired_assignment(self):
-        past = datetime.now(timezone.utc) - timedelta(hours=1)
+        past = datetime.now(UTC) - timedelta(hours=1)
         assignments = [
             ("asgn-1", "role-1", "operator", '["workflow:read"]', "viewer",
              "PLATFORM", "platform", "direct", past),

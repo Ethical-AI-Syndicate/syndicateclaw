@@ -9,7 +9,29 @@ from starlette.requests import Request
 from starlette.responses import Response
 from ulid import ULID
 
+from syndicateclaw.observability.metrics import (
+    http_request_duration_seconds,
+    http_requests_total,
+)
+
 logger = structlog.get_logger(__name__)
+
+
+class PrometheusMetricsMiddleware(BaseHTTPMiddleware):
+    """Record HTTP request counts and latency (low-cardinality path label)."""
+
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        t0 = time.perf_counter()
+        response = await call_next(request)
+        elapsed = time.perf_counter() - t0
+        route = request.url.path
+        http_request_duration_seconds.labels(method=request.method, route=route).observe(elapsed)
+        http_requests_total.labels(
+            method=request.method,
+            route=route,
+            status_code=str(response.status_code),
+        ).inc()
+        return response
 
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
@@ -79,4 +101,4 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 except Exception:
                     logger.warning("audit.middleware_emit_failed", exc_info=True)
 
-        return response  # type: ignore[return-value]
+        return response

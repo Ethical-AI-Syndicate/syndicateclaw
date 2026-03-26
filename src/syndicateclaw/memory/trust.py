@@ -82,7 +82,10 @@ class MemoryTrustService:
 
             now = datetime.now(UTC)
             for rec in records:
-                elapsed_days = (now - rec.last_validated_at).total_seconds() / 86400
+                last_v = rec.last_validated_at
+                if last_v is None:
+                    continue
+                elapsed_days = (now - last_v).total_seconds() / 86400
                 new_score = max(
                     0.0,
                     (rec.trust_score or 1.0)
