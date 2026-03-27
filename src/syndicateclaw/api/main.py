@@ -29,6 +29,76 @@ logger = structlog.get_logger(__name__)
 VERSION = "0.1.0"
 
 
+async def configure_system_engine(session_factory: Any) -> None:
+    """Ensure system:engine has run:control + tool:execute before serving traffic."""
+    from sqlalchemy import select
+
+    from syndicateclaw.db.models import Principal, Role, RoleAssignment
+
+    async with session_factory() as session, session.begin():
+        principal = (
+            await session.execute(
+                select(Principal).where(
+                    Principal.principal_type == "service",
+                    Principal.name == "system:engine",
+                )
+            )
+        ).scalar_one_or_none()
+        if principal is None:
+            principal = Principal(
+                principal_type="service",
+                name="system:engine",
+                enabled=True,
+            )
+            session.add(principal)
+            await session.flush()
+
+        role = (
+            await session.execute(
+                select(Role).where(
+                    Role.name == "system_engine_runtime",
+                    Role.scope_type == "PLATFORM",
+                )
+            )
+        ).scalar_one_or_none()
+        if role is None:
+            role = Role(
+                name="system_engine_runtime",
+                description="Runtime permissions for system:engine service account",
+                built_in=True,
+                permissions=["run:control", "tool:execute"],
+                inherits_from=None,
+                display_base=None,
+                scope_type="PLATFORM",
+                created_by="system",
+            )
+            session.add(role)
+            await session.flush()
+
+        assignment = (
+            await session.execute(
+                select(RoleAssignment).where(
+                    RoleAssignment.principal_id == principal.id,
+                    RoleAssignment.role_id == role.id,
+                    RoleAssignment.scope_type == "PLATFORM",
+                    RoleAssignment.scope_id == "platform",
+                    RoleAssignment.revoked.is_(False),
+                )
+            )
+        ).scalar_one_or_none()
+        if assignment is None:
+            session.add(
+                RoleAssignment(
+                    principal_id=principal.id,
+                    role_id=role.id,
+                    scope_type="PLATFORM",
+                    scope_id="platform",
+                    granted_by="system",
+                    revoked=False,
+                )
+            )
+
+
 def _configure_structlog() -> None:
     structlog.configure(
         processors=[
@@ -106,6 +176,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:
         logger.debug("otel.httpx_instrument_skipped", exc_info=True)
     session_factory = get_session_factory(engine)
+    await configure_system_engine(session_factory)
     redis_client = cast(
         Redis,
         aioredis.from_url(settings.redis_url, decode_responses=True),  # type: ignore[no-untyped-call]
