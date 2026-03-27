@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Any, cast
 
@@ -322,8 +323,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.asymmetric_keypair = asymmetric_keypair
 
     from syndicateclaw.security.api_keys import ApiKeyService
+    from syndicateclaw.tasks.agent_heartbeat import run_agent_heartbeat_expiry_loop
+
     api_key_service = ApiKeyService(session_factory)
     app.state.api_key_service = api_key_service
+
+    heartbeat_task = asyncio.create_task(
+        run_agent_heartbeat_expiry_loop(
+            agent_service,
+            interval_seconds=settings.agent_heartbeat_check_interval,
+        ),
+        name="agent-heartbeat-expiry-loop",
+    )
 
     logger.info(
         "app.startup",
@@ -337,6 +348,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
     logger.info("app.shutdown")
+    heartbeat_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await heartbeat_task
     await engine.dispose()
     await redis_client.aclose()
 

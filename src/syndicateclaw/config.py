@@ -157,6 +157,19 @@ class Settings(BaseSettings):
         ge=1,
         description="Single-use streaming token TTL in seconds.",
     )
+    agent_heartbeat_check_interval: int = Field(
+        default=30,
+        ge=1,
+        description="Background poll interval in seconds for stale agent heartbeat checks.",
+    )
+    agent_heartbeat_timeout_seconds: int = Field(
+        default=60,
+        ge=1,
+        description=(
+            "Heartbeat staleness timeout in seconds before ONLINE "
+            "agents are marked OFFLINE."
+        ),
+    )
     runtime_enabled: bool = Field(
         default=False,
         description="When True, register experimental runtime/skill routes (Phase 1).",
