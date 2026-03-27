@@ -314,6 +314,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy has NO ownership check — scope gap.",
     ),
+    ("POST", "/api/v1/runs/{run_id}/streaming-token"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Issues single-use streaming token scoped to run.",
+    ),
 
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
@@ -579,6 +585,7 @@ ROUTE_REGISTRY.update(
         ("GET", "/api/v1/workflows/{id}/runs"): "run:read",
         ("POST", "/api/v1/workflows/{id}/runs"): "run:create",
         ("GET", "/api/v1/runs/{id}"): "run:read",
+        ("POST", "/api/v1/runs/{id}/streaming-token"): "run:read",
         ("POST", "/api/v1/runs/{id}/pause"): "run:control",
         ("POST", "/api/v1/runs/{id}/resume"): "run:control",
         ("POST", "/api/v1/runs/{id}/cancel"): "run:control",
