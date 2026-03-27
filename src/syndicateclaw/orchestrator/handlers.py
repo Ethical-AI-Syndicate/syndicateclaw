@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -8,6 +9,13 @@ from ulid import ULID
 
 from syndicateclaw.inference.types import ChatInferenceRequest, ChatMessage
 from syndicateclaw.llm.idempotency import IdempotencyStore as LLMIdempotencyStore
+from syndicateclaw.llm.metrics import (
+    llm_cache_hits_total,
+    llm_cost_usd_total,
+    llm_request_duration_seconds,
+    llm_requests_total,
+    llm_tokens_used_total,
+)
 from syndicateclaw.llm.templates import render_message_template
 from syndicateclaw.models import (
     ApprovalRequest,
@@ -143,7 +151,39 @@ async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeR
         idempotency_key=None if idem.bypass_cache else idem.key,
     )
 
-    response = await provider_service.infer_chat(request)
+    t0 = time.monotonic()
+    try:
+        response = await provider_service.infer_chat(request)
+    except Exception:
+        llm_requests_total.labels(provider="unknown", model="unknown", status="failed").inc()
+        raise
+
+    elapsed = max(time.monotonic() - t0, 0.0)
+
+    provider_label = str(getattr(response, "provider_id", "unknown"))
+    model_label = str(getattr(response, "model_id", "unknown"))
+    llm_requests_total.labels(provider=provider_label, model=model_label, status="success").inc()
+    llm_request_duration_seconds.labels(provider=provider_label, model=model_label).observe(elapsed)
+
+    usage = getattr(response, "usage", None)
+    if usage is not None:
+        llm_tokens_used_total.labels(
+            provider=provider_label,
+            model=model_label,
+            token_type="prompt",
+        ).inc(float(getattr(usage, "prompt_tokens", 0) or 0))
+        llm_tokens_used_total.labels(
+            provider=provider_label,
+            model=model_label,
+            token_type="completion",
+        ).inc(float(getattr(usage, "completion_tokens", 0) or 0))
+
+    cost_usd = getattr(response, "cost_usd", None)
+    if cost_usd is not None:
+        llm_cost_usd_total.labels(provider=provider_label, model=model_label).inc(float(cost_usd))
+
+    if bool(context.config.get("cache_hit", False)):
+        llm_cache_hits_total.labels(provider=provider_label, model=model_label).inc()
 
     response_key = str(context.config.get("response_key", "llm_response"))
     state[response_key] = response.content
