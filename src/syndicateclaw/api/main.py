@@ -322,6 +322,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)
 
+    from syndicateclaw.services.schedule_service import ScheduleService
+
+    schedule_service = ScheduleService(session_factory)
+    app.state.schedule_service = schedule_service
+
     app.state.provider_config_loader = provider_config_loader
     app.state.inference_catalog = inference_catalog
     app.state.provider_registry = provider_registry
@@ -349,6 +354,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     api_key_service = ApiKeyService(session_factory)
     app.state.api_key_service = api_key_service
+
+    scheduler_task: asyncio.Task[None] | None = None
+    if getattr(settings, "scheduler_enabled", True):
+        from syndicateclaw.services.scheduler_service import SchedulerService
+
+        scheduler_service = SchedulerService(session_factory, settings)
+        scheduler_task = asyncio.create_task(
+            scheduler_service.start(),
+            name="scheduler-loop",
+        )
 
     heartbeat_task = asyncio.create_task(
         run_agent_heartbeat_expiry_loop(
@@ -389,6 +404,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     heartbeat_task.cancel()
     with suppress(asyncio.CancelledError):
         await heartbeat_task
+    if scheduler_task is not None:
+        scheduler_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await scheduler_task
     message_delivery_task.cancel()
     with suppress(asyncio.CancelledError):
         await message_delivery_task

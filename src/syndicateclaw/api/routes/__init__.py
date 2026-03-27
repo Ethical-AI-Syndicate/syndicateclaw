@@ -10,6 +10,7 @@ from syndicateclaw.api.routes.messages import router as messages_router
 from syndicateclaw.api.routes.policy import router as policy_router
 from syndicateclaw.api.routes.providers_ops import router as providers_ops_router
 from syndicateclaw.api.routes.runs import router as runs_router
+from syndicateclaw.api.routes.schedules import router as schedules_router
 from syndicateclaw.api.routes.streaming import router as streaming_router
 from syndicateclaw.api.routes.tools import router as tools_router
 from syndicateclaw.api.routes.workflow_versions import router as workflow_versions_router
@@ -26,6 +27,7 @@ ALL_ROUTERS = [
     policy_router,
     providers_ops_router,
     runs_router,
+    schedules_router,
     streaming_router,
     tools_router,
     workflows_router,

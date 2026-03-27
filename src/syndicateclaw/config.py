@@ -170,6 +170,30 @@ class Settings(BaseSettings):
             "agents are marked OFFLINE."
         ),
     )
+    scheduler_enabled: bool = Field(
+        default=True,
+        description="When True, the scheduler background worker polls for due schedules.",
+    )
+    scheduler_poll_interval: int = Field(
+        default=10,
+        ge=1,
+        description="Seconds between scheduler poll cycles.",
+    )
+    scheduler_max_concurrent: int = Field(
+        default=50,
+        ge=1,
+        description="Maximum schedules processed concurrently per scheduler instance.",
+    )
+    scheduler_lock_lease_seconds: int = Field(
+        default=120,
+        ge=1,
+        description="Lock lease duration in seconds before another instance can claim.",
+    )
+    scheduler_batch_size: int = Field(
+        default=20,
+        ge=1,
+        description="Maximum schedules claimed per poll cycle.",
+    )
     message_max_hops: int = Field(
         default=10,
         ge=1,

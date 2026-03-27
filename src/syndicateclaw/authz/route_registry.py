@@ -782,6 +782,14 @@ ROUTE_REGISTRY.update(
         ("GET", "/healthz"): None,
         ("GET", "/readyz"): None,
         ("GET", "/api/v1/info"): None,
+        ("POST", "/api/v1/schedules"): "schedule:manage",
+        ("GET", "/api/v1/schedules"): "schedule:read",
+        ("GET", "/api/v1/schedules/{schedule_id}"): "schedule:read",
+        ("PUT", "/api/v1/schedules/{schedule_id}"): "schedule:manage",
+        ("DELETE", "/api/v1/schedules/{schedule_id}"): "schedule:manage",
+        ("POST", "/api/v1/schedules/{schedule_id}/pause"): "schedule:manage",
+        ("POST", "/api/v1/schedules/{schedule_id}/resume"): "schedule:manage",
+        ("GET", "/api/v1/schedules/{schedule_id}/preview-next-run"): "schedule:read",
     }
 )
 

@@ -10,9 +10,11 @@ from sqlalchemy import (
     Index,
     Integer,
     LargeBinary,
+    String,
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -123,6 +125,9 @@ class WorkflowRun(Base):
     node_executions: Mapped[list[NodeExecution]] = relationship(
         back_populates="run", lazy="selectin"
     )
+    parent_schedule_id: Mapped[str | None]
+    triggered_by: Mapped[str | None]
+    namespace: Mapped[str | None]
 
 
 class Agent(Base):
@@ -891,3 +896,32 @@ class StreamingToken(Base):
     workflow_id: Mapped[str | None] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(nullable=False)
     used_at: Mapped[datetime | None]
+
+
+class WorkflowSchedule(Base):
+    __tablename__ = "workflow_schedules"
+    __table_args__ = (
+        Index("idx_schedules_next_run", "next_run_at", postgresql_where=text("status = 'ACTIVE'")),
+    )
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(Text, nullable=False)
+    workflow_version: Mapped[int | None]
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None]
+    schedule_type: Mapped[str] = mapped_column(Text, nullable=False)
+    schedule_value: Mapped[str] = mapped_column(Text, nullable=False)
+    input_state: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    actor: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="ACTIVE")
+    next_run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_run_at: Mapped[datetime | None]
+    max_runs: Mapped[int | None]
+    run_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_by: Mapped[str | None]
+    locked_until: Mapped[datetime | None]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
