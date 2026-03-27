@@ -368,6 +368,48 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         notes="Service-layer ownership/admin checks return 403 for non-owners.",
     ),
 
+    # ── Messages / Topics ──────────────────────────────────────────────
+    ("POST", "/api/v1/messages"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/messages"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/messages/{id}"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{id}/ack"): RouteAuthzSpec(
+        permission="message:ack",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{id}/reply"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/topics/{topic}/subscribe"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("DELETE", "/api/v1/topics/{topic}/subscribe"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/topics"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
         permission="memory:write",
@@ -686,6 +728,14 @@ ROUTE_REGISTRY.update(
         ("PUT", "/api/v1/agents/{id}"): "agent:manage",
         ("DELETE", "/api/v1/agents/{id}"): "agent:manage",
         ("POST", "/api/v1/agents/{id}/heartbeat"): "agent:heartbeat",
+        ("POST", "/api/v1/messages"): "message:send",
+        ("GET", "/api/v1/messages"): "message:read",
+        ("GET", "/api/v1/messages/{id}"): "message:read",
+        ("POST", "/api/v1/messages/{id}/ack"): "message:ack",
+        ("POST", "/api/v1/messages/{id}/reply"): "message:send",
+        ("POST", "/api/v1/topics/{topic}/subscribe"): "agent:manage",
+        ("DELETE", "/api/v1/topics/{topic}/subscribe"): "agent:manage",
+        ("GET", "/api/v1/topics"): "agent:read",
         ("GET", "/healthz"): None,
         ("GET", "/readyz"): None,
         ("GET", "/api/v1/info"): None,
