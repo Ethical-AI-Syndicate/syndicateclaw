@@ -211,3 +211,23 @@ class Settings(BaseSettings):
         default=None,
         description="Optional second HS256 secret for key rotation (tried after primary).",
     )
+
+    builder_enabled: bool = Field(
+        default=True,
+        description="When True, BuilderCSRFMiddleware enforces X-Builder-Token on workflow PUT.",
+    )
+    builder_token_ttl_seconds: int = Field(
+        default=3600,
+        ge=60,
+        description="TTL for multi-use builder tokens (seconds).",
+    )
+    plugins_config_path: str | None = Field(
+        default=None,
+        description="Path to plugins.yaml; default is repo-root plugins.yaml when unset.",
+    )
+    plugin_timeout_seconds: int = Field(
+        default=5,
+        ge=1,
+        le=300,
+        description="Wall-clock timeout for each plugin hook invocation.",
+    )

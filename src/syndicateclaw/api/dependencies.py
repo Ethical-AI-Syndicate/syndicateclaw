@@ -80,6 +80,10 @@ def get_streaming_token_service(request: Request) -> Any:
     return _get_service(request, "streaming_token_service")
 
 
+def get_builder_token_service(request: Request) -> Any:
+    return _get_service(request, "builder_token_service")
+
+
 def get_agent_service(request: Request) -> Any:
     return _get_service(request, "agent_service")
 

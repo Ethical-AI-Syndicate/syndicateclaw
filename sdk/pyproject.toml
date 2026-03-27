@@ -9,6 +9,7 @@ description = "Python client for SyndicateClaw API (v1.5.0 developer experience 
 requires-python = ">=3.10"
 dependencies = [
     "httpx>=0.27",
+    "packaging>=24",
 ]
 
 [project.optional-dependencies]

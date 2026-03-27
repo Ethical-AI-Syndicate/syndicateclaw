@@ -189,6 +189,11 @@ class TestAuditEventType:
             "INFERENCE_STREAM_STARTED", "INFERENCE_STREAM_COMPLETED", "INFERENCE_STREAM_FAILED",
             "CATALOG_SYNC_STARTED", "CATALOG_SYNC_COMPLETED", "CATALOG_SYNC_FAILED",
             "CATALOG_SYNC_ANOMALY_ABORTED",
+            "plugin.hook_invoked",
+            "plugin.hook_completed",
+            "plugin.hook_failed",
+            "plugin.hook_timeout",
+            "plugin.security_violation",
         }
         actual = {e.value for e in AuditEventType}
         assert expected_prefixes == actual

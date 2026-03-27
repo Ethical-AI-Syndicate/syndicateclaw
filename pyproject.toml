@@ -70,6 +70,8 @@ testpaths = ["tests"]
 markers = [
     "integration: marks tests as integration tests (require DB/services)",
     "requires_api_keys: marks tests that require real provider API keys",
+    "pentest: security penetration scenarios (v2.0.0 gate)",
+    "chaos: chaos / failure injection scenarios (v2.0.0 gate)",
 ]
 
 [tool.mypy]

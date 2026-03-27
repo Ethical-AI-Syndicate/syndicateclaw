@@ -872,3 +872,13 @@ Pending (platform team):
 - StateCache: terminal runs 60s TTL; active runs 3600s (PENDING included)
 - Migrations 014-023 in chain; test DB uses metadata drop/create for ORM parity
 - Pending: load test baseline against real staging (platform team); run `alembic upgrade head` where DB credentials available
+
+## v1.5.0 Code-Level Completion Confirmation (2026-03-27)
+
+- Migrations 024 (plugin audit event sequencing) and 025 (builder token sequencing); `streaming_tokens` columns unchanged from 008
+- BuilderTokenService: multi-use builder tokens; `POST /api/v1/workflows/{id}/builder-token`; `BuilderCSRFMiddleware` requires `X-Builder-Token` on `PUT /api/v1/workflows/{id}` when builder enabled
+- Static builder shell: `GET /builder/new`, `GET /builder/{workflow_id}` (public HTML)
+- Plugin system: `PluginContext` (MappingProxyType + deepcopy), AST `check_plugin_security`, `PluginRegistry` (entry points / `module:Class` only), `PluginExecutor` with audit hooks and timeouts; `WorkflowEngine` invokes `on_node_execute` after successful node completion
+- SDK (`sdk/`): exceptions, `ensure_compatible()` version gate, `WorkflowBuilder`, `LocalRuntime` production guard, `StreamingSession`; unit tests in `tests/unit/test_sdk_v15.py`
+- Security gate script: `scripts/check_audit_gates.py`; ADRs 0002–0014 added; `docs/api/permission-table.md` index
+- Pending: full React builder app; 26 pentest + 11 chaos scenarios; CI jobs for pip-audit/bandit/locust; PyPI publish; `release/v2.0.0` tag and Docker push when ops ready

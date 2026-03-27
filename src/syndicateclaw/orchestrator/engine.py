@@ -268,12 +268,14 @@ class WorkflowEngine:
         audit_service: Any = None,
         signing_key: bytes | None = None,
         state_cache: Any = None,
+        plugin_executor: Any = None,
     ) -> None:
         self._handlers = handler_registry
         self._checkpoint_store = checkpoint_store
         self._audit_service = audit_service
         self._signing_key = signing_key
         self._state_cache = state_cache
+        self._plugin_executor = plugin_executor
         self._runs: dict[str, WorkflowRunResult] = {}
 
     async def _maybe_cache_state(self, run: WorkflowRun) -> None:
@@ -330,7 +332,7 @@ class WorkflowEngine:
             run_result.current_node_id = current_node_id
             context.node_id = current_node_id
 
-            result = await self._execute_node(node, run, run_result, context)
+            result = await self._execute_node(node, run, run_result, context, workflow)
             await self._maybe_cache_state(run)
 
             if run.status in (
@@ -486,6 +488,7 @@ class WorkflowEngine:
         run: WorkflowRun,
         run_result: WorkflowRunResult,
         context: ExecutionContext,
+        workflow: WorkflowDefinition,
     ) -> NodeResult:
         handler = self._handlers.get(node.handler)
         if handler is None:
@@ -585,6 +588,20 @@ class WorkflowEngine:
 
         run_result.node_executions.append(execution)
         assert result is not None
+        if (
+            self._plugin_executor is not None
+            and execution.status == NodeExecutionStatus.COMPLETED
+        ):
+            ns = run.state.get("_namespace", "default")
+            await self._plugin_executor.invoke_on_node_execute(
+                run_id=run.id,
+                workflow_id=workflow.id,
+                actor=run.initiated_by or "system",
+                namespace=ns,
+                state=dict(run.state),
+                node_id=node.id,
+                output_state=dict(result.output_state),
+            )
         return result
 
     @staticmethod

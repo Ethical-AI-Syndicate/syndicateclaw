@@ -288,6 +288,11 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="workflow_by_id",
         legacy_check="authenticated_only",
     ),
+    ("POST", "/api/v1/workflows/{workflow_id}/builder-token"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
 
     # ── Workflow Runs ──────────────────────────────────────────────────
     ("GET", "/api/v1/workflows/runs"): RouteAuthzSpec(
@@ -615,6 +620,8 @@ PUBLIC_ROUTES: set[tuple[str, str]] = {
     ("GET", "/healthz"),
     ("GET", "/readyz"),
     ("GET", "/api/v1/info"),
+    ("GET", "/builder/new"),
+    ("GET", "/builder/{workflow_id}"),
 }
 
 # Routes that are authenticated by non-RBAC mechanisms.
@@ -798,6 +805,9 @@ ROUTE_REGISTRY.update(
         ("GET", "/api/v1/organizations/{id}/members"): "org:read",
         ("DELETE", "/api/v1/organizations/{id}/members/{id}"): "org:manage",
         ("PUT", "/api/v1/organizations/{id}/members/{id}/role"): "org:manage",
+        ("POST", "/api/v1/workflows/{id}/builder-token"): "workflow:manage",
+        ("GET", "/builder/new"): None,
+        ("GET", "/builder/{id}"): None,
     }
 )
 

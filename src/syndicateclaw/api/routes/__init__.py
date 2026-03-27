@@ -4,6 +4,7 @@ from syndicateclaw.api.routes.agents import router as agents_router
 from syndicateclaw.api.routes.api_keys import router as api_keys_router
 from syndicateclaw.api.routes.approvals import router as approvals_router
 from syndicateclaw.api.routes.audit import router as audit_router
+from syndicateclaw.api.routes.builder import router as builder_router
 from syndicateclaw.api.routes.inference import router as inference_router
 from syndicateclaw.api.routes.memory import router as memory_router
 from syndicateclaw.api.routes.messages import router as messages_router
@@ -18,6 +19,7 @@ from syndicateclaw.api.routes.workflow_versions import router as workflow_versio
 from syndicateclaw.api.routes.workflows import router as workflows_router
 
 ALL_ROUTERS = [
+    builder_router,
     agents_router,
     organizations_router,
     approvals_router,

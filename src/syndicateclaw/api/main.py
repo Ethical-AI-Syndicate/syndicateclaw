@@ -24,6 +24,7 @@ from syndicateclaw.api.routes import ALL_ROUTERS
 from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.config import Settings
 from syndicateclaw.middleware import RBACMiddleware
+from syndicateclaw.middleware.csrf import BuilderCSRFMiddleware
 
 logger = structlog.get_logger(__name__)
 
@@ -242,14 +243,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         snapshot_store=snapshot_store,
     )
 
-    workflow_engine = WorkflowEngine(
-        BUILTIN_HANDLERS,
-        checkpoint_store=None,
-        audit_service=audit_service,
-        signing_key=signing_key,
-        state_cache=state_cache,
-    )
-
     for tool, handler in BUILTIN_TOOLS:
         tool_registry.register(tool, handler)
 
@@ -306,6 +299,31 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         streaming_token_repository,
         streaming_token_ttl_seconds=settings.streaming_token_ttl_seconds,
     )
+    from syndicateclaw.plugins.executor import PluginExecutor
+    from syndicateclaw.plugins.registry import PluginRegistry
+    from syndicateclaw.services.builder_token_service import BuilderTokenService
+
+    builder_token_service = BuilderTokenService(
+        streaming_token_repository,
+        ttl_seconds=settings.builder_token_ttl_seconds,
+    )
+    _plugins_yaml = Path(settings.plugins_config_path or (repo_root / "plugins.yaml"))
+    _plugin_registry = PluginRegistry()
+    _plugin_registry.load_from_config(_plugins_yaml)
+    _plugin_executor = PluginExecutor(
+        _plugin_registry.plugins,
+        audit_service=audit_service,
+        timeout_seconds=float(settings.plugin_timeout_seconds),
+    )
+
+    workflow_engine = WorkflowEngine(
+        BUILTIN_HANDLERS,
+        checkpoint_store=None,
+        audit_service=audit_service,
+        signing_key=signing_key,
+        state_cache=state_cache,
+        plugin_executor=_plugin_executor,
+    )
     agent_service = AgentService(
         session_factory,
         heartbeat_timeout_seconds=getattr(settings, "agent_heartbeat_timeout_seconds", 60),
@@ -336,6 +354,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.provider_registry = provider_registry
     app.state.provider_service = provider_service
     app.state.streaming_token_service = streaming_token_service
+    app.state.builder_token_service = builder_token_service
     app.state.agent_service = agent_service
     app.state.subscription_service = subscription_service
     app.state.message_service = message_service
@@ -437,6 +456,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(PrometheusMetricsMiddleware)
     app.add_middleware(AuditMiddleware)
+    app.add_middleware(BuilderCSRFMiddleware)
     app.add_middleware(RBACMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIDMiddleware)

@@ -13,6 +13,7 @@ from syndicateclaw.api.decorators.quota import enforce_quota
 from syndicateclaw.api.dependencies import (
     get_actor_org,
     get_audit_service,
+    get_builder_token_service,
     get_current_actor,
     get_db_session,
     get_state_cache,
@@ -39,6 +40,7 @@ DEP_WORKFLOW_ENGINE = Depends(get_workflow_engine)
 DEP_VERSIONING_SERVICE = Depends(get_versioning_service)
 DEP_ACTOR_ORG = Depends(get_actor_org)
 DEP_STATE_CACHE = Depends(get_state_cache)
+DEP_BUILDER_TOKEN_SERVICE = Depends(get_builder_token_service)
 Q_OFFSET = Query(0, ge=0)
 Q_LIMIT = Query(50, ge=1, le=200)
 Q_RUN_STATUS = Query(None, alias="status")
@@ -373,6 +375,23 @@ async def get_node_executions(
 
 # Parameterized /{workflow_id} routes must come AFTER all literal /runs/* routes,
 # otherwise FastAPI matches "runs" as a workflow_id.
+
+@router.post("/{workflow_id}/builder-token")
+async def issue_builder_token(
+    workflow_id: str,
+    actor: str = DEP_CURRENT_ACTOR,
+    db: AsyncSession = DEP_DB_SESSION,
+    builder_svc: Any = DEP_BUILDER_TOKEN_SERVICE,
+) -> dict[str, Any]:
+    """Issue a multi-use builder token for PUT /api/v1/workflows/{id} (CSRF)."""
+    from syndicateclaw.db.models import WorkflowDefinition as WFModel
+
+    wf = await db.get(WFModel, workflow_id)
+    if wf is None or (wf.owner and wf.owner != actor):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
+    bt = await builder_svc.issue(workflow_id, actor)
+    return {"builder_token": bt.token, "expires_at": bt.expires_at.isoformat()}
+
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(

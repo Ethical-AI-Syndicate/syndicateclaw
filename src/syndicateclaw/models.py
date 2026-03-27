@@ -157,6 +157,13 @@ class AuditEventType(str, enum.Enum):
     CATALOG_SYNC_FAILED = "CATALOG_SYNC_FAILED"
     CATALOG_SYNC_ANOMALY_ABORTED = "CATALOG_SYNC_ANOMALY_ABORTED"
 
+    # Plugin lifecycle (v1.5.0) — values match audit string convention
+    PLUGIN_HOOK_INVOKED = "plugin.hook_invoked"
+    PLUGIN_HOOK_COMPLETED = "plugin.hook_completed"
+    PLUGIN_HOOK_FAILED = "plugin.hook_failed"
+    PLUGIN_HOOK_TIMEOUT = "plugin.hook_timeout"
+    PLUGIN_SECURITY_VIOLATION = "plugin.security_violation"
+
 
 class MemorySourceType(str, enum.Enum):
     HUMAN = "HUMAN"
