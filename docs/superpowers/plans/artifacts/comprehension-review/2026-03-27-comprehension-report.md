@@ -887,6 +887,6 @@ Pending (platform team):
 
 - `tests/security/`: pentest-marked automated regressions (core, agent, enterprise, DX); skipped scenarios documented where async DB or RBAC harness is heavy; `tests/security/conftest.py` loads integration fixtures for ASGI/JWT tests.
 - `tests/chaos/`: chaos-marked stubs (skipped) for Postgres/Redis/DLQ scenarios until staging controls exist.
-- `scripts/check_benchmark_regression.py`; `tests/perf/test_smoke_benchmark.py`; `tests/perf/baseline_v1.4.0.json` remains a placeholder until a real baseline is recorded.
+- `scripts/check_benchmark_regression.py`; `tests/perf/test_smoke_benchmark.py`; `tests/perf/baseline_v2.0.0.json` committed as trimmed pytest-benchmark reference for scheduled regression checks.
 - `.gitlab-ci.yml`: `security_scan` uses JSON Bandit/pip-audit plus `check_audit_gates.py`; manual `pentest` and `chaos_tests` on `release/v2.0.0`; scheduled `benchmark` runs smoke benchmark + regression helper.
 - `CHANGELOG.md` [2.0.0] documents the above; replace perf baseline before enforcing regression thresholds in production CI.

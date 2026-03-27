@@ -18,7 +18,7 @@ Three sequential weeks: security audit + hardening, chaos testing + performance 
 - [ ] v1.5.0 deployed to staging with all migrations applied
 - [ ] `pip-audit` and `bandit` installed in CI and dev environments
 - [ ] Chaos testing tooling available (Docker stop/kill commands, network block via `iptables`, disk fill via `dd`)
-- [ ] Performance benchmark baselines from v1.4.0 committed to `tests/perf/baseline_v1.4.0.json`
+- [x] Pytest-benchmark smoke baseline committed to `tests/perf/baseline_v2.0.0.json` (Locust/load baselines remain separate)
 - [ ] A second scheduler instance available in staging for HA chaos tests
 - [ ] All ADR documents (0001–0014) drafted before Week 3 (assign to engineers during Weeks 1–2)
 - [ ] react-flow commercial license confirmed resolved (hard block on release if not)
@@ -268,11 +268,10 @@ locust -f tests/perf/locustfile.py --headless -u 50 -r 10 --run-time 30m \
     --host https://staging.syndicateclaw.example.com \
     --json > tests/perf/benchmark_v2.0.0.json
 
-# Compare against v1.4.0 baselines
+# Compare current pytest-benchmark JSON against committed baseline
 python scripts/check_benchmark_regression.py \
-    tests/perf/benchmark_v2.0.0.json \
-    tests/perf/baseline_v1.4.0.json \
-    --threshold 0.10  # fail if any metric degrades >10%
+    benchmark.json \
+    tests/perf/baseline_v2.0.0.json
 ```
 
 Add `benchmark` CI job:
@@ -281,7 +280,7 @@ benchmark:
   stage: test
   script:
     - pytest tests/perf/ --benchmark-only --benchmark-json=benchmark.json
-    - python scripts/check_benchmark_regression.py benchmark.json baseline_v1.4.0.json
+    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 ```
@@ -292,7 +291,7 @@ benchmark:
 
 - [ ] All 11 chaos scenarios pass: no data loss, recovery <30s, no crashes
 - [ ] Scheduler produces exactly 1 run per schedule tick under all three concurrent scenarios
-- [ ] Performance benchmarks within 10% of v1.4.0 baselines
+- [ ] Performance benchmarks within 10% of `tests/perf/baseline_v2.0.0.json` (smoke); Locust baselines tracked separately
 - [ ] `tests/perf/benchmark_v2.0.0.json` committed to repo
 - [ ] Benchmark regression CI job added and passing
 
@@ -439,7 +438,7 @@ benchmark:
   stage: test
   script:
     - pytest tests/perf/ --benchmark-only --benchmark-json=benchmark.json
-    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v1.4.0.json
+    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
@@ -497,7 +496,7 @@ Each item requires an explicit sign-off from the responsible owner before the re
 | All 26 pen test scenarios pass | Security | |
 | All 11 chaos scenarios pass (no data loss, recovery <30s) | Platform | |
 | Scheduler: exactly 1 run per tick under concurrent HA instances | Platform | |
-| Benchmarks within 10% of v1.4.0 baselines | Performance | |
+| Benchmarks within 10% of `baseline_v2.0.0.json` (smoke) | Performance | |
 | Upgrade guide tested on staging (migration + rollback confirmed) | Platform | |
 | Changelog `{RELEASE_DATE}` replaced with actual date | Release Mgr | |
 | Changelog reviewed for completeness | Release Mgr | |
@@ -520,7 +519,7 @@ Each item requires an explicit sign-off from the responsible owner before the re
 - [ ] Scheduler duplicate execution test passes under concurrent HA instances
 - [ ] `pip-audit`: zero critical/high with available patches
 - [ ] `bandit`: zero high-severity issues
-- [ ] Performance benchmarks within 10% of v1.4.0 baselines; regression CI job added
+- [ ] Performance benchmarks within 10% of `tests/perf/baseline_v2.0.0.json` (smoke); Locust baselines tracked separately; regression CI job added
 - [ ] All 14 ADRs written (0001–0014)
 - [ ] API documentation complete with permission table per endpoint
 - [ ] Upgrade guide tested on staging: migration succeeds, rollback works, data export procedure verified

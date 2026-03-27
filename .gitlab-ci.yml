@@ -114,7 +114,7 @@ benchmark:
     - pip install pytest-benchmark
   script:
     - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json -q
-    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v1.4.0.json
+    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 

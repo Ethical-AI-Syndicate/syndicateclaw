@@ -457,7 +457,7 @@ locust -f tests/perf/locustfile.py --headless -u 50 -r 10 --run-time 30m \
     --json > tests/perf/baseline_v1.4.0.json
 ```
 
-**Baseline document:** Commit `baseline_v1.4.0.json` to the repo. This is the reference for v2.0.0 regression comparison. Record: RPS achieved, P95 latency for GET and POST endpoints, memory RSS after 30 minutes.
+**Baseline document:** Commit Locust output as `baseline_v1.4.0.json` when a staging run is available. Pytest-benchmark smoke baselines for scheduled CI are tracked separately in `tests/perf/baseline_v2.0.0.json` (v2.0.0). Record for Locust: RPS achieved, P95 latency for GET and POST endpoints, memory RSS after 30 minutes.
 
 **Tests:**
 - `test_schedule_no_duplicates_under_load`: run scheduler load test (50 simultaneous due schedules, 2 scheduler instances); assert total runs created = 50.
