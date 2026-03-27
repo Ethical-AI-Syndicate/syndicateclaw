@@ -5,7 +5,14 @@ from uuid import uuid4
 
 import factory
 
-from syndicateclaw.db.models import ApiKey, ApprovalRequest, AuditEvent, PolicyRule, WorkflowDefinition, WorkflowRun
+from syndicateclaw.db.models import (
+    ApiKey,
+    ApprovalRequest,
+    AuditEvent,
+    PolicyRule,
+    WorkflowDefinition,
+    WorkflowRun,
+)
 
 
 class WorkflowDefinitionFactory(factory.Factory):
