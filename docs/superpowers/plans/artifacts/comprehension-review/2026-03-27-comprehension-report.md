@@ -859,3 +859,16 @@ Week 4 commits:
 Pending (platform team):
 - Agent hard-delete cron: enforce 90-day retention window on deregistered agents
 - Messaging DLQ monitoring: alert when dead_letter_records source_type=agent_message grows
+
+## v1.4.0 Code-Level Completion Confirmation (2026-03-27)
+
+- SchedulerService SKIP LOCKED; HA concurrent duplicate test passes (COUNT=1)
+- max-runs completion logic correct (run_count+1 >= max_runs)
+- JWT permissions claim removed; live RBAC lookup at request time; token carries sub, optional org_id/org_role
+- Namespace NOT NULL across workflow_definitions, workflow_runs, agent_messages, policy_rules; agents/memory_records documented skips where already present
+- Quota enforcement on workflow create, agent register, schedule create, memory write; storage_bytes_updated on memory insert
+- organization_quotas_usage table tracks storage_bytes_used
+- Org DELETING blocks new runs (409); cleanup job deletes tenant data in dependency order
+- StateCache: terminal runs 60s TTL; active runs 3600s (PENDING included)
+- Migrations 014-023 in chain; test DB uses metadata drop/create for ORM parity
+- Pending: load test baseline against real staging (platform team); run `alembic upgrade head` where DB credentials available
