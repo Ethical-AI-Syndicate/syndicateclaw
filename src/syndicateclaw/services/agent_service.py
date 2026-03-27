@@ -78,6 +78,16 @@ class AgentService:
                 raise AgentNotFoundError("Agent not found")
             return agent
 
+    async def get_by_name(self, name: str, namespace: str) -> Agent:
+        async with self._session_factory() as session:
+            result = await session.execute(
+                select(Agent).where(Agent.name == name, Agent.namespace == namespace)
+            )
+            agent = result.scalar_one_or_none()
+            if agent is None:
+                raise AgentNotFoundError("Agent not found")
+            return agent
+
     async def _actor_has_admin_permission(self, session: AsyncSession, actor: str) -> bool:
         principal_id = await resolve_principal_id(session, actor)
         evaluator = RBACEvaluator(session, redis_client=None)
@@ -87,6 +97,10 @@ class AgentService:
             resource_scope=Scope.platform(),
         )
         return decision.decision == Decision.ALLOW
+
+    async def actor_has_admin_permission(self, actor: str) -> bool:
+        async with self._session_factory() as session:
+            return await self._actor_has_admin_permission(session, actor)
 
     async def _load_with_ownership(
         self,
