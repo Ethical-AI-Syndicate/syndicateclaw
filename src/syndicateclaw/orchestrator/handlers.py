@@ -13,6 +13,7 @@ from syndicateclaw.models import (
     ApprovalRequest,
     AuditEvent,
     AuditEventType,
+    PolicyEffect,
     ToolRiskLevel,
 )
 from syndicateclaw.orchestrator.engine import (
@@ -148,15 +149,149 @@ async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeR
     state[response_key] = response.content
     state[f"_llm_output_{response_key}"] = True
 
-    if not bool(context.config.get("allow_tool_calls", False)):
+    tool_calls = list(getattr(response, "tool_calls", []) or [])
+    allow_tool_calls = bool(context.config.get("allow_tool_calls", False))
+    if tool_calls and not allow_tool_calls:
         logger.warning(
             "llm.tool_calls_ignored",
             run_id=context.run_id,
             node_id=context.node_id,
+            count=len(tool_calls),
         )
+    elif tool_calls and allow_tool_calls:
+        await _process_llm_tool_calls(state, context, tool_calls)
 
     logger.info("llm.completed", run_id=context.run_id, model=response.model_id)
     return NodeResult(output_state=state)
+
+
+def _validate_tool_call_args(input_data: dict[str, Any], schema: dict[str, Any]) -> None:
+    required = schema.get("required", [])
+    for key in required:
+        if key not in input_data:
+            raise ValueError(f"missing required field '{key}'")
+
+
+async def _emit_tool_call_audit(
+    context: ExecutionContext,
+    *,
+    action: str,
+    details: dict[str, Any],
+) -> None:
+    if context.audit_service is None or not hasattr(context.audit_service, "record"):
+        return
+    await context.audit_service.record(
+        AuditEvent(
+            event_type=AuditEventType.TOOL_EXECUTION_STARTED,
+            actor="system:engine",
+            resource_type="tool",
+            resource_id=str(details.get("tool", "unknown")),
+            action=action,
+            details=details,
+        )
+    )
+
+
+async def _process_llm_tool_calls(
+    state: dict[str, Any],
+    context: ExecutionContext,
+    tool_calls: list[dict[str, Any]],
+) -> None:
+    tool_executor = context.tool_executor
+    if tool_executor is None:
+        return
+
+    policy_engine = getattr(tool_executor, "_policy_engine", None)
+    tool_registry = getattr(tool_executor, "_registry", None)
+    if tool_registry is None:
+        return
+
+    for call in tool_calls:
+        name = str(call.get("name", ""))
+        args = call.get("arguments", {})
+        if not isinstance(args, dict):
+            args = {}
+
+        tool_def = tool_registry.get(name)
+        if tool_def is None:
+            await _emit_tool_call_audit(
+                context,
+                action="llm.tool_call_invalid_args",
+                details={"tool": name, "reason": "unknown_tool"},
+            )
+            continue
+
+        try:
+            _validate_tool_call_args(args, tool_def.tool.input_schema)
+        except ValueError as exc:
+            await _emit_tool_call_audit(
+                context,
+                action="llm.tool_call_invalid_args",
+                details={"tool": name, "reason": str(exc)},
+            )
+            continue
+
+        decision = PolicyEffect.ALLOW
+        if policy_engine is not None and hasattr(policy_engine, "evaluate"):
+            result = await policy_engine.evaluate(
+                "tool",
+                name,
+                "execute",
+                "system:engine",
+                {
+                    "tool": name,
+                    "input": args,
+                    "run_id": context.run_id,
+                    "node_id": context.node_id,
+                },
+            )
+            decision = result.effect if hasattr(result, "effect") else result
+
+        if decision == PolicyEffect.DENY:
+            await _emit_tool_call_audit(
+                context,
+                action="llm.tool_call_denied",
+                details={"tool": name, "decision": "DENY"},
+            )
+            continue
+
+        if decision == PolicyEffect.REQUIRE_APPROVAL:
+            approval = ApprovalRequest(
+                run_id=context.run_id,
+                node_execution_id=context.config.get("node_execution_id", str(ULID())),
+                tool_name=name,
+                action_description=f"LLM tool call requires approval: {name}",
+                risk_level=tool_def.tool.risk_level,
+                requested_by="system:engine",
+                expires_at=_utcnow() + timedelta(hours=24),
+                context={"tool": name, "arguments": args},
+            )
+            state.setdefault("_pending_approvals", []).append(approval.model_dump(mode="json"))
+            await _emit_tool_call_audit(
+                context,
+                action="llm.tool_call_requires_approval",
+                details={"tool": name, "approval_id": approval.id},
+            )
+            continue
+
+        await _emit_tool_call_audit(
+            context,
+            action="llm.tool_call",
+            details={"tool": name},
+        )
+        tool_context = ExecutionContext(
+            run_id=context.run_id,
+            node_id=context.node_id,
+            attempt=context.attempt,
+            config={**context.config, "actor": "system:engine"},
+            tool_executor=context.tool_executor,
+            memory_service=context.memory_service,
+            audit_service=context.audit_service,
+            checkpoint_store=context.checkpoint_store,
+            provider_service=context.provider_service,
+        )
+        result = await tool_executor.execute(name, args, tool_context)
+        state.setdefault("_llm_tool_results", []).append({"tool": name, "result": result})
 
 
 async def decision_handler(
