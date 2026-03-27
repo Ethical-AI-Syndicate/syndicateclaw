@@ -114,6 +114,52 @@ class Agent(Base):
     deregistered_at: Mapped[datetime | None]
 
 
+class AgentMessage(Base):
+    __tablename__ = "agent_messages"
+    __table_args__ = (
+        Index("idx_messages_recipient_status", "recipient", "status"),
+        Index("idx_messages_topic_status", "topic", "status"),
+        Index("idx_messages_conversation", "conversation_id"),
+        Index("idx_messages_sender", "sender"),
+    )
+
+    conversation_id: Mapped[str] = mapped_column(Text, nullable=False)
+    sender: Mapped[str] = mapped_column(Text, nullable=False)
+    recipient: Mapped[str | None] = mapped_column(Text)
+    topic: Mapped[str | None] = mapped_column(Text)
+    message_type: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSONB,
+        nullable=False,
+        default=dict,
+    )
+    priority: Mapped[str] = mapped_column(Text, nullable=False, default="NORMAL")
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="PENDING")
+    ttl_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=3600)
+    hop_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    parent_message_id: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime | None]
+    delivered_at: Mapped[datetime | None]
+    acked_at: Mapped[datetime | None]
+
+
+class TopicSubscription(Base):
+    __tablename__ = "topic_subscriptions"
+    __table_args__ = (
+        UniqueConstraint("agent_id", "topic", name="uq_topic_subscriptions"),
+        Index("idx_topic_subs_topic", "topic", "namespace"),
+    )
+
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    topic: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
+
+
 class NodeExecution(Base):
     __tablename__ = "node_executions"
     __table_args__ = (
