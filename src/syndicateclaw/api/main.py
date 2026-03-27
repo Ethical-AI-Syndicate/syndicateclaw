@@ -149,6 +149,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from syndicateclaw.approval.service import ApprovalService
     from syndicateclaw.audit.service import AuditService
+    from syndicateclaw.cache.state_cache import StateCache
     from syndicateclaw.db.base import get_engine, get_session_factory
     from syndicateclaw.memory.service import MemoryService
     from syndicateclaw.orchestrator.engine import WorkflowEngine
@@ -209,6 +210,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = engine
     app.state.session_factory = session_factory
     app.state.redis_client = redis_client
+    state_cache = StateCache(redis_client)
+    app.state.state_cache = state_cache
 
     audit_service = AuditService(session_factory, signing_key=signing_key)
     memory_service = MemoryService(
@@ -244,6 +247,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         checkpoint_store=None,
         audit_service=audit_service,
         signing_key=signing_key,
+        state_cache=state_cache,
     )
 
     for tool, handler in BUILTIN_TOOLS:

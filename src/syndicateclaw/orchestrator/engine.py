@@ -267,12 +267,24 @@ class WorkflowEngine:
         checkpoint_store: Any = None,
         audit_service: Any = None,
         signing_key: bytes | None = None,
+        state_cache: Any = None,
     ) -> None:
         self._handlers = handler_registry
         self._checkpoint_store = checkpoint_store
         self._audit_service = audit_service
         self._signing_key = signing_key
+        self._state_cache = state_cache
         self._runs: dict[str, WorkflowRunResult] = {}
+
+    async def _maybe_cache_state(self, run: WorkflowRun) -> None:
+        if self._state_cache is None:
+            return
+        st = (
+            run.status.value
+            if isinstance(run.status, WorkflowRunStatus)
+            else str(run.status)
+        )
+        await self._state_cache.set(run.id, dict(run.state), st)
 
     # -- public API ---------------------------------------------------------
 
@@ -285,6 +297,7 @@ class WorkflowEngine:
 
         run.status = WorkflowRunStatus.RUNNING
         run.started_at = _utcnow()
+        await self._maybe_cache_state(run)
 
         await self._emit_audit(
             AuditEventType.WORKFLOW_STARTED,
@@ -318,6 +331,7 @@ class WorkflowEngine:
             context.node_id = current_node_id
 
             result = await self._execute_node(node, run, run_result, context)
+            await self._maybe_cache_state(run)
 
             if run.status in (
                 WorkflowRunStatus.FAILED,
@@ -333,6 +347,7 @@ class WorkflowEngine:
             if node.node_type == NodeType.END:
                 run.status = WorkflowRunStatus.COMPLETED
                 run.completed_at = _utcnow()
+                await self._maybe_cache_state(run)
                 await self._emit_audit(
                     AuditEventType.WORKFLOW_COMPLETED,
                     actor=run.initiated_by,
@@ -438,6 +453,7 @@ class WorkflowEngine:
         if run_result is None:
             raise ValueError(f"Run not found: {run_id}")
         run_result.run.status = WorkflowRunStatus.PAUSED
+        await self._maybe_cache_state(run_result.run)
         await self._emit_audit(
             AuditEventType.WORKFLOW_PAUSED,
             actor=run_result.run.initiated_by,
@@ -453,6 +469,7 @@ class WorkflowEngine:
             raise ValueError(f"Run not found: {run_id}")
         run_result.run.status = WorkflowRunStatus.CANCELLED
         run_result.run.completed_at = _utcnow()
+        await self._maybe_cache_state(run_result.run)
         await self._emit_audit(
             AuditEventType.WORKFLOW_CANCELLED,
             actor=run_result.run.initiated_by,
