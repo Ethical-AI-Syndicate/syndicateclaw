@@ -247,7 +247,11 @@ async def resume_run(
     run = await db.get(RunModel, run_id)
     if run is None or (run.initiated_by and run.initiated_by != actor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
-    if run.status not in (WorkflowRunStatus.PAUSED.value, WorkflowRunStatus.WAITING_APPROVAL.value):
+    if run.status not in (
+        WorkflowRunStatus.PAUSED.value,
+        WorkflowRunStatus.WAITING_APPROVAL.value,
+        WorkflowRunStatus.WAITING_AGENT_RESPONSE.value,
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Cannot resume run in status {run.status}",
@@ -369,7 +373,12 @@ async def start_run(
 
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
-    active_statuses = {"PENDING", "RUNNING", "WAITING_APPROVAL"}
+    active_statuses = {
+        "PENDING",
+        "RUNNING",
+        "WAITING_APPROVAL",
+        "WAITING_AGENT_RESPONSE",
+    }
     active_count_stmt = select(func.count()).select_from(RunModel).where(
         RunModel.status.in_(active_statuses)
     )

@@ -456,6 +456,29 @@ def create_app() -> FastAPI:
         if dl is None:
             healthy = False
 
+        try:
+            sf = request.app.state.session_factory
+            async with sf() as session:
+                waiting_approval = (
+                    await session.execute(
+                        text("SELECT COUNT(*) FROM workflow_runs WHERE status = 'WAITING_APPROVAL'")
+                    )
+                ).scalar_one()
+                waiting_agent_response = (
+                    await session.execute(
+                        text(
+                            "SELECT COUNT(*) FROM workflow_runs "
+                            "WHERE status = 'WAITING_AGENT_RESPONSE'"
+                        )
+                    )
+                ).scalar_one()
+            checks["waiting_approval"] = str(waiting_approval)
+            checks["waiting_agent_response"] = str(waiting_agent_response)
+        except Exception as e:
+            checks["waiting_approval"] = f"error: {e}"
+            checks["waiting_agent_response"] = f"error: {e}"
+            healthy = False
+
         rate_limit_ok = checks.get("redis") == "ok"
         if rate_limit_ok:
             checks["rate_limiting"] = "ok"

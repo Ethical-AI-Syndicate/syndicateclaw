@@ -407,8 +407,13 @@ class TestScenario_ConcurrentRunFlood:  # noqa: N801
                 assert active_count < max_concurrent
 
     def test_active_statuses_include_all_non_terminal(self):
-        """Admission control counts PENDING, RUNNING, WAITING_APPROVAL as active."""
-        active_statuses = {"PENDING", "RUNNING", "WAITING_APPROVAL"}
+        """Admission control counts all waiting states as active."""
+        active_statuses = {
+            "PENDING",
+            "RUNNING",
+            "WAITING_APPROVAL",
+            "WAITING_AGENT_RESPONSE",
+        }
         terminal_statuses = {"COMPLETED", "FAILED", "CANCELLED"}
         assert active_statuses.isdisjoint(terminal_statuses)
         assert "PAUSED" not in active_statuses, \

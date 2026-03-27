@@ -303,6 +303,7 @@ class WorkflowEngine:
                 WorkflowRunStatus.PAUSED,
                 WorkflowRunStatus.CANCELLED,
                 WorkflowRunStatus.WAITING_APPROVAL,
+                WorkflowRunStatus.WAITING_AGENT_RESPONSE,
             ):
                 break
 
@@ -321,6 +322,7 @@ class WorkflowEngine:
                 WorkflowRunStatus.FAILED,
                 WorkflowRunStatus.PAUSED,
                 WorkflowRunStatus.WAITING_APPROVAL,
+                WorkflowRunStatus.WAITING_AGENT_RESPONSE,
             ):
                 break
 
@@ -361,7 +363,11 @@ class WorkflowEngine:
         if run_result is None:
             raise ValueError(f"Run not found: {run_id}")
         run = run_result.run
-        if run.status not in (WorkflowRunStatus.PAUSED, WorkflowRunStatus.WAITING_APPROVAL):
+        if run.status not in (
+            WorkflowRunStatus.PAUSED,
+            WorkflowRunStatus.WAITING_APPROVAL,
+            WorkflowRunStatus.WAITING_AGENT_RESPONSE,
+        ):
             raise ValueError(f"Run {run_id} is not paused (status={run.status})")
 
         run.status = WorkflowRunStatus.RUNNING
@@ -532,6 +538,12 @@ class WorkflowEngine:
                 execution.completed_at = _utcnow()
                 result = NodeResult(output_state=run.state)
                 break
+            except WaitForAgentResponseError:
+                run.status = WorkflowRunStatus.WAITING_AGENT_RESPONSE
+                execution.status = NodeExecutionStatus.COMPLETED
+                execution.completed_at = _utcnow()
+                result = NodeResult(output_state=run.state)
+                break
             except Exception as exc:
                 logger.warning(
                     "node.failed",
@@ -644,3 +656,7 @@ class PauseExecutionError(Exception):
 
 class WaitForApprovalError(Exception):
     """Raised by handlers that need approval before proceeding."""
+
+
+class WaitForAgentResponseError(Exception):
+    """Raised by handlers waiting for agent message responses."""

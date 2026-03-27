@@ -126,7 +126,7 @@ async def _cancel_stale_runs(_integration_env: None) -> None:
         async with engine.begin() as conn:
             await conn.execute(text(
                 "UPDATE workflow_runs SET status='CANCELLED' "
-                "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL')"
+                "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL','WAITING_AGENT_RESPONSE')"
             ))
         await engine.dispose()
     except Exception:

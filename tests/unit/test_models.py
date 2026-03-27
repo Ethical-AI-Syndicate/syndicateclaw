@@ -157,6 +157,7 @@ class TestWorkflowRunStatus:
             "RUNNING",
             "PAUSED",
             "WAITING_APPROVAL",
+            "WAITING_AGENT_RESPONSE",
             "COMPLETED",
             "FAILED",
             "CANCELLED",
