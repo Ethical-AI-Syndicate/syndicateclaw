@@ -745,3 +745,22 @@ class InferenceModelPin(Base):
     embedding_dimensions: Mapped[int | None] = mapped_column(Integer)
     pinned_by: Mapped[str] = mapped_column(Text, nullable=False)
     pinned_at: Mapped[datetime] = mapped_column(nullable=False)
+
+
+class StreamingToken(Base):
+    """Single-use streaming or builder token."""
+
+    __tablename__ = "streaming_tokens"
+    __table_args__ = (
+        Index("idx_streaming_tokens_run", "run_id"),
+        Index("idx_streaming_tokens_type", "token_type"),
+        Index("idx_streaming_tokens_expires", "expires_at"),
+    )
+
+    token: Mapped[str] = mapped_column(Text, primary_key=True)
+    run_id: Mapped[str | None] = mapped_column(Text)
+    actor: Mapped[str] = mapped_column(Text, nullable=False)
+    token_type: Mapped[str] = mapped_column(Text, nullable=False, default="streaming")
+    workflow_id: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    used_at: Mapped[datetime | None]
