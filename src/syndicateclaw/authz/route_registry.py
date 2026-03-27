@@ -326,6 +326,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Streaming-token auth is enforced by endpoint handler.",
     ),
+    ("GET", "/api/v1/runs/{run_id}/events"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Reconnect recovery endpoint returns run-scoped audit events.",
+    ),
 
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
@@ -604,6 +610,7 @@ ROUTE_REGISTRY.update(
         ("GET", "/api/v1/runs/{id}"): "run:read",
         ("POST", "/api/v1/runs/{id}/streaming-token"): "run:read",
         ("GET", "/api/v1/runs/{id}/stream"): "run:read",
+        ("GET", "/api/v1/runs/{id}/events"): "run:read",
         ("POST", "/api/v1/runs/{id}/pause"): "run:control",
         ("POST", "/api/v1/runs/{id}/resume"): "run:control",
         ("POST", "/api/v1/runs/{id}/cancel"): "run:control",
