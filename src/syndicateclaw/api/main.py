@@ -22,6 +22,7 @@ from syndicateclaw.api.rate_limit import RateLimitMiddleware
 from syndicateclaw.api.routes import ALL_ROUTERS
 from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.config import Settings
+from syndicateclaw.middleware import RBACMiddleware
 
 logger = structlog.get_logger(__name__)
 
@@ -264,6 +265,7 @@ def create_app() -> FastAPI:
 
     app.add_middleware(PrometheusMetricsMiddleware)
     app.add_middleware(AuditMiddleware)
+    app.add_middleware(RBACMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIDMiddleware)
     app.add_middleware(ShadowRBACMiddleware)
