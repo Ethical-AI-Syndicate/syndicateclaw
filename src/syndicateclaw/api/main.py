@@ -188,6 +188,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from syndicateclaw.inference.idempotency import IdempotencyStore
     from syndicateclaw.inference.registry import ProviderRegistry
     from syndicateclaw.inference.service import ProviderService
+    from syndicateclaw.services.streaming_token_service import (
+        StreamingTokenRepository,
+        StreamingTokenService,
+    )
     from syndicateclaw.tools.inference_tools import build_inference_tools
 
     provider_config_loader = ProviderConfigLoader(yaml_path)
@@ -210,6 +214,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         audit_service=audit_service,
         idempotency_store=idempotency_store,
     )
+    streaming_token_repository = StreamingTokenRepository(session_factory)
+    streaming_token_service = StreamingTokenService(
+        streaming_token_repository,
+        streaming_token_ttl_seconds=settings.streaming_token_ttl_seconds,
+    )
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)
 
@@ -217,6 +226,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.inference_catalog = inference_catalog
     app.state.provider_registry = provider_registry
     app.state.provider_service = provider_service
+    app.state.streaming_token_service = streaming_token_service
 
     app.state.audit_service = audit_service
     app.state.memory_service = memory_service

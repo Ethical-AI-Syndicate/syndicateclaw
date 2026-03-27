@@ -76,6 +76,10 @@ def get_provider_loader(request: Request) -> Any:
     return _get_service(request, "provider_config_loader")
 
 
+def get_streaming_token_service(request: Request) -> Any:
+    return _get_service(request, "streaming_token_service")
+
+
 def get_inference_catalog(request: Request) -> Any:
     """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
     return _get_service(request, "inference_catalog")

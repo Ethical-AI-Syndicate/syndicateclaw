@@ -152,6 +152,11 @@ class Settings(BaseSettings):
             "Default True preserves backward compatibility for legacy unscoped keys."
         ),
     )
+    streaming_token_ttl_seconds: int = Field(
+        default=300,
+        ge=1,
+        description="Single-use streaming token TTL in seconds.",
+    )
     runtime_enabled: bool = Field(
         default=False,
         description="When True, register experimental runtime/skill routes (Phase 1).",
