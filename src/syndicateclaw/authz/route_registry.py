@@ -320,6 +320,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Issues single-use streaming token scoped to run.",
     ),
+    ("GET", "/api/v1/runs/{run_id}/stream"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Streaming-token auth is enforced by endpoint handler.",
+    ),
 
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
@@ -496,6 +502,12 @@ PUBLIC_ROUTES: set[tuple[str, str]] = {
     ("GET", "/api/v1/info"),
 }
 
+# Routes that are authenticated by non-RBAC mechanisms.
+EXEMPT_ROUTES: set[tuple[str, str]] = {
+    ("GET", "/api/v1/runs/{id}/stream"),
+    ("GET", "/api/v1/runs/{run_id}/stream"),
+}
+
 
 def get_route_spec(method: str, path_template: str) -> RouteAuthzSpec | None:
     """Look up the authorization spec for a route.
@@ -508,6 +520,11 @@ def get_route_spec(method: str, path_template: str) -> RouteAuthzSpec | None:
 def is_public_route(method: str, path_template: str) -> bool:
     """Check if a route is public (no auth required)."""
     return (method.upper(), path_template) in PUBLIC_ROUTES
+
+
+def is_exempt_route(method: str, path_template: str) -> bool:
+    """Check if a route skips RBAC because it has alternate auth."""
+    return (method.upper(), path_template) in EXEMPT_ROUTES
 
 
 def get_scope_resolver(
@@ -586,6 +603,7 @@ ROUTE_REGISTRY.update(
         ("POST", "/api/v1/workflows/{id}/runs"): "run:create",
         ("GET", "/api/v1/runs/{id}"): "run:read",
         ("POST", "/api/v1/runs/{id}/streaming-token"): "run:read",
+        ("GET", "/api/v1/runs/{id}/stream"): "run:read",
         ("POST", "/api/v1/runs/{id}/pause"): "run:control",
         ("POST", "/api/v1/runs/{id}/resume"): "run:control",
         ("POST", "/api/v1/runs/{id}/cancel"): "run:control",
@@ -633,12 +651,16 @@ def get_required_permission(method: str, path: str) -> str | None | str:
     key = (method.upper(), normalized)
 
     if key in ROUTE_REGISTRY:
+        if key in EXEMPT_ROUTES:
+            return None
         return ROUTE_REGISTRY[key]
 
     # Compatibility lookup for routes registered with trailing slash.
     alt_path = f"{normalized}/" if not normalized.endswith("/") else normalized[:-1]
     alt_key = (method.upper(), alt_path)
     if alt_key in ROUTE_REGISTRY:
+        if alt_key in EXEMPT_ROUTES:
+            return None
         return ROUTE_REGISTRY[alt_key]
 
     return "DENY"
