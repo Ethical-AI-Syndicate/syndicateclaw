@@ -79,6 +79,41 @@ class WorkflowRun(Base):
     )
 
 
+class Agent(Base):
+    __tablename__ = "agents"
+    __table_args__ = (
+        UniqueConstraint("name", "namespace", name="uq_agents_name_namespace"),
+        Index("idx_agents_namespace_status", "namespace", "status"),
+        Index("idx_agents_capabilities", "capabilities", postgresql_using="gin"),
+    )
+
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
+    capabilities: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        default=list,
+        server_default="{}",
+    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+    )
+    status: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="OFFLINE",
+        server_default="OFFLINE",
+    )
+    registered_by: Mapped[str] = mapped_column(Text, nullable=False)
+    heartbeat_at: Mapped[datetime | None]
+    deregistered_at: Mapped[datetime | None]
+
+
 class NodeExecution(Base):
     __tablename__ = "node_executions"
     __table_args__ = (
