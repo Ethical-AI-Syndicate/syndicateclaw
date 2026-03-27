@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import (
+    DateTime,
     Float,
     ForeignKey,
     Index,
@@ -11,6 +12,7 @@ from sqlalchemy import (
     LargeBinary,
     Text,
     UniqueConstraint,
+    func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -31,6 +33,13 @@ class WorkflowDefinition(Base):
     edges: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     owner: Mapped[str | None] = mapped_column(Text)
     metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    current_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=1,
+        server_default="1",
+    )
+    updated_by: Mapped[str | None] = mapped_column(Text)
     owner_principal_id: Mapped[str | None] = mapped_column(
         ForeignKey("principals.id", ondelete="SET NULL")
     )
@@ -38,6 +47,43 @@ class WorkflowDefinition(Base):
     owning_scope_id: Mapped[str | None] = mapped_column(Text)
 
     runs: Mapped[list[WorkflowRun]] = relationship(back_populates="workflow", lazy="selectin")
+
+
+class WorkflowVersion(Base):
+    __tablename__ = "workflow_versions"
+    __table_args__ = (
+        UniqueConstraint("workflow_id", "version", name="uq_workflow_version"),
+        Index("idx_workflow_versions_wf", "workflow_id", "version"),
+    )
+
+    workflow_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_definitions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    changed_by: Mapped[str] = mapped_column(Text, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    comment: Mapped[str | None] = mapped_column(Text)
+
+
+class WorkflowVersionArchive(Base):
+    __tablename__ = "workflow_versions_archive"
+    __table_args__ = (
+        Index("idx_workflow_versions_archive_wf", "workflow_id", "version"),
+    )
+
+    workflow_id: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    changed_by: Mapped[str] = mapped_column(Text, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text)
 
 
 class WorkflowRun(Base):
