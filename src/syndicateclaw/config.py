@@ -145,6 +145,13 @@ class Settings(BaseSettings):
         description="When True, RBAC decisions deny before the route runs (403). "
         "When False (default), RBAC runs in shadow mode only.",
     )
+    allow_unscoped_keys: bool = Field(
+        default=True,
+        description=(
+            "When False, API keys without explicit scopes are rejected with 401. "
+            "Default True preserves backward compatibility for legacy unscoped keys."
+        ),
+    )
     runtime_enabled: bool = Field(
         default=False,
         description="When True, register experimental runtime/skill routes (Phase 1).",

@@ -9,6 +9,7 @@ from opentelemetry import trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.config import Settings
+from syndicateclaw.security.api_keys import UnscopedApiKeyNotPermittedError
 from syndicateclaw.security.auth import JWTError, decode_access_token, verify_api_key
 from syndicateclaw.security.revocation import is_token_revoked
 
@@ -135,7 +136,24 @@ async def get_current_actor(request: Request) -> str:
         ) as span:
             api_key_service = getattr(request.app.state, "api_key_service", None)
             if api_key_service is not None:
-                actor = await api_key_service.verify_key(api_key)
+                api_key_settings: Settings = request.app.state.settings
+                try:
+                    verification = await api_key_service.verify_key_details(
+                        api_key,
+                        allow_unscoped_keys=getattr(api_key_settings, "allow_unscoped_keys", True),
+                    )
+                except UnscopedApiKeyNotPermittedError as err:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail={
+                            "detail": "unscoped_key_not_permitted",
+                            "upgrade_guide": "https://docs.syndicateclaw.dev/upgrade/api-key-scopes",
+                        },
+                    ) from err
+
+                actor = verification.actor if verification is not None else None
+                request.state.api_key_scopes = verification.scopes if verification else []
+                request.state.unscoped_key = verification.unscoped if verification else False
             else:
                 actor = verify_api_key(api_key)
             if actor is None:

@@ -12,7 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -386,6 +386,16 @@ class ApiKey(Base):
     expires_at: Mapped[datetime | None]
     actor_principal_id: Mapped[str | None] = mapped_column(
         ForeignKey("principals.id", ondelete="SET NULL")
+    )
+    scopes: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        default=list,
+        server_default="{}",
+        comment=(
+            "Empty array intentionally grants full access for v1.0 backward "
+            "compatibility. See v1.1.0 spec section 4.3.2."
+        ),
     )
 
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from syndicateclaw.api.routes.api_keys import router as api_keys_router
 from syndicateclaw.api.routes.approvals import router as approvals_router
 from syndicateclaw.api.routes.audit import router as audit_router
 from syndicateclaw.api.routes.inference import router as inference_router
@@ -11,6 +12,7 @@ from syndicateclaw.api.routes.workflows import router as workflows_router
 
 ALL_ROUTERS = [
     approvals_router,
+    api_keys_router,
     audit_router,
     inference_router,
     memory_router,
