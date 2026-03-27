@@ -17,6 +17,7 @@ from syndicateclaw.llm.metrics import (
     llm_tokens_used_total,
 )
 from syndicateclaw.llm.templates import render_message_template
+from syndicateclaw.llm.tracing import llm_span
 from syndicateclaw.models import (
     ApprovalRequest,
     AuditEvent,
@@ -166,6 +167,18 @@ async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeR
     llm_request_duration_seconds.labels(provider=provider_label, model=model_label).observe(elapsed)
 
     usage = getattr(response, "usage", None)
+    with llm_span(
+        provider=provider_label,
+        model=model_label,
+        cached=bool(context.config.get("cache_hit", False)),
+    ) as span:
+        if usage is not None:
+            span.set_attribute("prompt_tokens", int(getattr(usage, "prompt_tokens", 0) or 0))
+            span.set_attribute(
+                "completion_tokens", int(getattr(usage, "completion_tokens", 0) or 0)
+            )
+        span.set_attribute("latency_ms", int(elapsed * 1000))
+
     if usage is not None:
         llm_tokens_used_total.labels(
             provider=provider_label,
