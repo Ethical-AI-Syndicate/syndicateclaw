@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import os
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
+from syndicateclaw.approval.service import ApprovalService
+from syndicateclaw.audit.service import AuditService
+from syndicateclaw.db.base import Base
 from syndicateclaw.models import (
     ApprovalRequest,
     EdgeDefinition,
@@ -20,6 +25,7 @@ from syndicateclaw.models import (
     WorkflowDefinition,
     WorkflowRun,
 )
+from syndicateclaw.policy.engine import PolicyEngine
 
 
 @pytest.fixture()
@@ -138,3 +144,66 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
         expires_at=datetime.now(UTC) + timedelta(hours=24),
         context={"run_id": sample_workflow_run.id},
     )
+
+
+@pytest.fixture(scope="session")
+async def db_engine() -> AsyncEngine:
+    database_url = os.environ.get(
+        "SYNDICATECLAW_DATABASE_URL",
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
+    )
+    engine = create_async_engine(database_url, future=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    try:
+        yield engine
+    finally:
+        await engine.dispose()
+
+
+@pytest.fixture()
+async def db_session(db_engine: AsyncEngine) -> AsyncSession:
+    connection = await db_engine.connect()
+    transaction = await connection.begin()
+    session_factory = async_sessionmaker(bind=connection, expire_on_commit=False)
+    session = session_factory()
+    try:
+        yield session
+    finally:
+        await session.close()
+        if transaction.is_active:
+            await transaction.rollback()
+        await connection.close()
+
+
+@pytest.fixture()
+def policy_engine(db_engine: AsyncEngine) -> PolicyEngine:
+    session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
+    return PolicyEngine(session_factory)
+
+
+@pytest.fixture()
+def audit_service(db_engine: AsyncEngine) -> AuditService:
+    session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
+    return AuditService(session_factory)
+
+
+@pytest.fixture()
+def approval_service(db_engine: AsyncEngine) -> ApprovalService:
+    session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
+    return ApprovalService(session_factory, notification_callback=None)
+
+
+@pytest.fixture()
+def test_actor() -> str:
+    return "test-actor-operator"
+
+
+@pytest.fixture()
+def admin_actor() -> str:
+    return "test-actor-admin"
+
+
+@pytest.fixture()
+def rbac_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")

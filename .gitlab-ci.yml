@@ -103,6 +103,29 @@ runtime_contract_schemas:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
 
+integration_tests:
+  stage: test
+  image: python:3.12-slim
+  services:
+    - postgres:16
+  variables:
+    POSTGRES_USER: syndicateclaw
+    POSTGRES_DB: syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:${POSTGRES_PASSWORD}@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+  secrets:
+    POSTGRES_PASSWORD:
+      vault: ci/syndicateclaw/postgres_password@secret
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - pip install -U pip
+    - pip install -e ".[dev]"
+  script:
+    - pytest tests/ -m integration -q --tb=line
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+
 nightly_quality_debt:
   stage: test
   image: python:3.12-slim
@@ -123,4 +146,3 @@ nightly_quality_debt:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - when: never
-
