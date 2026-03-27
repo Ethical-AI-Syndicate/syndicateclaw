@@ -834,3 +834,28 @@ Verification evidence:
 Week 4 commits:
 - `5ac258e` feat(db): add workflow versioning schema
 - `f069d86` feat: add workflow versioning service and API integration
+- `378cb42` docs: append v1.3.0 week 4 completion checkpoint
+
+## v1.3.0 Code-Level Completion Confirmation (2026-03-27)
+
+✓ sender always server-set; client override logged as WARN
+✓ Heartbeat enforces ownership; non-owner → 403
+✓ BROADCAST requires message:broadcast; limited to subscribed agents; cap 50
+✓ Hop count on every message; MAX_HOPS enforced; loop terminates with DLQ entry
+✓ Topic subscriptions: data model, API, migration 011
+✓ WAITING_AGENT_RESPONSE counted in concurrent run pool
+✓ Versioning uses workflow_versions table (not JSONB column)
+✓ Rollback creates new version; history preserved; in-flight runs unaffected
+✓ Concurrent update atomic (SELECT FOR UPDATE); no lost updates
+✓ Version cap: 100 max; oldest archived on overflow
+✓ workflow_versions_created_total uses namespace label only (no workflow_id)
+✓ Migrations 009-013 applied; round-trip verified
+✓ All new routes in RBAC route registry
+✓ Full pytest suite: 682 passed, 15 skipped, 2 xfailed
+✓ Integration tests: 148 passed, 14 skipped, 2 xfailed
+✓ ruff check src tests: clean
+✓ mypy src: clean
+
+Pending (platform team):
+- Agent hard-delete cron: enforce 90-day retention window on deregistered agents
+- Messaging DLQ monitoring: alert when dead_letter_records source_type=agent_message grows
