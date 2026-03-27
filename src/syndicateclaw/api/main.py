@@ -271,6 +271,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         StreamingTokenService,
     )
     from syndicateclaw.services.subscription_service import SubscriptionService
+    from syndicateclaw.services.versioning_service import VersioningService
     from syndicateclaw.tasks.agent_response_resume import run_agent_response_resume_loop
     from syndicateclaw.tasks.message_delivery import run_message_delivery_loop
     from syndicateclaw.tools.inference_tools import build_inference_tools
@@ -317,6 +318,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         router=message_router,
         redis_client=redis_client,
     )
+    versioning_service = VersioningService(session_factory)
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)
 
@@ -328,6 +330,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.agent_service = agent_service
     app.state.subscription_service = subscription_service
     app.state.message_service = message_service
+    app.state.versioning_service = versioning_service
 
     app.state.audit_service = audit_service
     app.state.memory_service = memory_service

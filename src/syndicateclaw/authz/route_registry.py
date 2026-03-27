@@ -256,11 +256,37 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         owner_field="owner",
         notes="Legacy: 404 if owner set and != actor.",
     ),
+    ("PUT", "/api/v1/workflows/{workflow_id}"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="ownership_check",
+        owner_field="owner",
+    ),
     ("POST", "/api/v1/workflows/{workflow_id}/runs"): RouteAuthzSpec(
         permission="run:create",
         scope_resolver="workflow_for_run_start",
         legacy_check="authenticated_only",
         notes="Concurrency limit also checked.",
+    ),
+    ("GET", "/api/v1/workflows/{workflow_id}/versions"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/workflows/{workflow_id}/versions/{version}"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/workflows/{workflow_id}/rollback"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/workflows/{workflow_id}/diff"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
     ),
 
     # ── Workflow Runs ──────────────────────────────────────────────────
@@ -669,6 +695,19 @@ def _normalize_path(path: str) -> str:
     return "/".join(normalized)
 
 
+def _path_matches_template(path: str, template: str) -> bool:
+    path_parts = [p for p in path.strip("/").split("/") if p]
+    tpl_parts = [p for p in template.strip("/").split("/") if p]
+    if len(path_parts) != len(tpl_parts):
+        return False
+    for path_part, tpl_part in zip(path_parts, tpl_parts, strict=False):
+        if tpl_part.startswith("{") and tpl_part.endswith("}"):
+            continue
+        if path_part != tpl_part:
+            return False
+    return True
+
+
 ROUTE_REGISTRY: dict[tuple[str, str], str | None] = {
     (
         method,
@@ -688,6 +727,10 @@ ROUTE_REGISTRY.update(
         ("GET", "/api/v1/workflows/{id}"): "workflow:read",
         ("PUT", "/api/v1/workflows/{id}"): "workflow:manage",
         ("DELETE", "/api/v1/workflows/{id}"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/versions"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/versions/{version}"): "workflow:manage",
+        ("POST", "/api/v1/workflows/{id}/rollback"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/diff"): "workflow:manage",
         ("GET", "/api/v1/workflows/{id}/runs"): "run:read",
         ("POST", "/api/v1/workflows/{id}/runs"): "run:create",
         ("GET", "/api/v1/runs/{id}"): "run:read",
@@ -767,5 +810,13 @@ def get_required_permission(method: str, path: str) -> str | None | str:
         if alt_key in EXEMPT_ROUTES:
             return None
         return ROUTE_REGISTRY[alt_key]
+
+    for (registered_method, template), permission in ROUTE_REGISTRY.items():
+        if registered_method != method.upper():
+            continue
+        if _path_matches_template(normalized, template):
+            if (registered_method, template) in EXEMPT_ROUTES:
+                return None
+            return permission
 
     return "DENY"

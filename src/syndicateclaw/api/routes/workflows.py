@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -13,6 +13,7 @@ from syndicateclaw.api.dependencies import (
     get_audit_service,
     get_current_actor,
     get_db_session,
+    get_versioning_service,
     get_workflow_engine,
 )
 from syndicateclaw.config import Settings
@@ -21,6 +22,7 @@ from syndicateclaw.models import (
     NodeDefinition,
     WorkflowRunStatus,
 )
+from syndicateclaw.services.versioning_service import VersionNotFoundError
 
 logger = structlog.get_logger(__name__)
 
@@ -30,6 +32,7 @@ DEP_CURRENT_ACTOR = Depends(get_current_actor)
 DEP_DB_SESSION = Depends(get_db_session)
 DEP_AUDIT_SERVICE = Depends(get_audit_service)
 DEP_WORKFLOW_ENGINE = Depends(get_workflow_engine)
+DEP_VERSIONING_SERVICE = Depends(get_versioning_service)
 Q_OFFSET = Query(0, ge=0)
 Q_LIMIT = Query(50, ge=1, le=200)
 Q_RUN_STATUS = Query(None, alias="status")
@@ -66,6 +69,16 @@ class WorkflowResponse(BaseModel):
 class StartRunRequest(BaseModel):
     initial_state: dict[str, Any] = Field(default_factory=dict)
     tags: dict[str, str] = Field(default_factory=dict)
+    version: int | None = None
+
+
+class UpdateWorkflowRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    nodes: list[NodeDefinition] | None = None
+    edges: list[EdgeDefinition] | None = None
+    metadata: dict[str, Any] | None = None
+    comment: str | None = None
 
 
 class WorkflowRunResponse(BaseModel):
@@ -147,6 +160,8 @@ async def create_workflow(
     workflow = WFModel(
         name=body.name,
         version=body.version,
+        current_version=1,
+        updated_by=actor,
         description=body.description or "",
         nodes=[n.model_dump() for n in body.nodes],
         edges=[e.model_dump() for e in body.edges],
@@ -352,6 +367,42 @@ async def get_workflow(
     return wf
 
 
+@router.put("/{workflow_id}", response_model=WorkflowResponse)
+async def update_workflow(
+    workflow_id: str,
+    body: UpdateWorkflowRequest,
+    actor: str = DEP_CURRENT_ACTOR,
+    db: AsyncSession = DEP_DB_SESSION,
+    versioning_service: Any = DEP_VERSIONING_SERVICE,
+) -> Any:
+    from syndicateclaw.db.models import WorkflowDefinition as WFModel
+
+    wf = await db.get(WFModel, workflow_id)
+    if wf is None or (wf.owner and wf.owner != actor):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
+    wf_any = cast(Any, wf)
+
+    if body.name is not None:
+        wf.name = body.name
+    if body.description is not None:
+        wf.description = body.description
+    if body.nodes is not None:
+        wf_any.nodes = [n.model_dump() for n in body.nodes]
+    if body.edges is not None:
+        wf_any.edges = [e.model_dump() for e in body.edges]
+    if body.metadata is not None:
+        wf.metadata_ = body.metadata
+
+    definition = {
+        "nodes": wf.nodes,
+        "edges": wf.edges,
+        "metadata": wf.metadata_,
+    }
+    await versioning_service.create_version(workflow_id, definition, actor, body.comment)
+    await db.flush()
+    return wf
+
+
 @router.post(
     "/{workflow_id}/runs",
     response_model=WorkflowRunResponse,
@@ -364,6 +415,7 @@ async def start_run(
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
     engine: Any = DEP_WORKFLOW_ENGINE,
+    versioning_service: Any = DEP_VERSIONING_SERVICE,
 ) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -400,9 +452,22 @@ async def start_run(
             ),
         )
 
+    resolved_version: int
+    if body.version is not None:
+        try:
+            await versioning_service.get_version(workflow_id, body.version)
+        except VersionNotFoundError as err:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow version not found",
+            ) from err
+        resolved_version = body.version
+    else:
+        resolved_version = int(getattr(wf, "current_version", 1) or 1)
+
     run = RunModel(
         workflow_id=workflow_id,
-        workflow_version=wf.version,
+        workflow_version=str(resolved_version),
         initiated_by=actor,
         state=body.initial_state,
         tags=body.tags,

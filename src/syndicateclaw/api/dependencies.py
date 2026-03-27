@@ -92,6 +92,10 @@ def get_subscription_service(request: Request) -> Any:
     return _get_service(request, "subscription_service")
 
 
+def get_versioning_service(request: Request) -> Any:
+    return _get_service(request, "versioning_service")
+
+
 def get_inference_catalog(request: Request) -> Any:
     """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
     return _get_service(request, "inference_catalog")
