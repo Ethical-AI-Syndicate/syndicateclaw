@@ -44,6 +44,7 @@ class ExecutionContext:
     memory_service: Any = None
     audit_service: Any = None
     checkpoint_store: Any = None
+    provider_service: Any = None
 
 
 @dataclasses.dataclass

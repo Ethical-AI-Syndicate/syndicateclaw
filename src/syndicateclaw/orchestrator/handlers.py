@@ -6,6 +6,9 @@ from typing import Any
 import structlog
 from ulid import ULID
 
+from syndicateclaw.inference.types import ChatInferenceRequest, ChatMessage
+from syndicateclaw.llm.idempotency import IdempotencyStore as LLMIdempotencyStore
+from syndicateclaw.llm.templates import render_message_template
 from syndicateclaw.models import (
     ApprovalRequest,
     AuditEvent,
@@ -100,21 +103,59 @@ async def approval_handler(
 
 
 async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
-    """Placeholder for LLM integration.
+    """Execute an LLM node through ProviderService."""
+    provider_service = context.provider_service or context.config.get("provider_service")
+    if provider_service is None:
+        raise RuntimeError("provider_service is required for llm handler")
 
-    In a full implementation this would call an LLM provider through the
-    configured model router. For now it annotates the state.
-    """
-    prompt = context.config.get("prompt", "")
-    model = context.config.get("model", "default")
+    actor = str(context.config.get("actor", "system:engine"))
+    scope_type = str(context.config.get("scope_type", "PLATFORM"))
+    scope_id = str(context.config.get("scope_id", "default"))
 
-    state["_llm_response"] = {
-        "note": "LLM handler placeholder - no actual call made",
-        "prompt": prompt,
-        "model": model,
-    }
+    idempotency = LLMIdempotencyStore()
+    idem = idempotency.resolve(
+        run_id=context.run_id,
+        node_id=context.node_id,
+        attempt_number=context.attempt,
+        bypass_cache=bool(context.config.get("bypass_cache", False)),
+    )
 
-    logger.info("llm.placeholder", run_id=context.run_id, model=model)
+    template = str(context.config.get("prompt_template", context.config.get("prompt", "")))
+    rendered_prompt = render_message_template(template, {"state": state, **context.config})
+
+    messages_cfg = context.config.get("messages")
+    if isinstance(messages_cfg, list) and messages_cfg:
+        messages = [ChatMessage.model_validate(item) for item in messages_cfg]
+    else:
+        messages = [ChatMessage(role="user", content=rendered_prompt)]
+
+    request = ChatInferenceRequest(
+        messages=messages,
+        model_id=context.config.get("model_id"),
+        provider_id=context.config.get("provider_id"),
+        temperature=context.config.get("temperature"),
+        max_tokens=context.config.get("max_tokens"),
+        actor=actor,
+        scope_type=scope_type,
+        scope_id=scope_id,
+        trace_id=str(ULID()),
+        idempotency_key=None if idem.bypass_cache else idem.key,
+    )
+
+    response = await provider_service.infer_chat(request)
+
+    response_key = str(context.config.get("response_key", "llm_response"))
+    state[response_key] = response.content
+    state[f"_llm_output_{response_key}"] = True
+
+    if not bool(context.config.get("allow_tool_calls", False)):
+        logger.warning(
+            "llm.tool_calls_ignored",
+            run_id=context.run_id,
+            node_id=context.node_id,
+        )
+
+    logger.info("llm.completed", run_id=context.run_id, model=response.model_id)
     return NodeResult(output_state=state)
 
 
