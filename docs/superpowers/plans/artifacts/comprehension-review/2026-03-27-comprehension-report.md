@@ -796,3 +796,41 @@ Operational handoff (platform team):
 - Provider API keys must be injected via vault before any LLM workflows run
 - system:engine RBAC assignment must be verified post-deploy via readyz check
 - SSE streaming token TTL (default 300s) tunable via SYNDICATECLAW_STREAMING_TOKEN_TTL_SECONDS
+
+## v1.3.0 Week 4 Completion Checkpoint (2026-03-27)
+
+- Implemented migrations:
+  - `012_workflow_versions` (workflow_versions + workflow_versions_archive)
+  - `013_workflow_defs_ver` (workflow_definitions.current_version, updated_by)
+- Implemented `VersioningService` in
+  `src/syndicateclaw/services/versioning_service.py`:
+  - atomic version creation with row lock
+  - version cap enforcement (archive oldest over 100)
+  - rollback creates a new forward version
+  - structured diff support
+- Added workflow versioning API routes in
+  `src/syndicateclaw/api/routes/workflow_versions.py`:
+  - list versions
+  - get version
+  - rollback
+  - diff (`from`/`to` query params)
+- Integrated versioning into workflow APIs:
+  - `PUT /api/v1/workflows/{workflow_id}` creates a new version each update
+  - `POST /api/v1/workflows/{workflow_id}/runs` accepts optional `version`
+    and pins run `workflow_version` accordingly
+- Registered all new endpoints in RBAC registry and added dynamic template
+  path matching support to avoid false `DENY` on parameterized paths.
+- Added observability metric in
+  `src/syndicateclaw/messaging/metrics.py`:
+  - `workflow_versions_total{namespace=...}` (no workflow_id label)
+
+Verification evidence:
+- `SYNDICATECLAW_DATABASE_URL=... .venv/bin/alembic downgrade 011_topic_subscriptions && ... upgrade head` passed
+- `SYNDICATECLAW_DATABASE_URL=... SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED=false .venv/bin/pytest tests/unit/test_versioning_service.py -v` passed (7 tests)
+- `SYNDICATECLAW_DATABASE_URL=... SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED=false .venv/bin/pytest tests/ -k version -v` passed (15 selected)
+- `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED=false .venv/bin/ruff check src tests` passed
+- `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED=false .venv/bin/mypy src` passed
+
+Week 4 commits:
+- `5ac258e` feat(db): add workflow versioning schema
+- `f069d86` feat: add workflow versioning service and API integration
