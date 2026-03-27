@@ -5,9 +5,17 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 from ulid import ULID
 
-from syndicateclaw.api.dependencies import get_current_actor, get_schedule_service
+from syndicateclaw.api.decorators.quota import enforce_quota
+from syndicateclaw.api.dependencies import (
+    get_actor_org,
+    get_current_actor,
+    get_db_session,
+    get_schedule_service,
+)
+from syndicateclaw.services.organization_service import count_schedules_for_org
 from syndicateclaw.services.schedule_service import (
     InvalidScheduleError,
     ScheduleConflictError,
@@ -20,6 +28,8 @@ router = APIRouter(prefix="/api/v1/schedules", tags=["schedules"])
 
 DEP_CURRENT_ACTOR = Depends(get_current_actor)
 DEP_SCHEDULE_SERVICE = Depends(get_schedule_service)
+DEP_DB_SESSION = Depends(get_db_session)
+DEP_ACTOR_ORG = Depends(get_actor_org)
 Q_NAMESPACE = Query(None)
 Q_OFFSET = Query(0)
 Q_LIMIT = Query(100)
@@ -100,7 +110,15 @@ async def create_schedule(
     request: ScheduleCreateRequest,
     actor: str = DEP_CURRENT_ACTOR,
     svc: ScheduleService = DEP_SCHEDULE_SERVICE,
+    db: AsyncSession = DEP_DB_SESSION,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> ScheduleResponse:
+    await enforce_quota(actor_org, db, "max_schedules", count_schedules_for_org)
+    if actor_org is not None and request.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
     try:
         schedule = await svc.create(
             ulid_factory=ULID,

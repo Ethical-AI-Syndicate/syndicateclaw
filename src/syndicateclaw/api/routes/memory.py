@@ -8,11 +8,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from syndicateclaw.api.decorators.quota import enforce_quota, json_value_byte_size
 from syndicateclaw.api.dependencies import (
+    get_actor_org,
     get_current_actor,
     get_db_session,
 )
 from syndicateclaw.models import MemoryDeletionStatus, MemoryType
+from syndicateclaw.services.organization_service import (
+    add_storage_bytes_used,
+    count_memory_records_for_org,
+    get_storage_bytes_used,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -20,6 +27,7 @@ router = APIRouter(prefix="/api/v1/memory", tags=["memory"])
 
 DEP_CURRENT_ACTOR = Depends(get_current_actor)
 DEP_DB_SESSION = Depends(get_db_session)
+DEP_ACTOR_ORG = Depends(get_actor_org)
 Q_MEMORY_TYPE = Query(None)
 Q_OFFSET = Query(0, ge=0)
 Q_LIMIT = Query(50, ge=1, le=200)
@@ -85,10 +93,31 @@ async def write_memory(
     body: WriteMemoryRequest,
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> Any:
     from datetime import UTC, timedelta
 
     from syndicateclaw.db.models import MemoryRecord as MRModel
+
+    if actor_org is not None and body.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
+
+    await enforce_quota(actor_org, db, "max_memory_records", count_memory_records_for_org)
+    value_bytes = json_value_byte_size(
+        body.value if isinstance(body.value, dict) else {"_value": body.value}
+    )
+    if actor_org is not None:
+        quotas = actor_org.quotas or {}
+        limit_bytes = quotas.get("storage_limit_bytes", float("inf"))
+        current_bytes = await get_storage_bytes_used(db, actor_org.id)
+        if current_bytes + value_bytes > limit_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail={"error": "storage_quota_exceeded"},
+            )
 
     expires_at = None
     if body.ttl_seconds is not None:
@@ -111,6 +140,8 @@ async def write_memory(
     db.add(record)
     await db.flush()
     await db.refresh(record)
+    if actor_org is not None:
+        await add_storage_bytes_used(db, actor_org.id, value_bytes)
     logger.info("memory.written", namespace=body.namespace, key=body.key)
     return record
 

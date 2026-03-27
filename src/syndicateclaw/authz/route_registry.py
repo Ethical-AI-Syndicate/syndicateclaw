@@ -790,6 +790,14 @@ ROUTE_REGISTRY.update(
         ("POST", "/api/v1/schedules/{schedule_id}/pause"): "schedule:manage",
         ("POST", "/api/v1/schedules/{schedule_id}/resume"): "schedule:manage",
         ("GET", "/api/v1/schedules/{schedule_id}/preview-next-run"): "schedule:read",
+        ("POST", "/api/v1/organizations"): "admin:*",
+        ("GET", "/api/v1/organizations/{id}"): "org:read",
+        ("PUT", "/api/v1/organizations/{id}"): "org:manage",
+        ("DELETE", "/api/v1/organizations/{id}"): "org:manage",
+        ("POST", "/api/v1/organizations/{id}/members"): "org:manage",
+        ("GET", "/api/v1/organizations/{id}/members"): "org:read",
+        ("DELETE", "/api/v1/organizations/{id}/members/{id}"): "org:manage",
+        ("PUT", "/api/v1/organizations/{id}/members/{id}/role"): "org:manage",
     }
 )
 

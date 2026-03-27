@@ -4,7 +4,7 @@ from collections.abc import AsyncGenerator
 from typing import Any, cast
 
 import structlog
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, status
 from opentelemetry import trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -100,6 +100,10 @@ def get_schedule_service(request: Request) -> Any:
     return _get_service(request, "schedule_service")
 
 
+def get_state_cache(request: Request) -> Any:
+    return getattr(request.app.state, "state_cache", None)
+
+
 def get_inference_catalog(request: Request) -> Any:
     """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
     return _get_service(request, "inference_catalog")
@@ -145,6 +149,8 @@ async def get_current_actor(request: Request) -> str:
                     )
                 span.set_attribute("actor.id", str(actor))
                 request.state.actor = actor
+                request.state.jwt_org_id = claims.get("org_id")
+                request.state.jwt_org_role = claims.get("org_role")
                 return cast(str, actor)
         except JWTError as err:
             raise HTTPException(
@@ -200,3 +206,14 @@ async def get_current_actor(request: Request) -> str:
     logger.warning("auth.anonymous_fallback", environment=environment)
     request.state.actor = "anonymous"
     return "anonymous"
+
+
+async def get_actor_org(
+    actor: str = Depends(get_current_actor),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+) -> Any:
+    """Resolve the caller's organization from ``organization_members``, if any."""
+    from syndicateclaw.services.organization_service import OrganizationService
+
+    svc = OrganizationService(session)
+    return await svc.get_actor_org(actor)

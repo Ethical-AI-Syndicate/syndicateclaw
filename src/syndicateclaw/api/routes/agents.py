@@ -5,18 +5,28 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from syndicateclaw.api.dependencies import get_agent_service, get_current_actor
+from syndicateclaw.api.decorators.quota import enforce_quota
+from syndicateclaw.api.dependencies import (
+    get_actor_org,
+    get_agent_service,
+    get_current_actor,
+    get_db_session,
+)
 from syndicateclaw.services.agent_service import (
     AgentConflictError,
     AgentNotFoundError,
     AgentOwnershipError,
 )
+from syndicateclaw.services.organization_service import count_agents_for_org
 
 router = APIRouter(prefix="/api/v1/agents", tags=["agents"])
 
 DEP_CURRENT_ACTOR = Depends(get_current_actor)
 DEP_AGENT_SERVICE = Depends(get_agent_service)
+DEP_ACTOR_ORG = Depends(get_actor_org)
+DEP_DB_SESSION = Depends(get_db_session)
 Q_NAMESPACE = Query(None)
 Q_CAPABILITY = Query(None)
 Q_STATUS = Query(None)
@@ -60,7 +70,15 @@ async def register_agent(
     body: AgentRegisterRequest,
     actor: str = DEP_CURRENT_ACTOR,
     agent_service: Any = DEP_AGENT_SERVICE,
+    db: AsyncSession = DEP_DB_SESSION,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> Any:
+    await enforce_quota(actor_org, db, "max_agents", count_agents_for_org)
+    if actor_org is not None and body.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
     try:
         return await agent_service.register(
             name=body.name,

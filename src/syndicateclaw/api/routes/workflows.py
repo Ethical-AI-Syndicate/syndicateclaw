@@ -9,10 +9,13 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from syndicateclaw.api.decorators.quota import enforce_quota
 from syndicateclaw.api.dependencies import (
+    get_actor_org,
     get_audit_service,
     get_current_actor,
     get_db_session,
+    get_state_cache,
     get_versioning_service,
     get_workflow_engine,
 )
@@ -22,6 +25,7 @@ from syndicateclaw.models import (
     NodeDefinition,
     WorkflowRunStatus,
 )
+from syndicateclaw.services.organization_service import count_workflows_for_org
 from syndicateclaw.services.versioning_service import VersionNotFoundError
 
 logger = structlog.get_logger(__name__)
@@ -33,6 +37,8 @@ DEP_DB_SESSION = Depends(get_db_session)
 DEP_AUDIT_SERVICE = Depends(get_audit_service)
 DEP_WORKFLOW_ENGINE = Depends(get_workflow_engine)
 DEP_VERSIONING_SERVICE = Depends(get_versioning_service)
+DEP_ACTOR_ORG = Depends(get_actor_org)
+DEP_STATE_CACHE = Depends(get_state_cache)
 Q_OFFSET = Query(0, ge=0)
 Q_LIMIT = Query(50, ge=1, le=200)
 Q_RUN_STATUS = Query(None, alias="status")
@@ -154,9 +160,12 @@ async def create_workflow(
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
     audit: Any = DEP_AUDIT_SERVICE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> Any:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
+    await enforce_quota(actor_org, db, "max_workflows", count_workflows_for_org)
+    ns = actor_org.namespace if actor_org is not None else "default"
     workflow = WFModel(
         name=body.name,
         version=body.version,
@@ -167,6 +176,7 @@ async def create_workflow(
         edges=[e.model_dump() for e in body.edges],
         owner=actor,
         metadata_=body.metadata,
+        namespace=ns,
         owning_scope_type="PLATFORM",
         owning_scope_id="platform",
     )
@@ -218,12 +228,23 @@ async def get_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
+    state_cache: Any = DEP_STATE_CACHE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
     if run is None or (run.initiated_by and run.initiated_by != actor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
+    if actor_org is not None and run.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
+    if state_cache is not None:
+        cached = await state_cache.get(run_id)
+        if cached is not None:
+            run.state = cached
     return WorkflowRunResponse.from_orm_redacted(run)
 
 
@@ -416,6 +437,7 @@ async def start_run(
     db: AsyncSession = DEP_DB_SESSION,
     engine: Any = DEP_WORKFLOW_ENGINE,
     versioning_service: Any = DEP_VERSIONING_SERVICE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -424,6 +446,12 @@ async def start_run(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
 
     from syndicateclaw.db.models import WorkflowRun as RunModel
+
+    if actor_org is not None and actor_org.status == "DELETING":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Organization is being deleted; new runs are blocked",
+        )
 
     active_statuses = {
         "PENDING",
@@ -465,12 +493,19 @@ async def start_run(
     else:
         resolved_version = int(getattr(wf, "current_version", 1) or 1)
 
+    ns = wf.namespace
+    if actor_org is not None and wf.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
     run = RunModel(
         workflow_id=workflow_id,
         workflow_version=str(resolved_version),
         initiated_by=actor,
         state=body.initial_state,
         tags=body.tags,
+        namespace=ns,
         owning_scope_type="PLATFORM",
         owning_scope_id="platform",
     )

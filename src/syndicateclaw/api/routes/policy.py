@@ -120,6 +120,7 @@ async def create_policy_rule(
         conditions=[c.model_dump() for c in body.conditions],
         priority=body.priority,
         owner=actor,
+        namespace="default",
     )
     db.add(rule)
     await db.flush()

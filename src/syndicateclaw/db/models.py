@@ -4,6 +4,8 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import (
+    BigInteger,
+    Column,
     DateTime,
     Float,
     ForeignKey,
@@ -11,6 +13,7 @@ from sqlalchemy import (
     Integer,
     LargeBinary,
     String,
+    Table,
     Text,
     UniqueConstraint,
     func,
@@ -25,11 +28,17 @@ from .base import Base
 class WorkflowDefinition(Base):
     __tablename__ = "workflow_definitions"
     __table_args__ = (
-        UniqueConstraint("name", "version"),
+        UniqueConstraint("name", "version", "namespace"),
     )
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
     version: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="default",
+        server_default="default",
+    )
     description: Mapped[str | None] = mapped_column(Text)
     nodes: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     edges: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
@@ -127,7 +136,7 @@ class WorkflowRun(Base):
     )
     parent_schedule_id: Mapped[str | None]
     triggered_by: Mapped[str | None]
-    namespace: Mapped[str | None]
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, default="default")
 
 
 class Agent(Base):
@@ -194,6 +203,7 @@ class AgentMessage(Base):
     expires_at: Mapped[datetime | None]
     delivered_at: Mapped[datetime | None]
     acked_at: Mapped[datetime | None]
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, default="default")
 
 
 class TopicSubscription(Base):
@@ -326,11 +336,18 @@ class MemoryRecord(Base):
 class PolicyRule(Base):
     __tablename__ = "policy_rules"
     __table_args__ = (
+        UniqueConstraint("name", "namespace", name="uq_policy_rules_name_namespace"),
         Index("ix_policy_rules_resource_type", "resource_type"),
         Index("ix_policy_rules_enabled", "enabled"),
     )
 
-    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="default",
+        server_default="default",
+    )
     description: Mapped[str | None] = mapped_column(Text)
     resource_type: Mapped[str] = mapped_column(Text, nullable=False)
     resource_pattern: Mapped[str] = mapped_column(Text, nullable=False)
@@ -896,6 +913,48 @@ class StreamingToken(Base):
     workflow_id: Mapped[str | None] = mapped_column(Text)
     expires_at: Mapped[datetime] = mapped_column(nullable=False)
     used_at: Mapped[datetime | None]
+
+
+class Organization(Base):
+    """Tenant organization (v1.4.0 multi-tenancy)."""
+
+    __tablename__ = "organizations"
+    __table_args__ = ()
+
+    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    display_name: Mapped[str] = mapped_column(Text, nullable=False)
+    owner_actor: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="ACTIVE")
+    quotas: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+
+
+organization_members = Table(
+    "organization_members",
+    Base.metadata,
+    Column("id", Text, primary_key=True),
+    Column(
+        "organization_id",
+        Text,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("actor", Text, nullable=False),
+    Column("org_role", Text, nullable=False),
+    Column("rbac_role", Text, nullable=False),
+    Column("joined_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("organization_id", "actor", name="uq_organization_members_org_actor"),
+    Index("idx_org_members_actor", "actor"),
+)
+
+organization_quotas_usage = Table(
+    "organization_quotas_usage",
+    Base.metadata,
+    Column("organization_id", Text, ForeignKey("organizations.id"), primary_key=True),
+    Column("storage_bytes_used", BigInteger, nullable=False, server_default="0"),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
 
 
 class WorkflowSchedule(Base):
