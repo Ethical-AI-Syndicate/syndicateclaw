@@ -254,7 +254,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yaml_path.write_text("inference_enabled: false\nproviders: []\n", encoding="utf-8")
 
     from syndicateclaw.inference.catalog import ModelCatalog
-    from syndicateclaw.inference.config_loader import ProviderConfigLoader
+    from syndicateclaw.inference.config_loader import (
+        ProviderConfigLoader,
+        validate_provider_env_vars,
+    )
     from syndicateclaw.inference.config_schema import ProviderSystemConfig
     from syndicateclaw.inference.idempotency import IdempotencyStore
     from syndicateclaw.inference.registry import ProviderRegistry
@@ -273,6 +276,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         provider_config_loader.activate(ProviderSystemConfig(inference_enabled=False, providers=()))
 
     _cfg, _ver = provider_config_loader.current()
+    validate_provider_env_vars(_cfg)
     inference_catalog = ModelCatalog()
     inference_catalog.replace_from_yaml_static(_cfg, snapshot_version=_ver)
     provider_registry = ProviderRegistry(_cfg)

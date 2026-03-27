@@ -8,11 +8,17 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from syndicateclaw.inference.config_loader import ProviderConfigLoader, compute_provider_diff
+from syndicateclaw.inference.config_loader import (
+    ConfigurationError,
+    ProviderConfigLoader,
+    compute_provider_diff,
+    validate_provider_env_vars,
+)
 from syndicateclaw.inference.config_schema import ProviderSystemConfig, StaticCatalogEntry
 from syndicateclaw.inference.types import (
     AdapterProtocol,
     InferenceCapability,
+    ProviderAuthConfig,
     ProviderConfig,
     ProviderType,
 )
@@ -170,3 +176,24 @@ def test_reload_atomic_reader_sees_only_complete_snapshots(tmp_path: Path) -> No
 
     for s in seen:
         assert s in (set_a, set_b)
+
+
+def test_provider_config_missing_env_var_fatal(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg = ProviderSystemConfig(
+        inference_enabled=True,
+        providers=(
+            ProviderConfig(
+                id="remote",
+                name="remote",
+                provider_type=ProviderType.REMOTE,
+                adapter_protocol=AdapterProtocol.OPENAI_COMPATIBLE,
+                base_url="https://api.example.invalid",
+                capabilities=[InferenceCapability.CHAT],
+                auth=ProviderAuthConfig(env_var="SYNDICATECLAW_OPENAI_KEY"),
+            ),
+        ),
+    )
+
+    monkeypatch.delenv("SYNDICATECLAW_OPENAI_KEY", raising=False)
+    with pytest.raises(ConfigurationError, match="SYNDICATECLAW_OPENAI_KEY"):
+        validate_provider_env_vars(cfg)

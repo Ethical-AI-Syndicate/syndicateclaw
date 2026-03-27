@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import threading
 from pathlib import Path
 
@@ -101,3 +102,20 @@ class ProviderConfigLoader:
         """Validate from disk and activate in one step."""
         cfg = self.load_validate()
         return self.activate(cfg)
+
+
+class ConfigurationError(Exception):
+    """Raised for fatal provider configuration startup errors."""
+
+
+def validate_provider_env_vars(config: ProviderSystemConfig) -> None:
+    """Fail fast when configured provider auth env vars are missing/empty."""
+    for provider in config.providers:
+        auth = provider.auth
+        if auth is None or not auth.env_var:
+            continue
+        value = os.environ.get(auth.env_var)
+        if value is None or not value.strip():
+            raise ConfigurationError(
+                f"Provider '{provider.id}' requires env var '{auth.env_var}'"
+            )

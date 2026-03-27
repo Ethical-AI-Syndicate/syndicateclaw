@@ -753,3 +753,19 @@ Pending: operational gates documented above (platform team handoff).
 
 v1.2.0 deployment runbook note:
 - Before deploying v1.2.0, verify system:engine has run:control and tool:execute.
+
+v1.2.0 progress checkpoint (2026-03-27T07:27:33+00:00)
+- Added fatal startup validation for provider auth env vars via
+  `validate_provider_env_vars` in `src/syndicateclaw/inference/config_loader.py` and
+  invocation in `src/syndicateclaw/api/main.py`.
+- Added unit test `test_provider_config_missing_env_var_fatal` in
+  `tests/unit/inference/test_config_loader.py`.
+- Gate verification completed locally:
+  - `.venv/bin/pytest -k provider_config_missing -q` -> 1 passed
+  - `.venv/bin/pytest tests/unit/inference/test_config_loader.py -q` -> 6 passed
+  - `.venv/bin/pytest tests/unit/llm/test_tool_call_gating.py -q` -> 3 passed
+  - `.venv/bin/pytest tests/unit/test_provider_test_endpoint.py -q` -> 1 passed
+  - `.venv/bin/pytest tests/unit/test_system_engine_startup.py -q` -> 1 passed
+  - `.venv/bin/pytest tests/unit/test_streaming_endpoint.py -q` -> 2 passed
+  - `.venv/bin/ruff check src tests` -> clean
+  - `.venv/bin/mypy src` -> clean

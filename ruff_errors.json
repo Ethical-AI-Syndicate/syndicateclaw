@@ -1,0 +1,1130 @@
+[
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 50,
+      "row": 665
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from datetime import UTC, datetime, timedelta\n\n    import jwt as pyjwt\n",
+          "end_location": {
+            "column": 1,
+            "row": 666
+          },
+          "location": {
+            "column": 1,
+            "row": 664
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 664
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 664,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 89,
+      "row": 678
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 78,
+      "row": 678
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 678,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 81,
+      "row": 690
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 690
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 690,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 81,
+      "row": 701
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 701
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 701,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 82,
+      "row": 722
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 722
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 722,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 81,
+      "row": 742
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 742
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 742,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "F821",
+    "end_location": {
+      "column": 73,
+      "row": 753
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 62,
+      "row": 753
+    },
+    "message": "Undefined name `AsyncClient`",
+    "noqa_row": 753,
+    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 51,
+      "row": 775
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 776
+          },
+          "location": {
+            "column": 1,
+            "row": 771
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 771
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 771,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 51,
+      "row": 812
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 813
+          },
+          "location": {
+            "column": 1,
+            "row": 807
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 807
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 807,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 16,
+      "row": 856
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import uuid\n    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n    from syndicateclaw.db.models import Principal\n",
+          "end_location": {
+            "column": 1,
+            "row": 857
+          },
+          "location": {
+            "column": 1,
+            "row": 849
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 849
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 849,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 16,
+      "row": 908
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import uuid\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz.route_registry import resolve_run_by_id\n    from syndicateclaw.db.models import WorkflowDefinition as WFModel\n    from syndicateclaw.db.models import WorkflowRun as RunModel\n",
+          "end_location": {
+            "column": 1,
+            "row": 909
+          },
+          "location": {
+            "column": 1,
+            "row": 905
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 905
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 905,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 16,
+      "row": 932
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import uuid\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz.route_registry import resolve_workflow_for_run_start\n    from syndicateclaw.db.models import WorkflowDefinition as WFModel\n",
+          "end_location": {
+            "column": 1,
+            "row": 933
+          },
+          "location": {
+            "column": 1,
+            "row": 929
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 929
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 929,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 19,
+      "row": 951
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import inspect\n    from unittest.mock import AsyncMock, MagicMock\n\n    from syndicateclaw.authz import route_registry as rr\n",
+          "end_location": {
+            "column": 1,
+            "row": 952
+          },
+          "location": {
+            "column": 1,
+            "row": 949
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 949
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 949,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "B007",
+    "end_location": {
+      "column": 13,
+      "row": 961
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_name",
+          "end_location": {
+            "column": 13,
+            "row": 961
+          },
+          "location": {
+            "column": 9,
+            "row": 961
+          }
+        }
+      ],
+      "message": "Rename unused `name` to `_name`"
+    },
+    "location": {
+      "column": 9,
+      "row": 961
+    },
+    "message": "Loop control variable `name` not used within loop body",
+    "noqa_row": 961,
+    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 981
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 982
+          },
+          "location": {
+            "column": 1,
+            "row": 977
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 977
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 977,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 1001
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 1002
+          },
+          "location": {
+            "column": 1,
+            "row": 998
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 998
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 998,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 1008
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import MagicMock\n\n    from starlette.testclient import TestClient\n",
+          "end_location": {
+            "column": 1,
+            "row": 1009
+          },
+          "location": {
+            "column": 1,
+            "row": 1007
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1007
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1007,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 48,
+      "row": 1007
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 1008
+          },
+          "location": {
+            "column": 1,
+            "row": 1007
+          }
+        }
+      ],
+      "message": "Remove unused import: `starlette.testclient.TestClient`"
+    },
+    "location": {
+      "column": 38,
+      "row": 1007
+    },
+    "message": "`starlette.testclient.TestClient` imported but unused",
+    "noqa_row": 1007,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 16,
+      "row": 1052
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import uuid\n\n    from syndicateclaw.authz.evaluator import RBACEvaluator\n",
+          "end_location": {
+            "column": 1,
+            "row": 1053
+          },
+          "location": {
+            "column": 1,
+            "row": 1051
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1051
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1051,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 1087
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 1088
+          },
+          "location": {
+            "column": 1,
+            "row": 1083
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1083
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1083,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "E401",
+    "end_location": {
+      "column": 20,
+      "row": 1103
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import os\n    import uuid",
+          "end_location": {
+            "column": 20,
+            "row": 1103
+          },
+          "location": {
+            "column": 1,
+            "row": 1103
+          }
+        }
+      ],
+      "message": "Split imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1103
+    },
+    "message": "Multiple imports on one line",
+    "noqa_row": 1103,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-imports-on-one-line"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 20,
+      "row": 1103
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import os\n    import uuid\n",
+          "end_location": {
+            "column": 1,
+            "row": 1104
+          },
+          "location": {
+            "column": 1,
+            "row": 1103
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1103
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1103,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 51,
+      "row": 1118
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n    from syndicateclaw.db.models import Principal\n",
+          "end_location": {
+            "column": 1,
+            "row": 1119
+          },
+          "location": {
+            "column": 1,
+            "row": 1112
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1112
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1112,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 1179
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import DisagreementType, ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 1180
+          },
+          "location": {
+            "column": 1,
+            "row": 1175
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1175
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1175,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 40,
+      "row": 1211
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import inspect\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz import route_registry as rr\n",
+          "end_location": {
+            "column": 1,
+            "row": 1212
+          },
+          "location": {
+            "column": 1,
+            "row": 1209
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1209
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1209,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "B007",
+    "end_location": {
+      "column": 13,
+      "row": 1218
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_name",
+          "end_location": {
+            "column": 13,
+            "row": 1218
+          },
+          "location": {
+            "column": 9,
+            "row": 1218
+          }
+        }
+      ],
+      "message": "Rename unused `name` to `_name`"
+    },
+    "location": {
+      "column": 9,
+      "row": 1218
+    },
+    "message": "Loop control variable `name` not used within loop body",
+    "noqa_row": 1218,
+    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 57,
+      "row": 1230
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import inspect\n\n    from syndicateclaw.authz import route_registry as rr\n",
+          "end_location": {
+            "column": 1,
+            "row": 1231
+          },
+          "location": {
+            "column": 1,
+            "row": 1229
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1229
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1229,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 51,
+      "row": 1236
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from unittest.mock import AsyncMock, MagicMock\n",
+          "end_location": {
+            "column": 1,
+            "row": 1237
+          },
+          "location": {
+            "column": 1,
+            "row": 1236
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1236
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1236,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 51,
+      "row": 1236
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from unittest.mock import MagicMock",
+          "end_location": {
+            "column": 51,
+            "row": 1236
+          },
+          "location": {
+            "column": 5,
+            "row": 1236
+          }
+        }
+      ],
+      "message": "Remove unused import: `unittest.mock.AsyncMock`"
+    },
+    "location": {
+      "column": 42,
+      "row": 1236
+    },
+    "message": "`unittest.mock.AsyncMock` imported but unused",
+    "noqa_row": 1236,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "B007",
+    "end_location": {
+      "column": 13,
+      "row": 1237
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "_name",
+          "end_location": {
+            "column": 13,
+            "row": 1237
+          },
+          "location": {
+            "column": 9,
+            "row": 1237
+          }
+        }
+      ],
+      "message": "Rename unused `name` to `_name`"
+    },
+    "location": {
+      "column": 9,
+      "row": 1237
+    },
+    "message": "Loop control variable `name` not used within loop body",
+    "noqa_row": 1237,
+    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 72,
+      "row": 1761
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    import uuid\n\n    from starlette.applications import Starlette\n\n    from syndicateclaw.authz.evaluator import AuthzResult, Decision\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import (\n        DisagreementType,\n        ShadowRBACMiddleware,\n    )\n    from syndicateclaw.db.models import Principal, Role, RoleAssignment\n",
+          "end_location": {
+            "column": 1,
+            "row": 1762
+          },
+          "location": {
+            "column": 1,
+            "row": 1751
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1751
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1751,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 58,
+      "row": 1755
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from syndicateclaw.authz.evaluator import Decision",
+          "end_location": {
+            "column": 68,
+            "row": 1755
+          },
+          "location": {
+            "column": 5,
+            "row": 1755
+          }
+        }
+      ],
+      "message": "Remove unused import: `syndicateclaw.authz.evaluator.AuthzResult`"
+    },
+    "location": {
+      "column": 47,
+      "row": 1755
+    },
+    "message": "`syndicateclaw.authz.evaluator.AuthzResult` imported but unused",
+    "noqa_row": 1755,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 106,
+      "row": 1854
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1854
+    },
+    "message": "Line too long (105 > 100)",
+    "noqa_row": 1854,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 45,
+      "row": 1867
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from starlette.applications import Starlette\n    from starlette.responses import Response\n\n    from syndicateclaw.authz.evaluator import Decision\n    from syndicateclaw.authz.route_registry import RouteAuthzSpec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 1868
+          },
+          "location": {
+            "column": 1,
+            "row": 1863
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1863
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1863,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 104,
+      "row": 1884
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1884
+    },
+    "message": "Line too long (103 > 100)",
+    "noqa_row": 1884,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 102,
+      "row": 1886
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1886
+    },
+    "message": "Line too long (101 > 100)",
+    "noqa_row": 1886,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 108,
+      "row": 1887
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1887
+    },
+    "message": "Line too long (107 > 100)",
+    "noqa_row": 1887,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "I001",
+    "end_location": {
+      "column": 49,
+      "row": 1894
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "    from starlette.applications import Starlette\n\n    from syndicateclaw.authz.evaluator import AuthzResult, Decision\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
+          "end_location": {
+            "column": 1,
+            "row": 1895
+          },
+          "location": {
+            "column": 1,
+            "row": 1892
+          }
+        }
+      ],
+      "message": "Organize imports"
+    },
+    "location": {
+      "column": 5,
+      "row": 1892
+    },
+    "message": "Import block is un-sorted or un-formatted",
+    "noqa_row": 1892,
+    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 104,
+      "row": 1947
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1947
+    },
+    "message": "Line too long (103 > 100)",
+    "noqa_row": 1947,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 104,
+      "row": 1951
+    },
+    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 1951
+    },
+    "message": "Line too long (103 > 100)",
+    "noqa_row": 1951,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  }
+]

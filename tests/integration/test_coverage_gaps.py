@@ -4,6 +4,7 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from httpx import AsyncClient
 
 from syndicateclaw.db.models import (
     NodeExecution as NodeExecutionORM,
@@ -661,8 +662,9 @@ async def test_rbac_enforcement_with_principal_no_permission(session_factory):
 
 def _make_test_jwt(actor: str, secret: str = "test-secret-key-not-for-production") -> str:
     """Issue a minimal HS256 JWT for test use."""
-    import jwt as pyjwt
     from datetime import UTC, datetime, timedelta
+
+    import jwt as pyjwt
     return pyjwt.encode(
         {
             "sub": actor,
@@ -768,11 +770,13 @@ async def test_shadow_middleware_team_context_header(client: AsyncClient):
 @pytest.mark.asyncio
 async def test_shadow_evaluate_no_route_spec(session_factory):
     """_shadow_evaluate with unregistered route logs and returns."""
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+    from unittest.mock import AsyncMock, MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock, AsyncMock
+
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 
     async def homepage(request): return PlainTextResponse("ok")
     app = Starlette(routes=[Route("/", homepage)])
@@ -804,12 +808,14 @@ async def test_shadow_evaluate_no_route_spec(session_factory):
 @pytest.mark.asyncio
 async def test_shadow_evaluate_with_registered_route(session_factory):
     """_shadow_evaluate with a registered route exercises principal lookup."""
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
-    from syndicateclaw.authz.route_registry import get_route_spec
+    from unittest.mock import AsyncMock, MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock, AsyncMock
+
+    from syndicateclaw.authz.route_registry import get_route_spec
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 
     # Find a registered route
     spec = get_route_spec("GET", "/api/v1/workflows/")
@@ -846,14 +852,16 @@ async def test_shadow_evaluate_with_registered_route(session_factory):
 @pytest.mark.asyncio
 async def test_shadow_evaluate_with_principal(session_factory):
     """_shadow_evaluate with a real principal exercises RBAC evaluation."""
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
-    from syndicateclaw.authz.route_registry import get_route_spec
-    from syndicateclaw.db.models import Principal
+    import uuid
+    from unittest.mock import AsyncMock, MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock, AsyncMock
-    import uuid
+
+    from syndicateclaw.authz.route_registry import get_route_spec
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+    from syndicateclaw.db.models import Principal
 
     spec = get_route_spec("GET", "/api/v1/workflows/")
     if spec is None:
@@ -902,10 +910,12 @@ async def test_shadow_evaluate_with_principal(session_factory):
 
 @pytest.mark.asyncio
 async def test_scope_resolver_run_by_id_found(session_factory):
-    from syndicateclaw.authz.route_registry import resolve_run_by_id
-    from syndicateclaw.db.models import WorkflowDefinition as WFModel, WorkflowRun as RunModel
-    from unittest.mock import MagicMock
     import uuid
+    from unittest.mock import MagicMock
+
+    from syndicateclaw.authz.route_registry import resolve_run_by_id
+    from syndicateclaw.db.models import WorkflowDefinition as WFModel
+    from syndicateclaw.db.models import WorkflowRun as RunModel
     async with session_factory() as session:
         wf = WFModel(id=str(uuid.uuid4()), name=f"rr-test-{uuid.uuid4().hex[:8]}", version="1.0",
                      owning_scope_type="PLATFORM", owning_scope_id="platform")
@@ -926,10 +936,11 @@ async def test_scope_resolver_run_by_id_found(session_factory):
 
 @pytest.mark.asyncio
 async def test_scope_resolver_workflow_for_run_start_with_param(session_factory):
+    import uuid
+    from unittest.mock import MagicMock
+
     from syndicateclaw.authz.route_registry import resolve_workflow_for_run_start
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
-    from unittest.mock import MagicMock
-    import uuid
     async with session_factory() as session:
         wf = WFModel(id=str(uuid.uuid4()), name=f"rrs-test-{uuid.uuid4().hex[:8]}", version="1.0",
                      owning_scope_type="PLATFORM", owning_scope_id="platform")
@@ -946,9 +957,10 @@ async def test_scope_resolver_workflow_for_run_start_with_param(session_factory)
 @pytest.mark.asyncio
 async def test_scope_resolvers_remaining(session_factory):
     """Test all remaining scope resolvers in route_registry."""
-    from syndicateclaw.authz import route_registry as rr
-    from unittest.mock import MagicMock, AsyncMock
     import inspect
+    from unittest.mock import AsyncMock, MagicMock
+
+    from syndicateclaw.authz import route_registry as rr
 
     # Find all async resolve_* functions
     resolvers = [
@@ -958,7 +970,7 @@ async def test_scope_resolvers_remaining(session_factory):
             "resolve_workflow_for_run_start", "resolve_actor_scope"
         )
     ]
-    for name, fn in resolvers:
+    for _name, fn in resolvers:
         request = MagicMock()
         request.path_params = {}
         request.headers = MagicMock()
@@ -974,11 +986,13 @@ async def test_scope_resolvers_remaining(session_factory):
 
 @pytest.mark.asyncio
 async def test_resolve_route_template_no_match():
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+    from unittest.mock import MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock
+
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 
     async def homepage(request): return PlainTextResponse("ok")
     app = Starlette(routes=[Route("/api/v1/test/", homepage)])
@@ -995,16 +1009,16 @@ async def test_resolve_route_template_no_match():
 
 @pytest.mark.asyncio
 async def test_resolve_route_template_with_match():
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
+
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 
     async def handler(request): return PlainTextResponse("ok")
     app = Starlette(routes=[Route("/api/v1/items/{item_id}", handler)])
     middleware = ShadowRBACMiddleware(app)
 
-    from starlette.testclient import TestClient
     from unittest.mock import MagicMock
     request = MagicMock()
     request.app = app
@@ -1048,8 +1062,9 @@ async def test_rbac_evaluator_cache_with_redis(session_factory):
     except Exception:
         pytest.skip("Redis not available")
 
-    from syndicateclaw.authz.evaluator import RBACEvaluator
     import uuid
+
+    from syndicateclaw.authz.evaluator import RBACEvaluator
     principal_id = f"cache-test-{uuid.uuid4().hex[:8]}"
 
     async with session_factory() as session:
@@ -1080,11 +1095,13 @@ async def test_shadow_middleware_incr_metric_with_redis(session_factory):
     except Exception:
         pytest.skip("Redis not available")
 
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+    from unittest.mock import MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock
+
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 
     async def homepage(request): return PlainTextResponse("ok")
     app = Starlette(routes=[Route("/", homepage)])
@@ -1100,7 +1117,8 @@ async def test_shadow_middleware_incr_metric_with_redis(session_factory):
 @pytest.mark.asyncio
 async def test_shadow_evaluate_full_path_with_principal_and_redis(session_factory):
     """Full _shadow_evaluate with principal + Redis exercises disagreement classification."""
-    import os, uuid
+    import os
+    import uuid
     redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
     try:
         import redis.asyncio as aioredis
@@ -1109,13 +1127,15 @@ async def test_shadow_evaluate_full_path_with_principal_and_redis(session_factor
     except Exception:
         pytest.skip("Redis not available")
 
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
-    from syndicateclaw.authz.route_registry import get_route_spec
-    from syndicateclaw.db.models import Principal
+    from unittest.mock import AsyncMock, MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock, AsyncMock
+
+    from syndicateclaw.authz.route_registry import get_route_spec
+    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
+    from syndicateclaw.db.models import Principal
 
     spec = get_route_spec("GET", "/api/v1/workflows/")
     if spec is None:
@@ -1172,11 +1192,13 @@ async def test_shadow_update_metrics_with_redis(session_factory):
     except Exception:
         pytest.skip("Redis not available")
 
-    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware, DisagreementType
+    from unittest.mock import MagicMock
+
     from starlette.applications import Starlette
     from starlette.responses import PlainTextResponse
     from starlette.routing import Route
-    from unittest.mock import MagicMock
+
+    from syndicateclaw.authz.shadow_middleware import DisagreementType, ShadowRBACMiddleware
 
     async def homepage(request): return PlainTextResponse("ok")
     app = Starlette(routes=[Route("/", homepage)])
@@ -1207,15 +1229,16 @@ async def test_shadow_update_metrics_with_redis(session_factory):
 async def test_scope_resolver_approval_request_by_id(session_factory):
     """resolve_approval_request_by_id exercises the DB lookup path."""
     import inspect
-    from syndicateclaw.authz import route_registry as rr
     from unittest.mock import MagicMock
+
+    from syndicateclaw.authz import route_registry as rr
 
     # Find resolve functions not yet covered
     resolvers = {
         name: fn for name, fn in inspect.getmembers(rr, inspect.iscoroutinefunction)
         if name.startswith("resolve_") and "approval" in name.lower()
     }
-    for name, fn in resolvers.items():
+    for _name, fn in resolvers.items():
         request = MagicMock()
         request.path_params = {"request_id": "nonexistent-id"}
         async with session_factory() as session:
@@ -1227,14 +1250,15 @@ async def test_scope_resolver_approval_request_by_id(session_factory):
 async def test_all_route_registry_resolvers_with_missing_params(session_factory):
     """All scope resolvers handle missing path params gracefully."""
     import inspect
+
     from syndicateclaw.authz import route_registry as rr
 
     resolvers = [
         (name, fn) for name, fn in inspect.getmembers(rr, inspect.iscoroutinefunction)
         if name.startswith("resolve_")
     ]
-    from unittest.mock import MagicMock, AsyncMock
-    for name, fn in resolvers:
+    from unittest.mock import MagicMock
+    for _name, fn in resolvers:
         request = MagicMock()
         request.path_params = {}
         request.headers = MagicMock()
@@ -1752,12 +1776,12 @@ async def test_shadow_evaluate_disagreement_classifications_and_legacy_branches(
 
     from starlette.applications import Starlette
 
-    from syndicateclaw.authz.evaluator import AuthzResult, Decision
+    from syndicateclaw.authz.evaluator import Decision
+    from syndicateclaw.authz.route_registry import get_route_spec
     from syndicateclaw.authz.shadow_middleware import (
         DisagreementType,
         ShadowRBACMiddleware,
     )
-    from syndicateclaw.authz.route_registry import get_route_spec
     from syndicateclaw.db.models import Principal, Role, RoleAssignment
 
     actor_name = f"legacy-actor-{uuid.uuid4().hex[:8]}"
@@ -1851,7 +1875,13 @@ async def test_shadow_evaluate_disagreement_classifications_and_legacy_branches(
     req_no_sf.state.request_id = "req-2"
     req_no_sf.headers.get = MagicMock(return_value=None)
     req_no_sf.url.path = "/api/v1/policies/"
-    await middleware_no_sf._shadow_evaluate(req_no_sf, response, "POST", "/api/v1/policies/", actor_name)
+    await middleware_no_sf._shadow_evaluate(
+        req_no_sf,
+        response,
+        "POST",
+        "/api/v1/policies/",
+        actor_name,
+    )
 
     spec = get_route_spec("POST", "/api/v1/policies/")
     assert spec is not None
@@ -1860,11 +1890,12 @@ async def test_shadow_evaluate_disagreement_classifications_and_legacy_branches(
 
 
 def test_shadow_legacy_decision_and_deny_reason_helpers():
+    from starlette.applications import Starlette
+    from starlette.responses import Response
+
     from syndicateclaw.authz.evaluator import Decision
     from syndicateclaw.authz.route_registry import RouteAuthzSpec
     from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
-    from starlette.applications import Starlette
-    from starlette.responses import Response
 
     middleware = ShadowRBACMiddleware(Starlette())
     prefix_spec = RouteAuthzSpec(permission="policy:manage", legacy_check="prefix_admin")
@@ -1881,17 +1912,28 @@ def test_shadow_legacy_decision_and_deny_reason_helpers():
     assert middleware._evaluate_legacy(prefix_spec, "x", resp_403) == Decision.DENY
     assert middleware._evaluate_legacy(owner_spec, "x", resp_404) == Decision.DENY
 
-    assert middleware._legacy_deny_reason(prefix_spec, "admin:sec", resp_403) == "handler returned 403"
+    assert (
+        middleware._legacy_deny_reason(prefix_spec, "admin:sec", resp_403)
+        == "handler returned 403"
+    )
     assert "lacks admin prefix" in middleware._legacy_deny_reason(prefix_spec, "user:1", resp_500)
-    assert "ownership check failed" in middleware._legacy_deny_reason(owner_spec, "user:1", resp_404)
-    assert middleware._legacy_deny_reason(RouteAuthzSpec(permission="x"), "user:1", resp_500) == "HTTP 500"
+    assert "ownership check failed" in middleware._legacy_deny_reason(
+        owner_spec,
+        "user:1",
+        resp_404,
+    )
+    assert (
+        middleware._legacy_deny_reason(RouteAuthzSpec(permission="x"), "user:1", resp_500)
+        == "HTTP 500"
+    )
 
 
 @pytest.mark.asyncio
 async def test_shadow_record_and_metrics_non_happy_paths(session_factory):
+    from starlette.applications import Starlette
+
     from syndicateclaw.authz.evaluator import AuthzResult, Decision
     from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
-    from starlette.applications import Starlette
 
     class Pipe:
         def __init__(self):
@@ -1944,11 +1986,21 @@ async def test_shadow_record_and_metrics_non_happy_paths(session_factory):
         evaluation_latency_us=10,
     )
 
-    await middleware._emit_metrics(request, agreement=True, disagreement_type=None, rbac_result=result)
+    await middleware._emit_metrics(
+        request,
+        agreement=True,
+        disagreement_type=None,
+        rbac_result=result,
+    )
     assert "rbac.shadow.cache_hit" in app.state.redis_client.pipe.keys
 
     app.state.redis_client = RedisExplode()
-    await middleware._emit_metrics(request, agreement=True, disagreement_type=None, rbac_result=result)
+    await middleware._emit_metrics(
+        request,
+        agreement=True,
+        disagreement_type=None,
+        rbac_result=result,
+    )
 
     app_no_redis = Starlette()
     middleware_no_redis = ShadowRBACMiddleware(app_no_redis)
