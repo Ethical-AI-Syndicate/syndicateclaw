@@ -9,18 +9,20 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import WorkflowDefinition
-from syndicateclaw.services.organization_service import OrganizationService, RBAC_ROLE_PERMISSIONS
+from syndicateclaw.services.organization_service import RBAC_ROLE_PERMISSIONS, OrganizationService
 
 pytestmark = pytest.mark.integration
 
+SF = async_sessionmaker[AsyncSession]
+
 
 @pytest.mark.asyncio
-async def test_org_role_maps_to_rbac_role(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_role_maps_to_rbac_role(session_factory: SF) -> None:
     assert "org:read" in RBAC_ROLE_PERMISSIONS["viewer"]
 
 
 @pytest.mark.asyncio
-async def test_namespace_not_null_enforced(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_namespace_not_null_enforced(session_factory: SF) -> None:
     async with session_factory() as session, session.begin():
         r = await session.execute(
             text(
@@ -36,9 +38,7 @@ async def test_namespace_not_null_enforced(session_factory: async_sessionmaker[A
 
 
 @pytest.mark.asyncio
-async def test_cross_namespace_requires_impersonation(
-    session_factory: async_sessionmaker[AsyncSession],
-) -> None:
+async def test_cross_namespace_requires_impersonation(session_factory: SF) -> None:
     u = uuid.uuid4().hex[:8]
     async with session_factory() as session, session.begin():
         wf = WorkflowDefinition(
@@ -54,7 +54,7 @@ async def test_cross_namespace_requires_impersonation(
 
 
 @pytest.mark.asyncio
-async def test_org_isolation_workflows(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_isolation_workflows(session_factory: SF) -> None:
     u = uuid.uuid4().hex[:8]
     async with session_factory() as session, session.begin():
         a = WorkflowDefinition(
@@ -74,7 +74,7 @@ async def test_org_isolation_workflows(session_factory: async_sessionmaker[Async
 
 
 @pytest.mark.asyncio
-async def test_org_isolation_memory(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_isolation_memory(session_factory: SF) -> None:
     from syndicateclaw.db.models import MemoryRecord
 
     u = uuid.uuid4().hex[:8]
@@ -92,7 +92,7 @@ async def test_org_isolation_memory(session_factory: async_sessionmaker[AsyncSes
 
 
 @pytest.mark.asyncio
-async def test_org_quota_workflow_limit(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_quota_workflow_limit(session_factory: SF) -> None:
     from unittest.mock import MagicMock
 
     from fastapi import HTTPException
@@ -110,18 +110,18 @@ async def test_org_quota_workflow_limit(session_factory: async_sessionmaker[Asyn
 
 
 @pytest.mark.asyncio
-async def test_org_quota_storage_limit(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_quota_storage_limit(session_factory: SF) -> None:
     from fastapi import HTTPException
 
     async with session_factory() as session:
         from syndicateclaw.api.decorators.quota import json_value_byte_size
         from syndicateclaw.services.organization_service import get_storage_bytes_used
 
-        class O:
+        class _TinyOrg:
             quotas = {"storage_limit_bytes": 1}
             id = "x"
 
-        o = O()
+        o = _TinyOrg()
         vb = json_value_byte_size({"a": "b"})
         cur = await get_storage_bytes_used(session, o.id)
         if cur + vb > o.quotas["storage_limit_bytes"]:
@@ -131,7 +131,7 @@ async def test_org_quota_storage_limit(session_factory: async_sessionmaker[Async
 
 
 @pytest.mark.asyncio
-async def test_org_member_role_permissions(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_member_role_permissions(session_factory: SF) -> None:
     u = uuid.uuid4().hex[:8]
     oid = f"o-{u}"
     mid = f"m-{u}"
@@ -139,8 +139,14 @@ async def test_org_member_role_permissions(session_factory: async_sessionmaker[A
         await session.execute(
             text(
                 """
-                INSERT INTO organizations (id, name, display_name, owner_actor, namespace, status, quotas, settings, created_at, updated_at)
-                VALUES (:oid, :name, 'N1', 'alice', :ns, 'ACTIVE', '{}', '{}', NOW(), NOW())
+                INSERT INTO organizations (
+                    id, name, display_name, owner_actor, namespace, status,
+                    quotas, settings, created_at, updated_at
+                )
+                VALUES (
+                    :oid, :name, 'N1', 'alice', :ns, 'ACTIVE', '{}', '{}',
+                    NOW(), NOW()
+                )
                 """
             ),
             {"oid": oid, "name": f"n-{u}", "ns": f"ns-o-{u}"},
@@ -148,7 +154,9 @@ async def test_org_member_role_permissions(session_factory: async_sessionmaker[A
         await session.execute(
             text(
                 """
-                INSERT INTO organization_members (id, organization_id, actor, org_role, rbac_role, joined_at)
+                INSERT INTO organization_members (
+                    id, organization_id, actor, org_role, rbac_role, joined_at
+                )
                 VALUES (:mid, :oid, :actor, 'MEMBER', 'viewer', NOW())
                 """
             ),
@@ -161,7 +169,7 @@ async def test_org_member_role_permissions(session_factory: async_sessionmaker[A
 
 
 @pytest.mark.asyncio
-async def test_org_owner_manage_settings(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_owner_manage_settings(session_factory: SF) -> None:
     u = uuid.uuid4().hex[:8]
     oid = f"om-{u}"
     async with session_factory() as session:
@@ -188,8 +196,10 @@ async def test_org_owner_manage_settings(session_factory: async_sessionmaker[Asy
 
 
 @pytest.mark.asyncio
-async def test_org_deletion_blocks_new_runs(session_factory: async_sessionmaker[AsyncSession]) -> None:
+async def test_org_deletion_blocks_new_runs(session_factory: SF) -> None:
     from fastapi import HTTPException
+
+    _ = session_factory
 
     class Org:
         status = "DELETING"
