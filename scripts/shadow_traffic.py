@@ -27,7 +27,6 @@ def make_token(actor: str, scopes: list[str] | None = None) -> str:
     from datetime import timedelta
     return create_access_token(
         actor,
-        scopes or [],
         timedelta(hours=1),
         secret_key=SECRET_KEY,
     )

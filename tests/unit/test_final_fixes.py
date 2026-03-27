@@ -147,17 +147,23 @@ class TestEdDSAJWT:
         priv, pub = self._generate_ed25519_keypair()
 
         token = create_access_token(
-            "alice", ["read"], timedelta(hours=1),
-            algorithm="EdDSA", private_key=priv,
+            "alice",
+            timedelta(hours=1),
+            algorithm="EdDSA",
+            private_key=priv,
+            org_id="org-1",
+            org_role="ADMIN",
         )
         claims = decode_access_token(token, public_key=pub)
         assert claims["sub"] == "alice"
-        assert claims["permissions"] == ["read"]
+        assert claims.get("org_id") == "org-1"
+        assert "permissions" not in claims
 
     def test_hs256_still_works(self):
         from syndicateclaw.security.auth import create_access_token, decode_access_token
         token = create_access_token(
-            "bob", ["write"], timedelta(hours=1),
+            "bob",
+            timedelta(hours=1),
             secret_key="my-secret",
         )
         claims = decode_access_token(token, secret_key="my-secret")
@@ -169,8 +175,10 @@ class TestEdDSAJWT:
         priv, pub = self._generate_ed25519_keypair()
 
         token = create_access_token(
-            "charlie", ["admin"], timedelta(hours=1),
-            algorithm="EdDSA", private_key=priv,
+            "charlie",
+            timedelta(hours=1),
+            algorithm="EdDSA",
+            private_key=priv,
         )
         claims = decode_access_token(
             token, secret_key="wrong-secret", public_key=pub,
@@ -185,7 +193,8 @@ class TestEdDSAJWT:
     def test_expired_token_raises_jwt_error(self):
         from syndicateclaw.security.auth import JWTError, create_access_token, decode_access_token
         token = create_access_token(
-            "expired", [], timedelta(seconds=-1),
+            "expired",
+            timedelta(seconds=-1),
             secret_key="test",
         )
         with pytest.raises(JWTError):
