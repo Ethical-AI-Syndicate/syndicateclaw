@@ -333,6 +333,41 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         notes="Reconnect recovery endpoint returns run-scoped audit events.",
     ),
 
+    # ── Agents ─────────────────────────────────────────────────────────
+    ("POST", "/api/v1/agents"): RouteAuthzSpec(
+        permission="agent:register",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/agents"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    ("DELETE", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Soft-delete is enforced in AgentService.",
+    ),
+    ("POST", "/api/v1/agents/{id}/heartbeat"): RouteAuthzSpec(
+        permission="agent:heartbeat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
         permission="memory:write",
@@ -645,6 +680,12 @@ ROUTE_REGISTRY.update(
         ("DELETE", "/api/v1/api-keys/{id}"): "admin:*",
         ("GET", "/api/v1/api-keys/scopes"): None,
         ("POST", "/api/v1/providers/{name}/test"): "admin:*",
+        ("POST", "/api/v1/agents"): "agent:register",
+        ("GET", "/api/v1/agents"): "agent:read",
+        ("GET", "/api/v1/agents/{id}"): "agent:read",
+        ("PUT", "/api/v1/agents/{id}"): "agent:manage",
+        ("DELETE", "/api/v1/agents/{id}"): "agent:manage",
+        ("POST", "/api/v1/agents/{id}/heartbeat"): "agent:heartbeat",
         ("GET", "/healthz"): None,
         ("GET", "/readyz"): None,
         ("GET", "/api/v1/info"): None,
