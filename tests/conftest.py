@@ -159,6 +159,8 @@ async def db_engine() -> AsyncEngine:
     )
     engine = create_async_engine(database_url, future=True)
     async with engine.begin() as conn:
+        # Recreate schema so new columns (e.g. namespace) match ORM; create_all does not ALTER.
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     try:
         yield engine

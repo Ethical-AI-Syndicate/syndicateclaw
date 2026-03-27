@@ -10,6 +10,7 @@ from sqlalchemy import delete, text
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from syndicateclaw.config import Settings
+from syndicateclaw.db.base import Base
 from syndicateclaw.db.models import WorkflowDefinition, WorkflowSchedule
 from syndicateclaw.services.schedule_service import (
     InvalidScheduleError,
@@ -32,6 +33,9 @@ async def engine() -> AsyncEngine:
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test",
     )
     db_engine = create_async_engine(url)
+    async with db_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
     try:
         yield db_engine
     finally:
@@ -298,7 +302,12 @@ async def wf_definitions(session_factory: async_sessionmaker) -> None:
             delete(WorkflowDefinition).where(WorkflowDefinition.id.in_(wf_ids))
         )
         for wf_id in wf_ids:
-            wf = WorkflowDefinition(id=wf_id, name=f"test-{wf_id}", version="1")
+            wf = WorkflowDefinition(
+                id=wf_id,
+                name=f"test-{wf_id}",
+                version="1",
+                namespace="default",
+            )
             session.add(wf)
 
 

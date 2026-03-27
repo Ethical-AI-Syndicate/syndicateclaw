@@ -96,6 +96,7 @@ async def test_agent_node_timeout(engine: AsyncEngine) -> None:
             version="1",
             nodes=[],
             edges=[],
+            namespace="default",
         )
         session.add(wf)
         await session.flush()
@@ -103,6 +104,7 @@ async def test_agent_node_timeout(engine: AsyncEngine) -> None:
             workflow_id=wf.id,
             workflow_version="1",
             status="WAITING_AGENT_RESPONSE",
+            namespace="default",
             state={
                 "_waiting_agent_response": {
                     "conversation_id": "conv-timeout",

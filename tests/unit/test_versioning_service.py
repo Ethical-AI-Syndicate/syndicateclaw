@@ -52,6 +52,7 @@ async def _workflow_id(service: VersioningService) -> str:
             nodes=[],
             edges=[],
             metadata_={},
+            namespace="default",
         )
         session.add(wf)
         await session.flush()
@@ -102,6 +103,7 @@ async def test_version_pinning_on_run(versioning_service: VersioningService) -> 
             workflow_version="2",
             status="PENDING",
             state={},
+            namespace="default",
         )
         session.add(run)
         await session.flush()
@@ -137,6 +139,7 @@ async def test_pinned_run_unaffected_by_rollback(versioning_service: VersioningS
             workflow_version="2",
             status="RUNNING",
             state={},
+            namespace="default",
         )
         session.add(run)
         await session.flush()

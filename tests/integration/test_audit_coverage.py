@@ -88,6 +88,7 @@ async def test_audit_export_returns_ordered_events(
                 edges={},
                 owner="test",
                 metadata_={},
+                namespace="default",
             )
         )
         session.add(
@@ -99,6 +100,7 @@ async def test_audit_export_returns_ordered_events(
                 state={},
                 initiated_by="test",
                 version_manifest={},
+                namespace="default",
             )
         )
         for i in range(3):
