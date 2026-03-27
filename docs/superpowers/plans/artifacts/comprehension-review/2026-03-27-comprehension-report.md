@@ -769,3 +769,30 @@ v1.2.0 progress checkpoint (2026-03-27T07:27:33+00:00)
   - `.venv/bin/pytest tests/unit/test_streaming_endpoint.py -q` -> 2 passed
   - `.venv/bin/ruff check src tests` -> clean
   - `.venv/bin/mypy src` -> clean
+
+## v1.2.0 Code-Level Completion Confirmation (2026-03-27)
+
+All code-level acceptance criteria from revised spec §18 confirmed:
+
+✓ ProviderService pipeline with InferenceRouter, circuit breaker, and YAML config
+✓ Fatal ConfigurationError on missing provider API key at startup
+✓ Routing rules first-match-wins; claude-* routes to Anthropic before * catch-all
+✓ LLM node handler calls ProviderService (not adapter directly)
+✓ SandboxedEnvironment with StrictUndefined; sandbox tests pass
+✓ allow_tool_calls defaults to false; tool calls gated by policy engine when enabled
+✓ Idempotency key is {run_id}:{node_id}:{attempt}; retries bypass cache
+✓ Streaming tokens: single-use, run-scoped, 5-min TTL
+✓ Primary JWT in ?token= returns 401 (streaming token required)
+✓ GET /api/v1/runs/{id}/events?since= endpoint for reconnect recovery
+✓ llm_complete SSE event contains only usage + timestamp (no response body)
+✓ All metrics are Counter or Histogram; no high-cardinality labels
+✓ POST /api/v1/providers/{name}/test requires admin:*; generic error only
+✓ system:engine configured with run:control + tool:execute at startup
+✓ All new routes in RBAC route registry
+✓ Migration 008 streaming_tokens includes workflow_id column
+✓ Provider integration tests gated behind requires_api_keys + vault secrets
+
+Operational handoff (platform team):
+- Provider API keys must be injected via vault before any LLM workflows run
+- system:engine RBAC assignment must be verified post-deploy via readyz check
+- SSE streaming token TTL (default 300s) tunable via SYNDICATECLAW_STREAMING_TOKEN_TTL_SECONDS
