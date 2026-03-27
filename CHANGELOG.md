@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0] — 2026-03-27
+
+### Added
+
+- Automated security regression suite under `tests/security/` (pentest marker): unauthenticated API behavior, SSRF validation, workflow safety limits, JWT and checkpoint checks, DX/builder and plugin guardrails; some scenarios skipped pending heavier RBAC/DB harnesses.
+- Chaos test scaffolding under `tests/chaos/` (chaos marker), skipped in CI until staging/Docker hooks exist.
+- `scripts/check_benchmark_regression.py` and `tests/perf/test_smoke_benchmark.py` for scheduled pytest-benchmark JSON vs `tests/perf/baseline_v1.4.0.json` (placeholder baseline skips strict comparison until a real baseline is captured).
+- CI: `security_scan` runs Bandit and pip-audit with JSON reports and `scripts/check_audit_gates.py`; optional manual `pentest` and `chaos_tests` jobs on `release/v2.0.0`; scheduled `benchmark` job.
+
+### Notes
+
+- Replace `tests/perf/baseline_v1.4.0.json` with a captured benchmark artifact before treating regression checks as authoritative.
+
 ## [1.0.0] — 2026-03-25
 
 ### Added

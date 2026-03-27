@@ -52,11 +52,71 @@ security_scan:
     - pip install -e ".[dev]"
     - pip install bandit pip-audit
   script:
-    - bandit -r src/ -ll -x tests
-    - pip-audit
+    - bandit -r src/ -ll -x tests --format json -o bandit_report.json
+    - pip-audit -f json -o audit_report.json
+    - python scripts/check_audit_gates.py audit_report.json bandit_report.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
+
+pentest:
+  stage: integration
+  image: python:3.12-slim
+  services:
+    - postgres:16
+    - redis:7
+  variables:
+    POSTGRES_USER: syndicateclaw
+    POSTGRES_DB: syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:${POSTGRES_PASSWORD}@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+  secrets:
+    POSTGRES_PASSWORD:
+      vault: ci/syndicateclaw/postgres_password@secret
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - pip install -U pip
+    - pip install -e ".[dev]"
+    - pip install -e ./sdk
+  script:
+    - pytest tests/security/ -m pentest -v --tb=short
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "release/v2.0.0"'
+      when: manual
+
+chaos_tests:
+  stage: integration
+  image: python:3.12-slim
+  variables:
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    PIP_NO_CACHE_DIR: "1"
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - pip install -U pip
+    - pip install -e ".[dev]"
+  script:
+    - pytest tests/chaos/ -m chaos -v --tb=short
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "release/v2.0.0"'
+      when: manual
+
+benchmark:
+  stage: test
+  image: python:3.12-slim
+  variables:
+    PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    PIP_NO_CACHE_DIR: "1"
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - pip install -U pip
+    - pip install -e ".[dev]"
+    - pip install pytest-benchmark
+  script:
+    - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json -q
+    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v1.4.0.json
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 docker_build:
   stage: build

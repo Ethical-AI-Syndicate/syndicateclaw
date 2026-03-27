@@ -882,3 +882,11 @@ Pending (platform team):
 - SDK (`sdk/`): exceptions, `ensure_compatible()` version gate, `WorkflowBuilder`, `LocalRuntime` production guard, `StreamingSession`; unit tests in `tests/unit/test_sdk_v15.py`
 - Security gate script: `scripts/check_audit_gates.py`; ADRs 0002–0014 added; `docs/api/permission-table.md` index
 - Pending: full React builder app; 26 pentest + 11 chaos scenarios; CI jobs for pip-audit/bandit/locust; PyPI publish; `release/v2.0.0` tag and Docker push when ops ready
+
+## v2.0.0 Close-out (2026-03-27)
+
+- `tests/security/`: pentest-marked automated regressions (core, agent, enterprise, DX); skipped scenarios documented where async DB or RBAC harness is heavy; `tests/security/conftest.py` loads integration fixtures for ASGI/JWT tests.
+- `tests/chaos/`: chaos-marked stubs (skipped) for Postgres/Redis/DLQ scenarios until staging controls exist.
+- `scripts/check_benchmark_regression.py`; `tests/perf/test_smoke_benchmark.py`; `tests/perf/baseline_v1.4.0.json` remains a placeholder until a real baseline is recorded.
+- `.gitlab-ci.yml`: `security_scan` uses JSON Bandit/pip-audit plus `check_audit_gates.py`; manual `pentest` and `chaos_tests` on `release/v2.0.0`; scheduled `benchmark` runs smoke benchmark + regression helper.
+- `CHANGELOG.md` [2.0.0] documents the above; replace perf baseline before enforcing regression thresholds in production CI.

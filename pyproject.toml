@@ -52,6 +52,7 @@ dev = [
     "types-jsonschema==4.23.0.20240813",
     "types-PyYAML==6.0.12.20241230",
     "locust>=2.20.0",
+    "pytest-benchmark>=4.0.0",
 ]
 
 [tool.hatch.build.targets.wheel]
