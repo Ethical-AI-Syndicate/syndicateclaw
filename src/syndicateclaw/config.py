@@ -141,9 +141,9 @@ class Settings(BaseSettings):
         description="Only these host suffixes (e.g. models.dev, sub.models.dev) may be fetched.",
     )
     rbac_enforcement_enabled: bool = Field(
-        default=False,
+        default=True,
         description="When True, RBAC decisions deny before the route runs (403). "
-        "When False (default), RBAC runs in shadow mode only.",
+        "When False, RBAC runs in shadow mode only.",
     )
     allow_unscoped_keys: bool = Field(
         default=True,

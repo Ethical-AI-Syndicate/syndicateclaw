@@ -33,7 +33,7 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
         os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0"),
     )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
-    monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
+    monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 
 
 @pytest.fixture()
