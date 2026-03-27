@@ -271,6 +271,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         StreamingTokenService,
     )
     from syndicateclaw.services.subscription_service import SubscriptionService
+    from syndicateclaw.tasks.agent_response_resume import run_agent_response_resume_loop
     from syndicateclaw.tasks.message_delivery import run_message_delivery_loop
     from syndicateclaw.tools.inference_tools import build_inference_tools
 
@@ -361,6 +362,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         ),
         name="message-delivery-loop",
     )
+    agent_response_resume_task = asyncio.create_task(
+        run_agent_response_resume_loop(
+            session_factory,
+            message_service,
+            poll_interval_seconds=5,
+        ),
+        name="agent-response-resume-loop",
+    )
 
     logger.info(
         "app.startup",
@@ -380,6 +389,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     message_delivery_task.cancel()
     with suppress(asyncio.CancelledError):
         await message_delivery_task
+    agent_response_resume_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await agent_response_resume_task
     await engine.dispose()
     await redis_client.aclose()
 

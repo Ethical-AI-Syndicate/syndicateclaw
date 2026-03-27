@@ -240,6 +240,21 @@ class MessageService:
             result = await session.execute(stmt)
             return list(result.scalars().all())
 
+    async def delivered_responses(self, *, limit: int = 200) -> list[AgentMessage]:
+        stmt: Select[tuple[AgentMessage]] = (
+            select(AgentMessage)
+            .where(
+                AgentMessage.message_type == "RESPONSE",
+                AgentMessage.status == "DELIVERED",
+                AgentMessage.expires_at > datetime.now(UTC),
+            )
+            .order_by(AgentMessage.created_at.asc())
+            .limit(limit)
+        )
+        async with self._session_factory() as session:
+            result = await session.execute(stmt)
+            return list(result.scalars().all())
+
     async def mark_delivery_failed(self, message_id: str) -> None:
         async with self._session_factory() as session, session.begin():
             row = await session.get(AgentMessage, message_id)
@@ -254,6 +269,14 @@ class MessageService:
                 return
             row.status = "DELIVERED"
             row.delivered_at = datetime.now(UTC)
+
+    async def mark_response_consumed(self, message_id: str) -> None:
+        async with self._session_factory() as session, session.begin():
+            row = await session.get(AgentMessage, message_id)
+            if row is None:
+                return
+            row.status = "ACKED"
+            row.acked_at = datetime.now(UTC)
 
     async def relay(self, message: AgentMessage) -> list[AgentMessage]:
         payload = self._router.relay_payload(message)

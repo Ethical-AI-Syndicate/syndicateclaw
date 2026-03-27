@@ -37,6 +37,7 @@ class NodeType(str, enum.Enum):
     ACTION = "ACTION"
     DECISION = "DECISION"
     APPROVAL = "APPROVAL"
+    AGENT = "AGENT"
     CHECKPOINT = "CHECKPOINT"
 
 

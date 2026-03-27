@@ -28,6 +28,7 @@ from syndicateclaw.models import (
 from syndicateclaw.orchestrator.engine import (
     ExecutionContext,
     NodeResult,
+    WaitForAgentResponseError,
     WaitForApprovalError,
     safe_eval_condition,
 )
@@ -342,9 +343,87 @@ async def _process_llm_tool_calls(
             audit_service=context.audit_service,
             checkpoint_store=context.checkpoint_store,
             provider_service=context.provider_service,
+            message_service=context.message_service,
         )
         result = await tool_executor.execute(name, args, tool_context)
         state.setdefault("_llm_tool_results", []).append({"tool": name, "result": result})
+
+
+def _render_template_dict(value: Any, template_context: dict[str, Any]) -> Any:
+    if isinstance(value, str):
+        return render_message_template(value, template_context)
+    if isinstance(value, list):
+        return [_render_template_dict(item, template_context) for item in value]
+    if isinstance(value, dict):
+        return {k: _render_template_dict(v, template_context) for k, v in value.items()}
+    return value
+
+
+async def agent_send_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
+    """Send a workflow message to an agent and optionally wait for response."""
+    message_service = context.message_service or context.config.get("message_service")
+    if message_service is None:
+        raise RuntimeError("message_service is required for agent_send handler")
+
+    recipient_id = context.config.get("recipient_id")
+    recipient_name = context.config.get("recipient_name")
+    recipient = str(recipient_id or recipient_name or "")
+    fallback_strategy = str(context.config.get("fallback_strategy", "fail")).lower()
+
+    message_type = str(context.config.get("message_type", "REQUEST"))
+    response_key = str(context.config.get("response_key", "agent_response"))
+    wait_for_response = bool(context.config.get("wait_for_response", False))
+    timeout_seconds = int(context.config.get("response_timeout_seconds", 300))
+    priority = str(context.config.get("priority", "NORMAL"))
+    namespace = str(context.config.get("namespace", state.get("namespace", "default")))
+    actor = str(context.config.get("actor", "system:engine"))
+
+    topic: str | None = None
+    if not recipient:
+        if fallback_strategy == "broadcast":
+            message_type = "BROADCAST"
+            recipient = ""
+        elif fallback_strategy == "queue":
+            capability = str(context.config.get("capability", "default"))
+            topic = f"capability:{capability}"
+        else:
+            raise ValueError("agent_send requires recipient_id or recipient_name")
+
+    template_context = {"state": state, "context": context.config}
+    content_cfg = context.config.get("content", {})
+    if not isinstance(content_cfg, dict):
+        raise ValueError("agent_send config.content must be an object")
+    content = _render_template_dict(content_cfg, template_context)
+
+    conversation_id = str(ULID())
+    sent_rows = await message_service.send(
+        actor=actor,
+        namespace=namespace,
+        message_type=message_type,
+        content=content,
+        recipient=recipient or None,
+        topic=topic,
+        conversation_id=conversation_id,
+        priority=priority,
+    )
+    if not sent_rows:
+        raise RuntimeError("agent_send did not persist any message")
+    first = sent_rows[0]
+
+    if not wait_for_response:
+        state[response_key] = {
+            "message_id": first.id,
+            "conversation_id": conversation_id,
+        }
+        return NodeResult(output_state=state)
+
+    state["_waiting_agent_response"] = {
+        "conversation_id": conversation_id,
+        "response_key": response_key,
+        "requested_at": _utcnow().isoformat(),
+        "timeout_seconds": timeout_seconds,
+    }
+    raise WaitForAgentResponseError(f"Waiting for agent response on conversation {conversation_id}")
 
 
 async def decision_handler(
@@ -380,5 +459,6 @@ BUILTIN_HANDLERS: dict[str, Any] = {
     "checkpoint": checkpoint_handler,
     "approval": approval_handler,
     "llm": llm_handler,
+    "agent_send": agent_send_handler,
     "decision": decision_handler,
 }
