@@ -73,6 +73,7 @@ markers = [
     "requires_api_keys: marks tests that require real provider API keys",
     "pentest: security penetration scenarios (v2.0.0 gate)",
     "chaos: chaos / failure injection scenarios (v2.0.0 gate)",
+    "perf: pytest-benchmark smoke (run explicitly or in scheduled benchmark job)",
 ]
 
 [tool.mypy]
