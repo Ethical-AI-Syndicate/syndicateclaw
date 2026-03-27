@@ -84,6 +84,14 @@ def get_agent_service(request: Request) -> Any:
     return _get_service(request, "agent_service")
 
 
+def get_message_service(request: Request) -> Any:
+    return _get_service(request, "message_service")
+
+
+def get_subscription_service(request: Request) -> Any:
+    return _get_service(request, "subscription_service")
+
+
 def get_inference_catalog(request: Request) -> Any:
     """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
     return _get_service(request, "inference_catalog")

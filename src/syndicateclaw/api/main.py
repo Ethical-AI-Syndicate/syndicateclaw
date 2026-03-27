@@ -263,11 +263,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from syndicateclaw.inference.idempotency import IdempotencyStore
     from syndicateclaw.inference.registry import ProviderRegistry
     from syndicateclaw.inference.service import ProviderService
+    from syndicateclaw.messaging.router import MessageRouter
     from syndicateclaw.services.agent_service import AgentService
+    from syndicateclaw.services.message_service import MessageService
     from syndicateclaw.services.streaming_token_service import (
         StreamingTokenRepository,
         StreamingTokenService,
     )
+    from syndicateclaw.services.subscription_service import SubscriptionService
+    from syndicateclaw.tasks.message_delivery import run_message_delivery_loop
     from syndicateclaw.tools.inference_tools import build_inference_tools
 
     provider_config_loader = ProviderConfigLoader(yaml_path)
@@ -300,6 +304,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         session_factory,
         heartbeat_timeout_seconds=getattr(settings, "agent_heartbeat_timeout_seconds", 60),
     )
+    subscription_service = SubscriptionService(session_factory, agent_service=agent_service)
+    message_router = MessageRouter(
+        session_factory,
+        max_hops=settings.message_max_hops,
+    )
+    message_service = MessageService(
+        session_factory,
+        agent_service=agent_service,
+        subscription_service=subscription_service,
+        router=message_router,
+        redis_client=redis_client,
+    )
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)
 
@@ -309,6 +325,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.provider_service = provider_service
     app.state.streaming_token_service = streaming_token_service
     app.state.agent_service = agent_service
+    app.state.subscription_service = subscription_service
+    app.state.message_service = message_service
 
     app.state.audit_service = audit_service
     app.state.memory_service = memory_service
@@ -335,6 +353,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         ),
         name="agent-heartbeat-expiry-loop",
     )
+    message_delivery_task = asyncio.create_task(
+        run_message_delivery_loop(
+            message_service,
+            session_factory,
+            poll_interval_seconds=5,
+        ),
+        name="message-delivery-loop",
+    )
 
     logger.info(
         "app.startup",
@@ -351,6 +377,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     heartbeat_task.cancel()
     with suppress(asyncio.CancelledError):
         await heartbeat_task
+    message_delivery_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await message_delivery_task
     await engine.dispose()
     await redis_client.aclose()
 
