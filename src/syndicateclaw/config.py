@@ -170,6 +170,11 @@ class Settings(BaseSettings):
             "agents are marked OFFLINE."
         ),
     )
+    message_max_hops: int = Field(
+        default=10,
+        ge=1,
+        description="Maximum relay hops for agent messages before forced termination.",
+    )
     runtime_enabled: bool = Field(
         default=False,
         description="When True, register experimental runtime/skill routes (Phase 1).",
