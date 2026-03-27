@@ -11,11 +11,14 @@ They must not have side effects. A None return signals scope resolution failure.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
+
+from syndicateclaw.authz.permissions import PERMISSION_VOCABULARY
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -514,3 +517,121 @@ def get_scope_resolver(
 def get_all_registered_routes() -> list[tuple[str, str]]:
     """Return all registered route keys for validation against app routes."""
     return list(ROUTE_PERMISSION_MAP.keys())
+
+
+_ULID_RE = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+_UUID_RE = re.compile(
+    r"^[0-9a-fA-F]{8}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{12}$"
+)
+
+
+def _normalize_path(path: str) -> str:
+    """Normalize runtime paths to registry templates.
+
+    Replaces ULID- or UUID-like path segments with ``{id}`` so dynamic
+    route lookups can be resolved via static registry entries.
+    """
+
+    if not path:
+        return path
+
+    trimmed = path.rstrip("/")
+    if not trimmed:
+        return "/"
+
+    parts = trimmed.split("/")
+    normalized: list[str] = []
+    for idx, part in enumerate(parts):
+        if idx == 0:
+            normalized.append(part)
+            continue
+        if _ULID_RE.match(part) or _UUID_RE.match(part):
+            normalized.append("{id}")
+        else:
+            normalized.append(part)
+
+    return "/".join(normalized)
+
+
+ROUTE_REGISTRY: dict[tuple[str, str], str | None] = {
+    (
+        method,
+        path,
+    ): (
+        spec.permission
+        if spec.permission in PERMISSION_VOCABULARY
+        else "admin:*"
+    )
+    for (method, path), spec in ROUTE_PERMISSION_MAP.items()
+}
+ROUTE_REGISTRY.update(
+    {
+        # v1.1.0 revised route matrix (forward-compatible entries)
+        ("GET", "/api/v1/workflows"): "workflow:read",
+        ("POST", "/api/v1/workflows"): "workflow:create",
+        ("GET", "/api/v1/workflows/{id}"): "workflow:read",
+        ("PUT", "/api/v1/workflows/{id}"): "workflow:manage",
+        ("DELETE", "/api/v1/workflows/{id}"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/runs"): "run:read",
+        ("POST", "/api/v1/workflows/{id}/runs"): "run:create",
+        ("GET", "/api/v1/runs/{id}"): "run:read",
+        ("POST", "/api/v1/runs/{id}/pause"): "run:control",
+        ("POST", "/api/v1/runs/{id}/resume"): "run:control",
+        ("POST", "/api/v1/runs/{id}/cancel"): "run:control",
+        ("POST", "/api/v1/runs/{id}/replay"): "run:replay",
+        ("GET", "/api/v1/runs/{id}/nodes"): "run:read",
+        ("POST", "/api/v1/approvals/{id}/approve"): "approval:decide",
+        ("POST", "/api/v1/approvals/{id}/reject"): "approval:decide",
+        ("GET", "/api/v1/approvals/{id}"): "approval:read",
+        ("GET", "/api/v1/approvals"): "approval:read",
+        ("POST", "/api/v1/policies"): "policy:manage",
+        ("GET", "/api/v1/policies"): "policy:read",
+        ("GET", "/api/v1/policies/{id}"): "policy:read",
+        ("PUT", "/api/v1/policies/{id}"): "policy:manage",
+        ("DELETE", "/api/v1/policies/{id}"): "policy:manage",
+        ("GET", "/api/v1/tools"): "tool:read",
+        ("POST", "/api/v1/tools/{name}/execute"): "tool:execute",
+        ("GET", "/api/v1/memory"): "memory:read",
+        ("POST", "/api/v1/memory"): "memory:write",
+        ("GET", "/api/v1/memory/{id}"): "memory:read",
+        ("PUT", "/api/v1/memory/{id}"): "memory:update",
+        ("DELETE", "/api/v1/memory/{id}"): "memory:delete",
+        ("GET", "/api/v1/memory/{id}/lineage"): "memory:read",
+        ("GET", "/api/v1/audit"): "audit:read",
+        ("GET", "/api/v1/api-keys"): "admin:*",
+        ("POST", "/api/v1/api-keys"): "admin:*",
+        ("DELETE", "/api/v1/api-keys/{id}"): "admin:*",
+        ("GET", "/api/v1/api-keys/scopes"): None,
+        ("GET", "/healthz"): None,
+        ("GET", "/readyz"): None,
+        ("GET", "/api/v1/info"): None,
+    }
+)
+
+
+def get_required_permission(method: str, path: str) -> str | None | str:
+    """Resolve required permission for an HTTP request.
+
+    Returns:
+      - permission string for protected route
+      - ``None`` for exempt/public routes
+      - ``"DENY"`` when route is not registered
+    """
+
+    normalized = _normalize_path(path)
+    key = (method.upper(), normalized)
+
+    if key in ROUTE_REGISTRY:
+        return ROUTE_REGISTRY[key]
+
+    # Compatibility lookup for routes registered with trailing slash.
+    alt_path = f"{normalized}/" if not normalized.endswith("/") else normalized[:-1]
+    alt_key = (method.upper(), alt_path)
+    if alt_key in ROUTE_REGISTRY:
+        return ROUTE_REGISTRY[alt_key]
+
+    return "DENY"
