@@ -431,6 +431,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Pull models.dev JSON (SSRF-hardened); merge into ModelCatalog only.",
     ),
+    ("POST", "/api/v1/providers/{name}/test"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Connectivity check endpoint; generic unreachable response on errors.",
+    ),
 
     # ── Tools ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/tools/"): RouteAuthzSpec(
@@ -638,6 +644,7 @@ ROUTE_REGISTRY.update(
         ("POST", "/api/v1/api-keys"): "admin:*",
         ("DELETE", "/api/v1/api-keys/{id}"): "admin:*",
         ("GET", "/api/v1/api-keys/scopes"): None,
+        ("POST", "/api/v1/providers/{name}/test"): "admin:*",
         ("GET", "/healthz"): None,
         ("GET", "/readyz"): None,
         ("GET", "/api/v1/info"): None,

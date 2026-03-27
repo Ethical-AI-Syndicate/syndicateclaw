@@ -17,8 +17,11 @@ from syndicateclaw.api.dependencies import (
     get_settings,
 )
 from syndicateclaw.config import Settings
+from syndicateclaw.inference.adapters.factory import adapter_for
 from syndicateclaw.inference.catalog_sync.modelsdev import ModelsDevSyncResult
 from syndicateclaw.inference.catalog_sync.runner import run_models_dev_catalog_sync
+from syndicateclaw.inference.service import _resolve_auth
+from syndicateclaw.inference.types import ChatInferenceRequest, ChatMessage
 
 logger = structlog.get_logger(__name__)
 
@@ -110,3 +113,33 @@ async def sync_models_dev_catalog(
         status_code=status_code,
         content=result.model_dump(mode="json"),
     )
+
+
+@router.post("/{name}/test", response_model=None)
+async def test_provider_connectivity(
+    name: str,
+    actor: str = Depends(get_current_actor),  # noqa: B008
+    loader: Any = Depends(get_provider_loader),  # noqa: B008
+) -> Any:
+    _ = actor
+    try:
+        cfg, _ver = loader.current()
+        provider = next((p for p in cfg.providers if p.name == name or p.id == name), None)
+        if provider is None:
+            return JSONResponse({"status": "unreachable", "provider": name}, status_code=502)
+        adapter = adapter_for(provider.adapter_protocol)
+        api_key, _api_key_secondary = _resolve_auth(provider)
+        req = ChatInferenceRequest(
+            messages=[ChatMessage(role="user", content="ping")],
+            actor=actor,
+            trace_id="provider-test",
+            model_id=(provider.allowed_models[0] if provider.allowed_models else None),
+            provider_id=provider.id,
+        )
+        await adapter.infer_chat(provider, req, api_key=api_key, bearer_token=None)
+        return {"status": "ok", "provider": name}
+    except Exception:
+        return JSONResponse(
+            {"status": "unreachable", "provider": name},
+            status_code=502,
+        )
