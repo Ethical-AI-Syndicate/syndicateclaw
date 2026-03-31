@@ -11,24 +11,31 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import make_asgi_app
 from sqlalchemy import text
 
+from syndicateclaw import __version__
 from syndicateclaw.api.middleware import (
     AuditMiddleware,
     PrometheusMetricsMiddleware,
     RequestIDMiddleware,
 )
 from syndicateclaw.api.rate_limit import RateLimitMiddleware
+from syndicateclaw.api.routers.admin import router as admin_router
 from syndicateclaw.api.routes import ALL_ROUTERS
 from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.config import Settings
+from syndicateclaw.connectors.discord.bot import router as discord_router
+from syndicateclaw.connectors.registry import build_registry
+from syndicateclaw.connectors.slack.bot import router as slack_router
+from syndicateclaw.connectors.telegram.bot import router as telegram_router
 from syndicateclaw.middleware import RBACMiddleware
 from syndicateclaw.middleware.csrf import BuilderCSRFMiddleware
 
 logger = structlog.get_logger(__name__)
 
-VERSION = "0.1.0"
+VERSION = __version__
 
 
 async def configure_system_engine(session_factory: Any) -> None:
@@ -294,6 +301,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         audit_service=audit_service,
         idempotency_store=idempotency_store,
     )
+    connector_registry = build_registry(settings, provider_service)
+    app.state.connector_registry = connector_registry
+    await connector_registry.start_all()
     streaming_token_repository = StreamingTokenRepository(session_factory)
     streaming_token_service = StreamingTokenService(
         streaming_token_repository,
@@ -424,6 +434,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
     logger.info("app.shutdown")
+    await connector_registry.stop_all()
     heartbeat_task.cancel()
     with suppress(asyncio.CancelledError):
         await heartbeat_task
@@ -473,6 +484,15 @@ def create_app() -> FastAPI:
 
     for router in ALL_ROUTERS:
         app.include_router(router)
+
+    app.include_router(admin_router)
+    app.include_router(telegram_router, prefix="/webhooks/telegram")
+    app.include_router(discord_router, prefix="/webhooks/discord")
+    app.include_router(slack_router, prefix="/webhooks/slack")
+
+    _console = Path(settings.console_static_dir)
+    if settings.console_enabled and _console.exists():
+        app.mount("/console", StaticFiles(directory=_console, html=True), name="console")
 
     app.mount("/metrics", make_asgi_app())
 

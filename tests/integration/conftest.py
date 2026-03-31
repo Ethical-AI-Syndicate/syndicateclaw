@@ -9,9 +9,13 @@ import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
+from sqlalchemy.exc import ArgumentError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
+
+
+_DEFAULT_DB_URL = "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
 
 
 @pytest.fixture(autouse=True)
@@ -19,18 +23,15 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure required env vars are set for Settings() construction."""
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
-        os.environ.get(
-            "SYNDICATECLAW_DATABASE_URL",
-            "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
-        ),
+        os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL,
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_SECRET_KEY",
-        os.environ.get("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production"),
+        os.environ.get("SYNDICATECLAW_SECRET_KEY") or "test-secret-key-not-for-production",
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0"),
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
     )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
@@ -52,6 +53,8 @@ async def session_factory(_integration_env: None) -> async_sessionmaker[AsyncSes
             yield sf
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+    except ArgumentError as exc:
+        pytest.skip(f"Integration test database URL invalid: {exc}")
     except Exception as exc:
         if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
@@ -116,9 +119,8 @@ async def _cancel_stale_runs(_integration_env: None) -> None:
     """Cancel stale PENDING/RUNNING runs before each test (avoids concurrency limit)."""
     import os
 
-    from sqlalchemy import text
     from sqlalchemy.ext.asyncio import create_async_engine
-    url = os.environ.get("SYNDICATECLAW_DATABASE_URL", "")
+    url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or ""
     if not url:
         return
     try:

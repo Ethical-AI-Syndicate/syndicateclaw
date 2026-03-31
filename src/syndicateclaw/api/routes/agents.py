@@ -116,6 +116,25 @@ async def list_agents(
     return list(rows)
 
 
+@router.get("/", response_model=list[AgentResponse])
+async def list_agents_trailing_slash(
+    namespace: str | None = Q_NAMESPACE,
+    capability: str | None = Q_CAPABILITY,
+    status_filter: str | None = Q_STATUS,
+    name: str | None = Q_NAME,
+    actor: str = DEP_CURRENT_ACTOR,
+    agent_service: Any = DEP_AGENT_SERVICE,
+) -> list[Any]:
+    return await list_agents(
+        namespace=namespace,
+        capability=capability,
+        status_filter=status_filter,
+        name=name,
+        actor=actor,
+        agent_service=agent_service,
+    )
+
+
 @router.get("/{agent_id}", response_model=AgentResponse)
 async def get_agent(
     agent_id: str,

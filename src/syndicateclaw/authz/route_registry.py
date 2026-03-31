@@ -398,6 +398,30 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Service-layer ownership/admin checks return 403 for non-owners.",
     ),
+    # FastAPI registers {agent_id}; mirror specs so shadow/enforcement resolve.
+    ("GET", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    ("DELETE", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Soft-delete is enforced in AgentService.",
+    ),
+    ("POST", "/api/v1/agents/{agent_id}/heartbeat"): RouteAuthzSpec(
+        permission="agent:heartbeat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
 
     # ── Messages / Topics ──────────────────────────────────────────────
     ("POST", "/api/v1/messages"): RouteAuthzSpec(
@@ -425,6 +449,21 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="platform",
         legacy_check="authenticated_only",
     ),
+    ("GET", "/api/v1/messages/{message_id}"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{message_id}/ack"): RouteAuthzSpec(
+        permission="message:ack",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{message_id}/reply"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
     ("POST", "/api/v1/topics/{topic}/subscribe"): RouteAuthzSpec(
         permission="agent:manage",
         scope_resolver="platform",
@@ -438,6 +477,52 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
     ("GET", "/api/v1/topics"): RouteAuthzSpec(
         permission="agent:read",
         scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+
+    # ── Organizations ─────────────────────────────────────────────────
+    ("POST", "/api/v1/organizations"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Org creation restricted to platform admins.",
+    ),
+    ("GET", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces organization membership.",
+    ),
+    ("PUT", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces OWNER/ADMIN.",
+    ),
+    ("DELETE", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces OWNER/ADMIN.",
+    ),
+    ("POST", "/api/v1/organizations/{org_id}/members"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/organizations/{org_id}/members"): RouteAuthzSpec(
+        permission="org:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("DELETE", "/api/v1/organizations/{org_id}/members/{member_actor}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/organizations/{org_id}/members/{member_actor}/role"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
         legacy_check="authenticated_only",
     ),
 
@@ -477,6 +562,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
     ),
 
     # ── Policies ───────────────────────────────────────────────────────
+    ("GET", "/api/v1/policy/"): RouteAuthzSpec(
+        permission="policy:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Legacy back-compat redirect endpoint.",
+    ),
     ("POST", "/api/v1/policies/"): RouteAuthzSpec(
         permission="policy:manage",
         scope_resolver="platform",
@@ -513,6 +604,11 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
     ),
 
     # ── Inference / providers (Gate 1 absent; ProviderService runs 2–4) ──
+    ("GET", "/api/v1/inference/"): RouteAuthzSpec(
+        permission="inference:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
     ("POST", "/api/v1/inference/chat"): RouteAuthzSpec(
         permission="inference:invoke_chat",
         scope_resolver="platform",
@@ -613,6 +709,99 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: no run ownership check.",
     ),
+
+    # ── Admin console ──────────────────────────────────────────────────
+    ("GET", "/api/v1/admin/dashboard"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/connectors"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/approvals"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("POST", "/api/v1/admin/approvals/{id}/decide"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/workflows/runs"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/workflows/runs/{run_id}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/memory/namespaces"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("DELETE", "/api/v1/admin/memory/namespaces/{namespace}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/audit"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/providers"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/api-keys"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("POST", "/api/v1/admin/api-keys"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("DELETE", "/api/v1/admin/api-keys/{key_id}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+
+    # ── Connector webhooks — authenticated by provider secrets, not RBAC ──
+    ("POST", "/webhooks/telegram/update"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Telegram secret token, not RBAC.",
+    ),
+    ("POST", "/webhooks/discord/interactions"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Discord signature, not RBAC.",
+    ),
+    ("POST", "/webhooks/slack/events"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Slack signing secret, not RBAC.",
+    ),
+    ("POST", "/webhooks/slack/command"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Slack signing secret, not RBAC.",
+    ),
 }
 
 # Public routes that skip shadow evaluation entirely.
@@ -628,6 +817,11 @@ PUBLIC_ROUTES: set[tuple[str, str]] = {
 EXEMPT_ROUTES: set[tuple[str, str]] = {
     ("GET", "/api/v1/runs/{id}/stream"),
     ("GET", "/api/v1/runs/{run_id}/stream"),
+    # Webhook endpoints — authenticated by provider-specific secrets, not RBAC
+    ("POST", "/webhooks/telegram/update"),
+    ("POST", "/webhooks/discord/interactions"),
+    ("POST", "/webhooks/slack/events"),
+    ("POST", "/webhooks/slack/command"),
 }
 
 

@@ -9,6 +9,7 @@ from syndicateclaw.api.routes.inference import router as inference_router
 from syndicateclaw.api.routes.memory import router as memory_router
 from syndicateclaw.api.routes.messages import router as messages_router
 from syndicateclaw.api.routes.organizations import router as organizations_router
+from syndicateclaw.api.routes.policy import legacy_router as legacy_policy_router
 from syndicateclaw.api.routes.policy import router as policy_router
 from syndicateclaw.api.routes.providers_ops import router as providers_ops_router
 from syndicateclaw.api.routes.runs import router as runs_router
@@ -29,6 +30,7 @@ ALL_ROUTERS = [
     memory_router,
     messages_router,
     policy_router,
+    legacy_policy_router,
     providers_ops_router,
     runs_router,
     schedules_router,

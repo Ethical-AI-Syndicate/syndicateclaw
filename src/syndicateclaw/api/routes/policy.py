@@ -33,6 +33,7 @@ def _require_policy_admin(actor: str) -> None:
 
 
 router = APIRouter(prefix="/api/v1/policies", tags=["policies"])
+legacy_router = APIRouter(prefix="/api/v1/policy", tags=["policies"])
 
 Q_RESOURCE_TYPE = Query(None)
 Q_ENABLED = Query(None)
@@ -269,3 +270,9 @@ async def evaluate_policy(
         rule_name=None,
         reason="No matching policy rule — default DENY (fail-closed)",
     )
+
+
+@legacy_router.get("/", response_model=None)
+async def legacy_policy_root() -> dict[str, str]:
+    """Back-compat OpenAPI marker for legacy `/api/v1/policy/` clients."""
+    return {"detail": "Policy API moved to /api/v1/policies/"}

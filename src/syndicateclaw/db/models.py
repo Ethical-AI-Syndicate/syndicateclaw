@@ -16,6 +16,7 @@ from sqlalchemy import (
     Table,
     Text,
     UniqueConstraint,
+    desc,
     func,
     text,
 )
@@ -28,7 +29,12 @@ from .base import Base
 class WorkflowDefinition(Base):
     __tablename__ = "workflow_definitions"
     __table_args__ = (
-        UniqueConstraint("name", "version", "namespace"),
+        UniqueConstraint(
+            "name",
+            "version",
+            "namespace",
+            name="uq_workflow_definitions_name_version_namespace",
+        ),
     )
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
@@ -57,7 +63,7 @@ class WorkflowDefinition(Base):
     owning_scope_type: Mapped[str | None] = mapped_column(Text)
     owning_scope_id: Mapped[str | None] = mapped_column(Text)
 
-    runs: Mapped[list[WorkflowRun]] = relationship(back_populates="workflow", lazy="selectin")
+    runs: Mapped[list[WorkflowRun]] = relationship(back_populates="workflow", lazy="raise")
 
 
 class WorkflowVersion(Base):
@@ -102,6 +108,7 @@ class WorkflowRun(Base):
     __table_args__ = (
         Index("ix_workflow_runs_status", "status"),
         Index("ix_workflow_runs_initiated_by", "initiated_by"),
+        Index("idx_workflow_runs_namespace_status", "namespace", "status"),
     )
 
     workflow_id: Mapped[str] = mapped_column(
@@ -132,7 +139,7 @@ class WorkflowRun(Base):
         remote_side="WorkflowRun.id", lazy="selectin"
     )
     node_executions: Mapped[list[NodeExecution]] = relationship(
-        back_populates="run", lazy="selectin"
+        back_populates="run", lazy="raise"
     )
     parent_schedule_id: Mapped[str | None]
     triggered_by: Mapped[str | None]
@@ -427,6 +434,7 @@ class AuditEvent(Base):
         Index("ix_audit_events_trace_id", "trace_id"),
         Index("ix_audit_events_resource_scope", "resource_scope_type", "resource_scope_id"),
         Index("ix_audit_events_actor_principal", "actor_principal_id"),
+        Index("idx_audit_events_actor_created", "actor", desc("created_at")),
     )
 
     event_type: Mapped[str] = mapped_column(Text, nullable=False)

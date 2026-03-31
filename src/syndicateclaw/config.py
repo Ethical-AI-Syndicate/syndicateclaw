@@ -231,3 +231,25 @@ class Settings(BaseSettings):
         le=300,
         description="Wall-clock timeout for each plugin hook invocation.",
     )
+
+    # ── Connectors ────────────────────────────────────────────────────────────
+    public_base_url: str = Field(default="", description="Public HTTPS base URL")
+
+    telegram_bot_token: str | None = Field(default=None)
+    telegram_webhook_secret: str | None = Field(default=None)
+
+    discord_bot_token: str | None = Field(default=None)
+    discord_app_id: str = Field(default="")
+    discord_public_key: str = Field(default="")
+    discord_guild_ids: str = Field(default="", description="comma-separated guild IDs")
+
+    slack_bot_token: str | None = Field(default=None)
+    slack_signing_secret: str | None = Field(default=None)
+
+    connector_default_model_id: str | None = Field(default=None)
+    connector_default_provider_id: str | None = Field(default=None)
+    connector_system_prompt: str | None = Field(default=None)
+
+    # ── Console ───────────────────────────────────────────────────────────────
+    console_enabled: bool = Field(default=True)
+    console_static_dir: str = Field(default="console/dist")

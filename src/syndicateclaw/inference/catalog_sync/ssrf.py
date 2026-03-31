@@ -5,9 +5,20 @@ from __future__ import annotations
 import asyncio
 import ipaddress
 import socket
+from dataclasses import dataclass
 from urllib.parse import urlparse
 
 from syndicateclaw.inference.catalog_sync.errors import SSRFBlockedError
+
+
+@dataclass(frozen=True)
+class ResolvedSafeURL:
+    original_url: str
+    scheme: str
+    hostname: str
+    port: int
+    resolved_ip: str
+    path_and_query: str
 
 
 def hostname_allowed_for_suffixes(hostname: str, allowed_suffixes: tuple[str, ...]) -> bool:
@@ -54,10 +65,7 @@ async def assert_safe_url(
     *,
     allowed_host_suffixes: tuple[str, ...],
 ) -> None:
-    """Validate scheme, host suffix, and that no resolved IP is blocked.
-
-    Call again after every HTTP redirect with the new absolute URL.
-    """
+    """Validate scheme, host suffix, and that no resolved IP is blocked."""
     parsed = urlparse(url)
     if parsed.scheme.lower() != "https":
         raise SSRFBlockedError("only_https_allowed")
@@ -88,3 +96,64 @@ async def assert_safe_url(
         ip = ipaddress.ip_address(a)
         if ip_address_is_blocked(ip):
             raise SSRFBlockedError(f"blocked_resolved:{a}")
+
+
+def _path_and_query_from_parsed(parsed) -> str:
+    path = parsed.path or "/"
+    if parsed.query:
+        return f"{path}?{parsed.query}"
+    return path
+
+
+async def resolve_safe_url(
+    url: str,
+    *,
+    allowed_host_suffixes: tuple[str, ...],
+) -> ResolvedSafeURL:
+    """
+    Resolve once, validate once, and return a pinned outbound target.
+
+    This is the primitive callers must use when they need TOCTOU-safe outbound fetches.
+    """
+    parsed = urlparse(url)
+
+    if parsed.scheme.lower() != "https":
+        raise SSRFBlockedError("only_https_allowed")
+
+    if not parsed.hostname:
+        raise SSRFBlockedError("missing_hostname")
+
+    host = parsed.hostname.lower().rstrip(".")
+    if not hostname_allowed_for_suffixes(host, allowed_host_suffixes):
+        raise SSRFBlockedError("host_not_in_allowlist")
+
+    port = parsed.port or 443
+
+    try:
+        ip = ipaddress.ip_address(host)
+        if ip_address_is_blocked(ip):
+            raise SSRFBlockedError("blocked_address_literal")
+        pinned_ip = str(ip)
+    except ValueError:
+        try:
+            resolved_ips = await resolve_hostname_ips(host)
+        except OSError as e:
+            raise SSRFBlockedError(f"dns_resolution_failed:{e!s}") from e
+
+        if not resolved_ips:
+            raise SSRFBlockedError("no_addresses")
+
+        blocked = [ip for ip in resolved_ips if ip_address_is_blocked(ipaddress.ip_address(ip))]
+        if blocked:
+            raise SSRFBlockedError(f"blocked_resolved:{blocked[0]}")
+
+        pinned_ip = sorted(resolved_ips)[0]
+
+    return ResolvedSafeURL(
+        original_url=url,
+        scheme=parsed.scheme.lower(),
+        hostname=parsed.hostname,
+        port=port,
+        resolved_ip=pinned_ip,
+        path_and_query=_path_and_query_from_parsed(parsed),
+    )

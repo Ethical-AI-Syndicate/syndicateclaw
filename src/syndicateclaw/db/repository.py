@@ -6,6 +6,8 @@ from typing import Any, Generic, TypeVar, get_args
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from syndicateclaw.models import MemoryDeletionStatus
+
 from .base import Base
 from .models import (
     ApprovalRequest,
@@ -140,7 +142,7 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
             stmt = stmt.where(
                 (MemoryRecord.expires_at.is_(None)) | (MemoryRecord.expires_at > now)
             )
-            stmt = stmt.where(MemoryRecord.deletion_status == "active")
+            stmt = stmt.where(MemoryRecord.deletion_status == MemoryDeletionStatus.ACTIVE.value)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -155,13 +157,14 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
         return result.scalar_one_or_none()
 
     async def mark_for_deletion(self, record_id: str) -> None:
+        now = datetime.now(UTC)
         stmt = (
             update(MemoryRecord)
             .where(MemoryRecord.id == record_id)
             .values(
-                deletion_status="pending_deletion",
-                deleted_at=datetime.now(UTC),
-                updated_at=datetime.now(UTC),
+                deletion_status=MemoryDeletionStatus.MARKED_FOR_DELETION.value,
+                deleted_at=now,
+                updated_at=now,
             )
         )
         await self.session.execute(stmt)
@@ -172,7 +175,7 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
         stmt = (
             delete(MemoryRecord)
             .where(
-                (MemoryRecord.deletion_status == "pending_deletion")
+                (MemoryRecord.deletion_status == MemoryDeletionStatus.MARKED_FOR_DELETION.value)
                 | (
                     MemoryRecord.expires_at.is_not(None)
                     & (MemoryRecord.expires_at <= now)

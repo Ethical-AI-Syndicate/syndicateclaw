@@ -39,6 +39,9 @@ PERMISSION_VOCABULARY: frozenset[str] = frozenset(
         "schedule:manage",
         "audit:read",
         "audit:export",
+        "inference:read",
+        "apikey:read",
+        "apikey:manage",
         "admin:*",
     }
 )

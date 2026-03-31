@@ -326,7 +326,7 @@ async def _process_llm_tool_calls(
                 action="llm.tool_call_requires_approval",
                 details={"tool": name, "approval_id": approval.id},
             )
-            continue
+            raise WaitForApprovalError(f"Approval required: {approval.id}")
 
         await _emit_tool_call_audit(
             context,

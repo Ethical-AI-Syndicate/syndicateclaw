@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import contextlib
 import os
 
 import pytest
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, text
 from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
 
 from syndicateclaw.db.models import Agent, AgentMessage, DeadLetterRecord, TopicSubscription
@@ -23,7 +24,16 @@ async def engine() -> AsyncEngine:
         "SYNDICATECLAW_DATABASE_URL",
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test",
     )
-    db_engine = create_async_engine(url)
+    db_engine = None
+    try:
+        db_engine = create_async_engine(url)
+        async with db_engine.begin() as conn:
+            await conn.execute(text("SELECT 1"))
+    except Exception as exc:
+        if db_engine is not None:
+            with contextlib.suppress(Exception):
+                await db_engine.dispose()
+        pytest.skip(f"Database unavailable: {exc}")
     try:
         yield db_engine
     finally:

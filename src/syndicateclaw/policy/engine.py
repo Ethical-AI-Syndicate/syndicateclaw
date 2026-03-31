@@ -254,7 +254,7 @@ class PolicyEngine:
                     setattr(row, key, value)
             row.updated_at = datetime.now(UTC)
             row = await repo.update(row)
-            result = PolicyRule.model_validate(row)
+            result = _row_to_policy_rule(row)
 
         await self._emit_audit(
             AuditEventType.POLICY_UPDATED,
@@ -290,7 +290,7 @@ class PolicyEngine:
                 rows = await repo.get_enabled_by_resource_type(resource_type)
             else:
                 rows = await repo.list()
-            return [PolicyRule.model_validate(r) for r in rows]
+            return [_row_to_policy_rule(r) for r in rows]
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -360,3 +360,38 @@ def _resolve_field(context: dict[str, Any], field_path: str) -> Any:
         else:
             return None
     return current
+
+
+def _row_to_policy_rule(row: Any) -> PolicyRule:
+    effect_value = getattr(row, "effect", PolicyEffect.DENY)
+    if isinstance(effect_value, PolicyEffect):
+        normalized_effect = effect_value
+    else:
+        normalized_effect = PolicyEffect(str(effect_value).upper())
+
+    conditions_raw = getattr(row, "conditions", None)
+    if isinstance(conditions_raw, list):
+        normalized_conditions = conditions_raw
+    elif isinstance(conditions_raw, dict) and conditions_raw:
+        if {"field", "operator", "value"}.issubset(conditions_raw.keys()):
+            normalized_conditions = [conditions_raw]
+        else:
+            normalized_conditions = []
+    else:
+        normalized_conditions = []
+
+    payload = {
+        "id": row.id,
+        "created_at": row.created_at,
+        "updated_at": row.updated_at,
+        "name": row.name,
+        "description": getattr(row, "description", "") or "",
+        "resource_type": row.resource_type,
+        "resource_pattern": row.resource_pattern,
+        "effect": normalized_effect,
+        "conditions": normalized_conditions,
+        "priority": getattr(row, "priority", 0),
+        "enabled": bool(getattr(row, "enabled", True)),
+        "owner": getattr(row, "owner", None) or "system",
+    }
+    return PolicyRule.model_validate(payload)

@@ -28,7 +28,6 @@ def mock_redis_down(redis_client: Any) -> Any:
 @contextlib.contextmanager
 def mock_db_execute_failure(session: Any) -> Any:
     """Inject failure on session.execute for targeted tests."""
-    real_execute = session.execute
 
     async def boom(*args: Any, **kwargs: Any) -> Any:
         raise OSError("mock database execute failure")

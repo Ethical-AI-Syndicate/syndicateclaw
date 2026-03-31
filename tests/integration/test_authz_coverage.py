@@ -116,16 +116,31 @@ async def test_rbac_evaluator_deny_emits_audit_event(
     assert len(rows) >= 1
 
 
-@pytest.mark.skip(reason="Legacy vs RBAC mismatch on a registered route; run manually.")
+@pytest.mark.skip(
+    reason=(
+        "Legacy vs RBAC mismatch on a registered route; run manually. "
+        "Unskip: v1.2 after principal provisioning path is implemented end-to-end."
+    )
+)
 async def test_shadow_middleware_logs_disagreement() -> None:
     pass
 
 
-@pytest.mark.skip(reason="Full-stack enforcement; use manual E2E with rbac_enforcement_enabled.")
+@pytest.mark.skip(
+    reason=(
+        "Full-stack enforcement; use manual E2E with rbac_enforcement_enabled. "
+        "Unskip: v1.2 when principal seeding is automated in CI."
+    )
+)
 async def test_rbac_enforcement_enabled_blocks_unauthorized_request() -> None:
     pass
 
 
-@pytest.mark.skip(reason="API key scope vs route permission needs staged principal + key mapping.")
+@pytest.mark.skip(
+    reason=(
+        "API key scope vs route permission needs staged principal + key mapping. "
+        "Unskip: v1.2 with full principal provisioning."
+    )
+)
 async def test_rbac_scope_check_insufficient_scope_returns_403() -> None:
     pass

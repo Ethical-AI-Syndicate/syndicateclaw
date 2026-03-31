@@ -270,7 +270,7 @@ class VersionManifest(BaseModel):
     )
     policy_version: str = Field(default="", description="Policy ruleset hash or version identifier")
     memory_schema_version: str = Field(default="", description="Memory schema version")
-    platform_version: str = Field(default="0.1.0", description="SyndicateClaw platform version")
+    platform_version: str = Field(default="2.0.0", description="SyndicateClaw platform version")
     captured_at: datetime = Field(
         default_factory=_utcnow,
         description="When the manifest was frozen",

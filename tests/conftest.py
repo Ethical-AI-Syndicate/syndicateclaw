@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import os
 from datetime import UTC, datetime, timedelta
 
@@ -153,15 +154,21 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
 
 @pytest.fixture(scope="session")
 async def db_engine() -> AsyncEngine:
-    database_url = os.environ.get(
-        "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
+    database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
     )
-    engine = create_async_engine(database_url, future=True)
-    async with engine.begin() as conn:
-        # Recreate schema so new columns (e.g. namespace) match ORM; create_all does not ALTER.
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+    engine = None
+    try:
+        engine = create_async_engine(database_url, future=True)
+        async with engine.begin() as conn:
+            # Recreate schema so new columns (e.g. namespace) match ORM; create_all does not ALTER.
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as exc:
+        if engine is not None:
+            with contextlib.suppress(Exception):
+                await engine.dispose()
+        pytest.skip(f"Database unavailable: {exc}")
     try:
         yield engine
     finally:

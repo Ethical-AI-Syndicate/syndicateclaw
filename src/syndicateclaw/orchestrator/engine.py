@@ -312,9 +312,24 @@ class WorkflowEngine:
 
         nodes_by_id = {n.id: n for n in workflow.nodes}
         start_node = self._find_start_node(workflow)
-        current_node_id: str | None = start_node.id
+        current_node_id: str | None = run_result.current_node_id or start_node.id
+
+        _step_count = 0
+        _visited_nodes = set()
 
         while current_node_id is not None:
+            if current_node_id in _visited_nodes:
+                run.status = WorkflowRunStatus.FAILED
+                run.error = f"Cycle detected at node {current_node_id}"
+                break
+            _visited_nodes.add(current_node_id)
+
+            _step_count += 1
+            if _step_count > 1000:
+                run.status = WorkflowRunStatus.FAILED
+                run.error = "Workflow execution exceeded max_steps=1000"
+                break
+
             if run.status in (
                 WorkflowRunStatus.PAUSED,
                 WorkflowRunStatus.CANCELLED,
