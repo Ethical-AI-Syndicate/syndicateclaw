@@ -16,8 +16,13 @@ logger = structlog.get_logger(__name__)
 def _classify_error(error: str) -> str:
     """Classify an error as transient or permanent based on heuristics."""
     permanent_indicators = [
-        "validation", "schema", "invalid", "malformed",
-        "permission", "forbidden", "not found",
+        "validation",
+        "schema",
+        "invalid",
+        "malformed",
+        "permission",
+        "forbidden",
+        "not found",
     ]
     for indicator in permanent_indicators:
         if indicator in error.lower():

@@ -77,9 +77,7 @@ class BaseRepository(Generic[T]):
 
 class WorkflowRunRepository(BaseRepository[WorkflowRun]):
     async def get_active_runs(self) -> list[WorkflowRun]:
-        stmt = select(WorkflowRun).where(
-            WorkflowRun.status.in_(["pending", "running", "paused"])
-        )
+        stmt = select(WorkflowRun).where(WorkflowRun.status.in_(["pending", "running", "paused"]))
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -88,9 +86,7 @@ class WorkflowRunRepository(BaseRepository[WorkflowRun]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def update_status(
-        self, record_id: str, status: str, error: str | None = None
-    ) -> None:
+    async def update_status(self, record_id: str, status: str, error: str | None = None) -> None:
         values: dict[str, Any] = {
             "status": status,
             "updated_at": datetime.now(UTC),
@@ -112,9 +108,7 @@ class NodeExecutionRepository(BaseRepository[NodeExecution]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_latest_for_node(
-        self, run_id: str, node_id: str
-    ) -> NodeExecution | None:
+    async def get_latest_for_node(self, run_id: str, node_id: str) -> NodeExecution | None:
         stmt = (
             select(NodeExecution)
             .where(NodeExecution.run_id == run_id, NodeExecution.node_id == node_id)
@@ -139,16 +133,12 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
         stmt = select(MemoryRecord).where(MemoryRecord.namespace == namespace)
         if not include_expired:
             now = datetime.now(UTC)
-            stmt = stmt.where(
-                (MemoryRecord.expires_at.is_(None)) | (MemoryRecord.expires_at > now)
-            )
+            stmt = stmt.where((MemoryRecord.expires_at.is_(None)) | (MemoryRecord.expires_at > now))
             stmt = stmt.where(MemoryRecord.deletion_status == MemoryDeletionStatus.ACTIVE.value)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_key(
-        self, namespace: str, key: str
-    ) -> MemoryRecord | None:
+    async def get_by_key(self, namespace: str, key: str) -> MemoryRecord | None:
         stmt = select(MemoryRecord).where(
             MemoryRecord.namespace == namespace,
             MemoryRecord.key == key,
@@ -176,10 +166,7 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
             delete(MemoryRecord)
             .where(
                 (MemoryRecord.deletion_status == MemoryDeletionStatus.MARKED_FOR_DELETION.value)
-                | (
-                    MemoryRecord.expires_at.is_not(None)
-                    & (MemoryRecord.expires_at <= now)
-                )
+                | (MemoryRecord.expires_at.is_not(None) & (MemoryRecord.expires_at <= now))
             )
             .returning(MemoryRecord.id)
         )
@@ -189,9 +176,7 @@ class MemoryRecordRepository(BaseRepository[MemoryRecord]):
 
 
 class PolicyRuleRepository(BaseRepository[PolicyRule]):
-    async def get_enabled_by_resource_type(
-        self, resource_type: str
-    ) -> list[PolicyRule]:
+    async def get_enabled_by_resource_type(self, resource_type: str) -> list[PolicyRule]:
         stmt = (
             select(PolicyRule)
             .where(
@@ -210,9 +195,7 @@ class PolicyDecisionRepository(BaseRepository[PolicyDecision]):
 
 class ApprovalRequestRepository(BaseRepository[ApprovalRequest]):
     async def get_pending(self) -> list[ApprovalRequest]:
-        stmt = select(ApprovalRequest).where(
-            ApprovalRequest.status == "PENDING"
-        )
+        stmt = select(ApprovalRequest).where(ApprovalRequest.status == "PENDING")
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
@@ -277,9 +260,7 @@ class AuditEventRepository:
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_resource(
-        self, resource_type: str, resource_id: str
-    ) -> list[AuditEvent]:
+    async def get_by_resource(self, resource_type: str, resource_id: str) -> list[AuditEvent]:
         stmt = (
             select(AuditEvent)
             .where(
@@ -346,9 +327,7 @@ class InputSnapshotRepository(BaseRepository[InputSnapshot]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_node(
-        self, run_id: str, node_execution_id: str
-    ) -> list[InputSnapshot]:
+    async def get_by_node(self, run_id: str, node_execution_id: str) -> list[InputSnapshot]:
         stmt = (
             select(InputSnapshot)
             .where(
@@ -360,9 +339,7 @@ class InputSnapshotRepository(BaseRepository[InputSnapshot]):
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_for_replay(
-        self, run_id: str, source_identifier: str
-    ) -> InputSnapshot | None:
+    async def get_for_replay(self, run_id: str, source_identifier: str) -> InputSnapshot | None:
         stmt = (
             select(InputSnapshot)
             .where(

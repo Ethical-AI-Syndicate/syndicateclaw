@@ -15,7 +15,7 @@ def _make_tool(name: str, risk: ToolRiskLevel = ToolRiskLevel.LOW) -> Tool:
 
 
 class TestToolRegistry:
-    def test_tool_registry_register_and_get(self):
+    def test_tool_registry_register_and_get(self) -> None:
         registry = ToolRegistry()
         tool = _make_tool("alpha")
         registry.register(tool, _dummy_handler)
@@ -26,7 +26,7 @@ class TestToolRegistry:
         assert result.tool.name == "alpha"
         assert result.handler is _dummy_handler
 
-    def test_tool_registry_list_tools(self):
+    def test_tool_registry_list_tools(self) -> None:
         registry = ToolRegistry()
         registry.register(_make_tool("one"), _dummy_handler)
         registry.register(_make_tool("two"), _dummy_handler)
@@ -37,7 +37,7 @@ class TestToolRegistry:
         names = {t.name for t in tools}
         assert names == {"one", "two", "three"}
 
-    def test_tool_registry_unregister(self):
+    def test_tool_registry_unregister(self) -> None:
         registry = ToolRegistry()
         tool = _make_tool("removable")
         registry.register(tool, _dummy_handler)
@@ -47,7 +47,7 @@ class TestToolRegistry:
         assert "removable" not in registry
         assert registry.get("removable") is None
 
-    def test_tool_registry_list_by_risk(self):
+    def test_tool_registry_list_by_risk(self) -> None:
         registry = ToolRegistry()
         registry.register(_make_tool("low1", ToolRiskLevel.LOW), _dummy_handler)
         registry.register(_make_tool("low2", ToolRiskLevel.LOW), _dummy_handler)
@@ -65,13 +65,13 @@ class TestToolRegistry:
         medium_tools = registry.list_tools(risk_level=ToolRiskLevel.MEDIUM)
         assert len(medium_tools) == 0
 
-    def test_tool_registry_len(self):
+    def test_tool_registry_len(self) -> None:
         registry = ToolRegistry()
         assert len(registry) == 0
         registry.register(_make_tool("x"), _dummy_handler)
         assert len(registry) == 1
 
-    def test_tool_registry_overwrite(self):
+    def test_tool_registry_overwrite(self) -> None:
         registry = ToolRegistry()
         tool1 = _make_tool("dup")
         tool2 = _make_tool("dup")

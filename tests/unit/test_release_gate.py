@@ -6,6 +6,7 @@ These tests verify the three final residual controls before release readiness.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -34,37 +35,37 @@ from syndicateclaw.security.signing import (
 class TestHMACSigning:
     """Verify signing utility correctness and tamper detection."""
 
-    def test_derive_signing_key_deterministic(self):
+    def test_derive_signing_key_deterministic(self) -> None:
         k1 = derive_signing_key("secret-a")
         k2 = derive_signing_key("secret-a")
         assert k1 == k2
 
-    def test_derive_signing_key_differs_per_secret(self):
+    def test_derive_signing_key_differs_per_secret(self) -> None:
         k1 = derive_signing_key("secret-a")
         k2 = derive_signing_key("secret-b")
         assert k1 != k2
 
-    def test_sign_and_verify_roundtrip(self):
+    def test_sign_and_verify_roundtrip(self) -> None:
         key = derive_signing_key("test")
         payload = {"tool": "fetch", "url": "https://example.com", "ts": 12345}
         sig = sign_payload(payload, key)
         assert verify_signature(payload, sig, key)
 
-    def test_verify_rejects_tampered_payload(self):
+    def test_verify_rejects_tampered_payload(self) -> None:
         key = derive_signing_key("test")
         payload = {"action": "execute", "risk": "high"}
         sig = sign_payload(payload, key)
         tampered = {**payload, "risk": "low"}
         assert not verify_signature(tampered, sig, key)
 
-    def test_verify_rejects_wrong_key(self):
+    def test_verify_rejects_wrong_key(self) -> None:
         k1 = derive_signing_key("real-key")
         k2 = derive_signing_key("wrong-key")
         payload = {"a": 1}
         sig = sign_payload(payload, k1)
         assert not verify_signature(payload, sig, k2)
 
-    def test_sign_record_adds_integrity_field(self):
+    def test_sign_record_adds_integrity_field(self) -> None:
         key = derive_signing_key("test")
         rec = {"event_type": "TOOL_EXECUTED", "actor": "user:alice"}
         signed = sign_record(rec, key)
@@ -72,30 +73,30 @@ class TestHMACSigning:
         assert signed["event_type"] == "TOOL_EXECUTED"
         assert signed["actor"] == "user:alice"
 
-    def test_verify_record_roundtrip(self):
+    def test_verify_record_roundtrip(self) -> None:
         key = derive_signing_key("test")
         rec = {"event_type": "TOOL_EXECUTED", "details": {"tool": "fetch"}}
         signed = sign_record(rec, key)
         assert verify_record(signed, key)
 
-    def test_verify_record_detects_tamper(self):
+    def test_verify_record_detects_tamper(self) -> None:
         key = derive_signing_key("test")
         signed = sign_record({"x": 1, "y": 2}, key)
         signed["x"] = 999
         assert not verify_record(signed, key)
 
-    def test_verify_record_fails_without_signature(self):
+    def test_verify_record_fails_without_signature(self) -> None:
         key = derive_signing_key("test")
         assert not verify_record({"no_sig": True}, key)
 
-    def test_canonical_json_order_invariant(self):
+    def test_canonical_json_order_invariant(self) -> None:
         key = derive_signing_key("test")
         p1 = {"b": 2, "a": 1}
         p2 = {"a": 1, "b": 2}
         assert sign_payload(p1, key) == sign_payload(p2, key)
 
 
-def _make_session_factory():
+def _make_session_factory() -> Any:
     """Create a mock async session factory with proper context manager protocol."""
     session = MagicMock()
     mock_result = MagicMock()
@@ -122,7 +123,7 @@ class TestAuditServiceSigning:
     """Verify that AuditService signs events when a key is provided."""
 
     @pytest.mark.asyncio
-    async def test_emit_signs_details_when_key_provided(self):
+    async def test_emit_signs_details_when_key_provided(self) -> None:
         from syndicateclaw.audit.service import AuditService
 
         key = derive_signing_key("audit-secret")
@@ -150,7 +151,7 @@ class TestAuditServiceSigning:
             assert verify_record(row.details, key)
 
     @pytest.mark.asyncio
-    async def test_emit_skips_signing_when_no_key(self):
+    async def test_emit_skips_signing_when_no_key(self) -> None:
         from syndicateclaw.audit.service import AuditService
 
         factory, session = _make_session_factory()
@@ -178,7 +179,7 @@ class TestDecisionLedgerSigning:
     """Verify that DecisionLedger signs records when a key is provided."""
 
     @pytest.mark.asyncio
-    async def test_record_appends_hmac_to_side_effects(self):
+    async def test_record_appends_hmac_to_side_effects(self) -> None:
         from syndicateclaw.audit.ledger import DecisionLedger
         from syndicateclaw.models import DecisionDomain
 
@@ -215,7 +216,7 @@ class TestDecisionLedgerSigning:
             assert any(se.startswith("hmac:") for se in decision.side_effects)
 
     @pytest.mark.asyncio
-    async def test_record_no_hmac_without_key(self):
+    async def test_record_no_hmac_without_key(self) -> None:
         from syndicateclaw.audit.ledger import DecisionLedger
         from syndicateclaw.models import DecisionDomain
 
@@ -254,7 +255,7 @@ class TestExportBundleSigning:
     """Verify evidence bundle HMAC."""
 
     @pytest.mark.asyncio
-    async def test_export_includes_hmac_when_key_provided(self):
+    async def test_export_includes_hmac_when_key_provided(self) -> None:
         from syndicateclaw.audit.export import RunExporter
 
         key = derive_signing_key("export-secret")
@@ -320,7 +321,7 @@ class TestMemoryCacheIsolation:
     """Cache must not leak protected records across actors."""
 
     @pytest.mark.asyncio
-    async def test_owner_only_record_not_cached(self):
+    async def test_owner_only_record_not_cached(self) -> None:
         """Records with non-default access_policy should not be written to cache."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -335,9 +336,11 @@ class TestMemoryCacheIsolation:
 
         service = MemoryService(factory, redis_client=redis_mock)
 
-        with patch.object(service, "_db_to_domain", return_value=record), \
-             patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls, \
-             patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
+        with (
+            patch.object(service, "_db_to_domain", return_value=record),
+            patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls,
+            patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls,
+        ):
             mock_repo = AsyncMock()
             mock_repo.get_by_key = AsyncMock(return_value=db_record_mock)
             mock_repo_cls.return_value = mock_repo
@@ -349,7 +352,7 @@ class TestMemoryCacheIsolation:
         redis_mock.setex.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_default_record_is_cached(self):
+    async def test_default_record_is_cached(self) -> None:
         """Records with default access_policy should be cached normally."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -364,9 +367,11 @@ class TestMemoryCacheIsolation:
 
         service = MemoryService(factory, redis_client=redis_mock)
 
-        with patch.object(service, "_db_to_domain", return_value=record), \
-             patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls, \
-             patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
+        with (
+            patch.object(service, "_db_to_domain", return_value=record),
+            patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls,
+            patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls,
+        ):
             mock_repo = AsyncMock()
             mock_repo.get_by_key = AsyncMock(return_value=db_record_mock)
             mock_repo_cls.return_value = mock_repo
@@ -378,7 +383,7 @@ class TestMemoryCacheIsolation:
         redis_mock.setex.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_cached_owner_only_denied_to_other_actor(self):
+    async def test_cached_owner_only_denied_to_other_actor(self) -> None:
         """If a protected record is somehow in cache, access check still blocks other actors."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -393,7 +398,7 @@ class TestMemoryCacheIsolation:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_cached_owner_only_allowed_to_owner(self):
+    async def test_cached_owner_only_allowed_to_owner(self) -> None:
         """Cache hit with owner_only policy returns record to the owner."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -409,7 +414,7 @@ class TestMemoryCacheIsolation:
         assert result.id == "rec-1"
 
     @pytest.mark.asyncio
-    async def test_system_only_denied_from_cache_to_regular_user(self):
+    async def test_system_only_denied_from_cache_to_regular_user(self) -> None:
         """system_only record in cache is denied to non-system actors."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -424,7 +429,7 @@ class TestMemoryCacheIsolation:
         assert result is None
 
     @pytest.mark.asyncio
-    async def test_system_only_allowed_from_cache_to_system_actor(self):
+    async def test_system_only_allowed_from_cache_to_system_actor(self) -> None:
         """system_only record in cache is accessible to system: actors."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -447,29 +452,25 @@ class TestMemoryCacheIsolation:
 class TestOwnershipFiltering:
     """Verify list endpoints scope results to the requesting actor."""
 
-    def test_workflow_list_query_filters_by_owner(self):
+    def test_workflow_list_query_filters_by_owner(self) -> None:
         """The list_workflows endpoint should filter by WFModel.owner == actor."""
         import inspect
 
         from syndicateclaw.api.routes.workflows import list_workflows
 
         source = inspect.getsource(list_workflows)
-        assert "WFModel.owner == actor" in source, (
-            "list_workflows must filter by owner"
-        )
+        assert "WFModel.owner == actor" in source, "list_workflows must filter by owner"
 
-    def test_run_list_query_filters_by_initiated_by(self):
+    def test_run_list_query_filters_by_initiated_by(self) -> None:
         """The list_runs endpoint should filter by RunModel.initiated_by == actor."""
         import inspect
 
         from syndicateclaw.api.routes.workflows import list_runs
 
         source = inspect.getsource(list_runs)
-        assert "RunModel.initiated_by == actor" in source, (
-            "list_runs must filter by initiated_by"
-        )
+        assert "RunModel.initiated_by == actor" in source, "list_runs must filter by initiated_by"
 
-    def test_approvals_list_scoped_to_actor(self):
+    def test_approvals_list_scoped_to_actor(self) -> None:
         """Approvals list should filter by assigned_to or requested_by."""
         import inspect
 
@@ -483,43 +484,51 @@ class TestOwnershipFiltering:
 class TestAccessPolicyLogic:
     """Verify the MemoryService._check_access_policy static method directly."""
 
-    def test_default_allows_anyone(self):
+    def test_default_allows_anyone(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="default")
         assert MemoryService._check_access_policy(rec, "user:stranger") is True
 
-    def test_owner_only_allows_owner(self):
+    def test_owner_only_allows_owner(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="owner_only", actor="user:alice")
         assert MemoryService._check_access_policy(rec, "user:alice") is True
 
-    def test_owner_only_denies_other(self):
+    def test_owner_only_denies_other(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="owner_only", actor="user:alice")
         assert MemoryService._check_access_policy(rec, "user:bob") is False
 
-    def test_system_only_allows_system(self):
+    def test_system_only_allows_system(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="system_only", actor="system:core")
         assert MemoryService._check_access_policy(rec, "system:scheduler") is True
 
-    def test_system_only_denies_user(self):
+    def test_system_only_denies_user(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="system_only", actor="system:core")
         assert MemoryService._check_access_policy(rec, "user:alice") is False
 
-    def test_restricted_allows_record_actor(self):
+    def test_restricted_allows_record_actor(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="restricted", actor="user:alice")
         assert MemoryService._check_access_policy(rec, "user:alice") is True
 
-    def test_restricted_denies_other(self):
+    def test_restricted_denies_other(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="restricted", actor="user:alice")
         assert MemoryService._check_access_policy(rec, "user:bob") is False
 
-    def test_unknown_policy_fails_closed(self):
+    def test_unknown_policy_fails_closed(self) -> None:
         from syndicateclaw.memory.service import MemoryService
+
         rec = _make_record(access_policy="nonexistent_policy")
         assert MemoryService._check_access_policy(rec, "user:alice") is False
 
@@ -532,24 +541,25 @@ class TestSigningKeyWiring:
         monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-secret-key")
 
-    def _get_lifespan_source(self):
+    def _get_lifespan_source(self) -> Any:
         import importlib
         import inspect
 
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         return inspect.getsource(main_mod.lifespan)
 
-    def test_lifespan_creates_signing_key(self):
+    def test_lifespan_creates_signing_key(self) -> None:
         source = self._get_lifespan_source()
         assert "derive_signing_key" in source
         assert "signing_key" in source
         assert "app.state.signing_key" in source
 
-    def test_lifespan_passes_key_to_audit_service(self):
+    def test_lifespan_passes_key_to_audit_service(self) -> None:
         source = self._get_lifespan_source()
         assert "AuditService(session_factory, signing_key=signing_key)" in source
 
-    def test_lifespan_passes_key_to_decision_ledger(self):
+    def test_lifespan_passes_key_to_decision_ledger(self) -> None:
         source = self._get_lifespan_source()
         assert "DecisionLedger(session_factory, signing_key=signing_key)" in source

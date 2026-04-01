@@ -116,6 +116,4 @@ def validate_provider_env_vars(config: ProviderSystemConfig) -> None:
             continue
         value = os.environ.get(auth.env_var)
         if value is None or not value.strip():
-            raise ConfigurationError(
-                f"Provider '{provider.id}' requires env var '{auth.env_var}'"
-            )
+            raise ConfigurationError(f"Provider '{provider.id}' requires env var '{auth.env_var}'")

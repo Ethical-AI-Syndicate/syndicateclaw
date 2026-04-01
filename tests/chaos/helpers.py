@@ -18,6 +18,7 @@ def restore_all() -> None:
 @contextlib.contextmanager
 def mock_redis_down(redis_client: Any) -> Any:
     """Temporarily make Redis ping fail."""
+
     async def fail_ping() -> None:
         raise OSError("mock redis down")
 

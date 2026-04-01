@@ -364,17 +364,14 @@ async def get_node_executions(
 
     from syndicateclaw.db.models import NodeExecution as NEModel
 
-    stmt = (
-        select(NEModel)
-        .where(NEModel.run_id == run_id)
-        .order_by(NEModel.created_at.asc())
-    )
+    stmt = select(NEModel).where(NEModel.run_id == run_id).order_by(NEModel.created_at.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
 # Parameterized /{workflow_id} routes must come AFTER all literal /runs/* routes,
 # otherwise FastAPI matches "runs" as a workflow_id.
+
 
 @router.post("/{workflow_id}/builder-token")
 async def issue_builder_token(
@@ -478,8 +475,8 @@ async def start_run(
         "WAITING_APPROVAL",
         "WAITING_AGENT_RESPONSE",
     }
-    active_count_stmt = select(func.count()).select_from(RunModel).where(
-        RunModel.status.in_(active_statuses)
+    active_count_stmt = (
+        select(func.count()).select_from(RunModel).where(RunModel.status.in_(active_statuses))
     )
     active_count = (await db.execute(active_count_stmt)).scalar() or 0
 
@@ -544,10 +541,6 @@ async def get_run_timeline(
 
     from syndicateclaw.db.models import AuditEvent as AEModel
 
-    stmt = (
-        select(AEModel)
-        .where(AEModel.resource_id == run_id)
-        .order_by(AEModel.created_at.asc())
-    )
+    stmt = select(AEModel).where(AEModel.resource_id == run_id).order_by(AEModel.created_at.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())

@@ -19,12 +19,12 @@ from syndicateclaw.models import (
 
 
 class TestBaseEntity:
-    def test_base_entity_generates_ulid(self):
+    def test_base_entity_generates_ulid(self) -> None:
         entity = BaseEntity()
         assert isinstance(entity.id, str)
         assert len(entity.id) == 26  # ULID string length
 
-    def test_base_entity_new_classmethod(self):
+    def test_base_entity_new_classmethod(self) -> None:
         entity = BaseEntity.new()
         assert isinstance(entity.id, str)
         assert len(entity.id) == 26
@@ -34,18 +34,14 @@ class TestBaseEntity:
 
 
 class TestWorkflowDefinition:
-    def test_workflow_definition_serialization(self):
+    def test_workflow_definition_serialization(self) -> None:
         wf = WorkflowDefinition.new(
             name="roundtrip",
             version="2.0",
             owner="tester",
             nodes=[
-                NodeDefinition(
-                    id="s", name="Start", node_type=NodeType.START, handler="start"
-                ),
-                NodeDefinition(
-                    id="e", name="End", node_type=NodeType.END, handler="end"
-                ),
+                NodeDefinition(id="s", name="Start", node_type=NodeType.START, handler="start"),
+                NodeDefinition(id="e", name="End", node_type=NodeType.END, handler="end"),
             ],
             edges=[EdgeDefinition(source_node_id="s", target_node_id="e")],
         )
@@ -61,32 +57,30 @@ class TestWorkflowDefinition:
 
 
 class TestNodeDefinition:
-    def test_node_definition_validation_valid(self):
-        node = NodeDefinition(
-            id="n1", name="Node", node_type=NodeType.ACTION, handler="my_handler"
-        )
+    def test_node_definition_validation_valid(self) -> None:
+        node = NodeDefinition(id="n1", name="Node", node_type=NodeType.ACTION, handler="my_handler")
         assert node.id == "n1"
         assert node.node_type == NodeType.ACTION
 
-    def test_node_definition_validation_missing_required(self):
+    def test_node_definition_validation_missing_required(self) -> None:
         with pytest.raises(ValidationError):
             NodeDefinition(id="n1", name="Node", node_type=NodeType.ACTION)  # type: ignore[call-arg]
 
-    def test_node_definition_all_types(self):
+    def test_node_definition_all_types(self) -> None:
         for nt in NodeType:
             node = NodeDefinition(id=f"n-{nt.value}", name=nt.value, node_type=nt, handler="h")
             assert node.node_type == nt
 
 
 class TestEdgeDefinition:
-    def test_edge_definition_defaults(self):
+    def test_edge_definition_defaults(self) -> None:
         edge = EdgeDefinition(source_node_id="a", target_node_id="b")
         assert edge.priority == 0
         assert edge.condition is None
 
 
 class TestToolAuditConfig:
-    def test_tool_audit_config_defaults(self):
+    def test_tool_audit_config_defaults(self) -> None:
         config = ToolAuditConfig()
         assert config.log_input is True
         assert config.log_output is True
@@ -94,7 +88,7 @@ class TestToolAuditConfig:
 
 
 class TestMemoryRecordConfidence:
-    def test_memory_record_confidence_valid_zero(self):
+    def test_memory_record_confidence_valid_zero(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -106,7 +100,7 @@ class TestMemoryRecordConfidence:
         )
         assert record.confidence == 0.0
 
-    def test_memory_record_confidence_valid_one(self):
+    def test_memory_record_confidence_valid_one(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -118,7 +112,7 @@ class TestMemoryRecordConfidence:
         )
         assert record.confidence == 1.0
 
-    def test_memory_record_confidence_too_low(self):
+    def test_memory_record_confidence_too_low(self) -> None:
         with pytest.raises(ValidationError):
             MemoryRecord.new(
                 namespace="ns",
@@ -130,7 +124,7 @@ class TestMemoryRecordConfidence:
                 confidence=-0.1,
             )
 
-    def test_memory_record_confidence_too_high(self):
+    def test_memory_record_confidence_too_high(self) -> None:
         with pytest.raises(ValidationError):
             MemoryRecord.new(
                 namespace="ns",
@@ -145,13 +139,13 @@ class TestMemoryRecordConfidence:
 
 class TestPolicyCondition:
     @pytest.mark.parametrize("op", ["eq", "neq", "in", "not_in", "gt", "lt", "matches"])
-    def test_policy_condition_operators(self, op: str):
+    def test_policy_condition_operators(self, op: str) -> None:
         cond = PolicyCondition(field="risk_level", operator=op, value="LOW")
         assert cond.operator == op
 
 
 class TestWorkflowRunStatus:
-    def test_workflow_run_status_transitions(self):
+    def test_workflow_run_status_transitions(self) -> None:
         expected = {
             "PENDING",
             "RUNNING",
@@ -167,27 +161,58 @@ class TestWorkflowRunStatus:
 
 
 class TestAuditEventType:
-    def test_audit_event_type_completeness(self):
+    def test_audit_event_type_completeness(self) -> None:
         expected_prefixes = {
-            "WORKFLOW_CREATED", "WORKFLOW_STARTED", "WORKFLOW_COMPLETED",
-            "WORKFLOW_FAILED", "WORKFLOW_PAUSED", "WORKFLOW_RESUMED", "WORKFLOW_CANCELLED",
-            "NODE_STARTED", "NODE_COMPLETED", "NODE_FAILED", "NODE_SKIPPED", "NODE_RETRIED",
-            "TOOL_REGISTERED", "TOOL_UPDATED", "TOOL_DISABLED",
-            "TOOL_EXECUTION_STARTED", "TOOL_EXECUTION_COMPLETED",
-            "TOOL_EXECUTION_FAILED", "TOOL_EXECUTION_TIMED_OUT",
-            "MEMORY_CREATED", "MEMORY_UPDATED", "MEMORY_ACCESSED",
-            "MEMORY_DELETED", "MEMORY_EXPIRED",
-            "MEMORY_TRUST_DECAYED", "MEMORY_CONFLICT_DETECTED", "MEMORY_VALIDATED",
-            "POLICY_CREATED", "POLICY_UPDATED", "POLICY_DELETED",
-            "POLICY_EVALUATED", "POLICY_DENIED",
-            "APPROVAL_REQUESTED", "APPROVAL_APPROVED",
-            "APPROVAL_REJECTED", "APPROVAL_EXPIRED",
+            "WORKFLOW_CREATED",
+            "WORKFLOW_STARTED",
+            "WORKFLOW_COMPLETED",
+            "WORKFLOW_FAILED",
+            "WORKFLOW_PAUSED",
+            "WORKFLOW_RESUMED",
+            "WORKFLOW_CANCELLED",
+            "NODE_STARTED",
+            "NODE_COMPLETED",
+            "NODE_FAILED",
+            "NODE_SKIPPED",
+            "NODE_RETRIED",
+            "TOOL_REGISTERED",
+            "TOOL_UPDATED",
+            "TOOL_DISABLED",
+            "TOOL_EXECUTION_STARTED",
+            "TOOL_EXECUTION_COMPLETED",
+            "TOOL_EXECUTION_FAILED",
+            "TOOL_EXECUTION_TIMED_OUT",
+            "MEMORY_CREATED",
+            "MEMORY_UPDATED",
+            "MEMORY_ACCESSED",
+            "MEMORY_DELETED",
+            "MEMORY_EXPIRED",
+            "MEMORY_TRUST_DECAYED",
+            "MEMORY_CONFLICT_DETECTED",
+            "MEMORY_VALIDATED",
+            "POLICY_CREATED",
+            "POLICY_UPDATED",
+            "POLICY_DELETED",
+            "POLICY_EVALUATED",
+            "POLICY_DENIED",
+            "APPROVAL_REQUESTED",
+            "APPROVAL_APPROVED",
+            "APPROVAL_REJECTED",
+            "APPROVAL_EXPIRED",
             "HTTP_REQUEST",
             "DECISION_RECORDED",
-            "INPUT_SNAPSHOT_CAPTURED", "REPLAY_STARTED", "REPLAY_DIVERGENCE_DETECTED",
-            "INFERENCE_STARTED", "INFERENCE_COMPLETED", "INFERENCE_FAILED",
-            "INFERENCE_STREAM_STARTED", "INFERENCE_STREAM_COMPLETED", "INFERENCE_STREAM_FAILED",
-            "CATALOG_SYNC_STARTED", "CATALOG_SYNC_COMPLETED", "CATALOG_SYNC_FAILED",
+            "INPUT_SNAPSHOT_CAPTURED",
+            "REPLAY_STARTED",
+            "REPLAY_DIVERGENCE_DETECTED",
+            "INFERENCE_STARTED",
+            "INFERENCE_COMPLETED",
+            "INFERENCE_FAILED",
+            "INFERENCE_STREAM_STARTED",
+            "INFERENCE_STREAM_COMPLETED",
+            "INFERENCE_STREAM_FAILED",
+            "CATALOG_SYNC_STARTED",
+            "CATALOG_SYNC_COMPLETED",
+            "CATALOG_SYNC_FAILED",
             "CATALOG_SYNC_ANOMALY_ABORTED",
             "plugin.hook_invoked",
             "plugin.hook_completed",

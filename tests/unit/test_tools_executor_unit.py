@@ -1,4 +1,5 @@
 """Unit tests for tools/executor.py — exception classes, schema validation, sandbox enforcement."""
+
 from __future__ import annotations
 
 import pytest

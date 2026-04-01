@@ -80,6 +80,7 @@ class DecisionLedger:
 
         if self._signing_key:
             from syndicateclaw.security.signing import sign_payload
+
             signature = sign_payload(decision.inputs, self._signing_key)
             decision.side_effects = [*decision.side_effects, f"hmac:{signature}"]
 
@@ -191,10 +192,7 @@ class DecisionLedger:
         trace_id: str | None = None,
     ) -> DecisionRecord:
         """Convenience method for memory write/read decisions."""
-        domain = (
-            DecisionDomain.MEMORY_WRITE if action == "write"
-            else DecisionDomain.MEMORY_READ
-        )
+        domain = DecisionDomain.MEMORY_WRITE if action == "write" else DecisionDomain.MEMORY_READ
         return await self.record(
             domain=domain,
             decision_type=f"memory_{action}",

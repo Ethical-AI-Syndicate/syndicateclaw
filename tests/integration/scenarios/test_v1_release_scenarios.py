@@ -292,9 +292,7 @@ def test_audit_log_has_no_update_or_delete_api_surface(
     importlib.reload(main_mod)
     app = main_mod.create_app()
     audit_routes = [
-        r
-        for r in app.routes
-        if hasattr(r, "path") and "audit" in getattr(r, "path", "")
+        r for r in app.routes if hasattr(r, "path") and "audit" in getattr(r, "path", "")
     ]
     for route in audit_routes:
         methods = getattr(route, "methods", None) or set()

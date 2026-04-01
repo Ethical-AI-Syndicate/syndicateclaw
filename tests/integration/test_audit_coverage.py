@@ -168,4 +168,3 @@ async def test_audit_integrity_hash_present(
         row = await session.get(DBAuditEvent, event.id)
         assert row is not None
         assert row.details.get("integrity_signature")
-

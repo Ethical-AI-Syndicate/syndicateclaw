@@ -45,9 +45,9 @@ class IntegrityVerifier:
         violations: list[dict[str, Any]] = []
 
         async with self._session_factory() as session:
-            stmt = select(DBDecisionRecord).order_by(
-                DBDecisionRecord.created_at.desc()
-            ).limit(limit)
+            stmt = (
+                select(DBDecisionRecord).order_by(DBDecisionRecord.created_at.desc()).limit(limit)
+            )
             result = await session.execute(stmt)
             records = list(result.scalars().all())
 
@@ -57,13 +57,15 @@ class IntegrityVerifier:
                 json.dumps(inputs, sort_keys=True, default=str).encode()
             ).hexdigest()
             if expected != (rec.context_hash or ""):
-                violations.append({
-                    "decision_record_id": rec.id,
-                    "expected_hash": expected,
-                    "stored_hash": rec.context_hash,
-                    "domain": rec.domain,
-                    "created_at": rec.created_at.isoformat() if rec.created_at else None,
-                })
+                violations.append(
+                    {
+                        "decision_record_id": rec.id,
+                        "expected_hash": expected,
+                        "stored_hash": rec.context_hash,
+                        "domain": rec.domain,
+                        "created_at": rec.created_at.isoformat() if rec.created_at else None,
+                    }
+                )
 
         logger.info(
             "integrity.decision_hashes_verified",
@@ -77,9 +79,7 @@ class IntegrityVerifier:
         violations: list[dict[str, Any]] = []
 
         async with self._session_factory() as session:
-            stmt = select(DBInputSnapshot).order_by(
-                DBInputSnapshot.created_at.desc()
-            ).limit(limit)
+            stmt = select(DBInputSnapshot).order_by(DBInputSnapshot.created_at.desc()).limit(limit)
             result = await session.execute(stmt)
             snapshots = list(result.scalars().all())
 
@@ -89,13 +89,15 @@ class IntegrityVerifier:
                 json.dumps(response_data, sort_keys=True, default=str).encode()
             ).hexdigest()
             if expected != (snap.content_hash or ""):
-                violations.append({
-                    "snapshot_id": snap.id,
-                    "run_id": snap.run_id,
-                    "expected_hash": expected,
-                    "stored_hash": snap.content_hash,
-                    "snapshot_type": snap.snapshot_type,
-                })
+                violations.append(
+                    {
+                        "snapshot_id": snap.id,
+                        "run_id": snap.run_id,
+                        "expected_hash": expected,
+                        "stored_hash": snap.content_hash,
+                        "snapshot_type": snap.snapshot_type,
+                    }
+                )
 
         logger.info(
             "integrity.snapshot_hashes_verified",
@@ -109,22 +111,27 @@ class IntegrityVerifier:
         orphans: list[dict[str, Any]] = []
 
         async with self._session_factory() as session:
-            stmt = select(DBToolExecution).where(
-                DBToolExecution.policy_decision_id.is_(None),
-                DBToolExecution.status == "COMPLETED",
-            ).order_by(
-                DBToolExecution.created_at.desc()
-            ).limit(limit)
+            stmt = (
+                select(DBToolExecution)
+                .where(
+                    DBToolExecution.policy_decision_id.is_(None),
+                    DBToolExecution.status == "COMPLETED",
+                )
+                .order_by(DBToolExecution.created_at.desc())
+                .limit(limit)
+            )
             result = await session.execute(stmt)
             executions = list(result.scalars().all())
 
         for ex in executions:
-            orphans.append({
-                "tool_execution_id": ex.id,
-                "tool_name": ex.tool_name,
-                "run_id": ex.run_id,
-                "created_at": ex.created_at.isoformat() if ex.created_at else None,
-            })
+            orphans.append(
+                {
+                    "tool_execution_id": ex.id,
+                    "tool_name": ex.tool_name,
+                    "run_id": ex.run_id,
+                    "created_at": ex.created_at.isoformat() if ex.created_at else None,
+                }
+            )
 
         logger.info(
             "integrity.unlinked_tool_executions",
@@ -135,11 +142,14 @@ class IntegrityVerifier:
     async def detect_version_drift(self, limit: int = 100) -> list[dict[str, Any]]:
         """Compare version manifests across recent runs to detect drift."""
         async with self._session_factory() as session:
-            stmt = select(DBWorkflowRun).where(
-                DBWorkflowRun.version_manifest.is_not(None),
-            ).order_by(
-                DBWorkflowRun.created_at.desc()
-            ).limit(limit)
+            stmt = (
+                select(DBWorkflowRun)
+                .where(
+                    DBWorkflowRun.version_manifest.is_not(None),
+                )
+                .order_by(DBWorkflowRun.created_at.desc())
+                .limit(limit)
+            )
             result = await session.execute(stmt)
             runs = list(result.scalars().all())
 
@@ -161,11 +171,13 @@ class IntegrityVerifier:
                     }
 
             if diffs:
-                drift_reports.append({
-                    "baseline_run_id": runs[0].id,
-                    "compared_run_id": run.id,
-                    "differences": diffs,
-                })
+                drift_reports.append(
+                    {
+                        "baseline_run_id": runs[0].id,
+                        "compared_run_id": run.id,
+                        "differences": diffs,
+                    }
+                )
 
         logger.info(
             "integrity.version_drift_check",

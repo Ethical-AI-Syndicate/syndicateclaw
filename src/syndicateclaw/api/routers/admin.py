@@ -155,20 +155,20 @@ async def get_approval_queue(actor: str = Depends(get_current_actor)) -> list[Ap
     return []
 
 
-@router.post("/approvals/{id}/decide")
+@router.post("/approvals/{approval_id}/decide")
 async def decide_approval(
-    id: str,
+    approval_id: str,
     body: ApprovalDecisionRequest,
     actor: str = Depends(get_current_actor),
 ) -> dict[str, Any]:
     logger.info(
         "admin.approval_decide_requested",
-        approval_id=id,
+        approval_id=approval_id,
         accepted=body.accepted,
         actor=actor,
     )
     # TODO: wire to ApprovalService decide/resolve API.
-    return {"id": id, "accepted": body.accepted, "queued": True}
+    return {"id": approval_id, "accepted": body.accepted, "queued": True}
 
 
 @router.get("/workflows/runs", response_model=list[WorkflowRunSummary])
@@ -183,7 +183,9 @@ async def list_workflow_runs(
 
 
 @router.get("/workflows/runs/{run_id}", response_model=WorkflowRunSummary)
-async def get_workflow_run(run_id: str, actor: str = Depends(get_current_actor)) -> WorkflowRunSummary:
+async def get_workflow_run(
+    run_id: str, actor: str = Depends(get_current_actor)
+) -> WorkflowRunSummary:
     _ = actor
     # TODO: load workflow run details by run_id.
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="run not found")
@@ -200,7 +202,9 @@ async def list_memory_namespaces(
 
 
 @router.delete("/memory/namespaces/{namespace}")
-async def purge_namespace(namespace: str, actor: str = Depends(get_current_actor)) -> dict[str, Any]:
+async def purge_namespace(
+    namespace: str, actor: str = Depends(get_current_actor)
+) -> dict[str, Any]:
     logger.warning("admin.memory_namespace_purge_requested", namespace=namespace, actor=actor)
     # TODO: wire to MemoryService namespace purge.
     return {"namespace": namespace, "purged": True}
@@ -212,7 +216,7 @@ async def list_audit_events(
     actor: str | None = Query(default=None),
     domain: str | None = Query(default=None),
     effect: str | None = Query(default=None),
-    since: datetime | None = Query(default=None),
+    since: datetime | None = None,
     current_actor: str = Depends(get_current_actor),
 ) -> list[AuditEntry]:
     _ = (limit, actor, domain, effect, since, current_actor)

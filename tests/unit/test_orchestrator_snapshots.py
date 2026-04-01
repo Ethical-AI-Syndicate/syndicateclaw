@@ -144,12 +144,15 @@ async def test_get_run_snapshots_returns_validated_models() -> None:
     mock_repo = AsyncMock()
     mock_repo.get_by_run = AsyncMock(return_value=[row])
 
-    with patch(
-        "syndicateclaw.orchestrator.snapshots.InputSnapshotRepository",
-        return_value=mock_repo,
-    ), patch(
-        "syndicateclaw.orchestrator.snapshots.InputSnapshot.model_validate",
-        return_value=MagicMock(run_id="run-1"),
+    with (
+        patch(
+            "syndicateclaw.orchestrator.snapshots.InputSnapshotRepository",
+            return_value=mock_repo,
+        ),
+        patch(
+            "syndicateclaw.orchestrator.snapshots.InputSnapshot.model_validate",
+            return_value=MagicMock(run_id="run-1"),
+        ),
     ):
         store = InputSnapshotStore(factory)
         snaps = await store.get_run_snapshots("run-1")

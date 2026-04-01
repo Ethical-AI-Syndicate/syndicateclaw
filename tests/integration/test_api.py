@@ -9,7 +9,7 @@ pytestmark = pytest.mark.integration
 
 
 class TestHealthCheck:
-    async def test_health_check(self, client: AsyncClient):
+    async def test_health_check(self, client: AsyncClient) -> None:
         resp = await client.get("/healthz")
         assert resp.status_code == 200
         data = resp.json()
@@ -18,7 +18,7 @@ class TestHealthCheck:
 
 
 class TestWorkflowCRUD:
-    async def test_create_workflow(self, client: AsyncClient):
+    async def test_create_workflow(self, client: AsyncClient) -> None:
         wf_name = f"integration-test-wf-{uuid.uuid4().hex[:8]}"
         payload = {
             "name": wf_name,
@@ -36,14 +36,14 @@ class TestWorkflowCRUD:
         assert data["name"] == wf_name
         assert "id" in data
 
-    async def test_list_workflows(self, client: AsyncClient):
+    async def test_list_workflows(self, client: AsyncClient) -> None:
         resp = await client.get("/api/v1/workflows/")
         assert resp.status_code == 200
         assert isinstance(resp.json(), list)
 
 
 class TestMemoryCRUD:
-    async def test_memory_crud(self, client: AsyncClient):
+    async def test_memory_crud(self, client: AsyncClient) -> None:
         ns = f"test-ns-{uuid.uuid4().hex[:8]}"
         key = f"test-key-{uuid.uuid4().hex[:8]}"
         create_payload = {
@@ -73,7 +73,7 @@ class TestMemoryCRUD:
 
 
 class TestApprovalLifecycle:
-    async def test_approval_lifecycle(self, client: AsyncClient):
+    async def test_approval_lifecycle(self, client: AsyncClient) -> None:
         wf_payload = {
             "name": f"approval-test-wf-{uuid.uuid4().hex[:8]}",
             "version": "1.0.0",

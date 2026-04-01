@@ -163,9 +163,7 @@ async def get_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
     return rule
 
 
@@ -181,9 +179,7 @@ async def update_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
 
     if body.description is not None:
         rule.description = body.description
@@ -219,9 +215,7 @@ async def delete_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
     rule.enabled = False
     await db.flush()
     logger.info("policy.disabled", rule_id=rule_id)

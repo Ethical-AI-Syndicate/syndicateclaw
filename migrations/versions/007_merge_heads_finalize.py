@@ -7,7 +7,6 @@ Create Date: 2026-03-27
 
 from collections.abc import Sequence
 
-
 revision: str = "007_merge_heads_finalize"
 down_revision: str | Sequence[str] | None = "007_merge_heads"
 branch_labels: str | Sequence[str] | None = None

@@ -1,1130 +1,1906 @@
 [
   {
     "cell": null,
-    "code": "I001",
+    "code": "N806",
     "end_location": {
-      "column": 50,
-      "row": 665
+      "column": 87,
+      "row": 83
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from datetime import UTC, datetime, timedelta\n\n    import jwt as pyjwt\n",
-          "end_location": {
-            "column": 1,
-            "row": 666
-          },
-          "location": {
-            "column": 1,
-            "row": 664
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 664
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 664,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "F821",
-    "end_location": {
-      "column": 89,
-      "row": 678
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
     "fix": null,
     "location": {
-      "column": 78,
-      "row": 678
+      "column": 79,
+      "row": 83
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 678,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 83,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "F821",
+    "code": "N806",
     "end_location": {
-      "column": 81,
-      "row": 690
+      "column": 79,
+      "row": 88
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
     "fix": null,
     "location": {
       "column": 70,
-      "row": 690
+      "row": 88
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 690,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 88,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "F821",
+    "code": "N806",
     "end_location": {
-      "column": 81,
-      "row": 701
+      "column": 87,
+      "row": 102
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 102
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 102,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 107
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
     "fix": null,
     "location": {
       "column": 70,
-      "row": 701
+      "row": 107
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 701,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 107,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "F821",
+    "code": "N806",
     "end_location": {
-      "column": 82,
-      "row": 722
+      "column": 87,
+      "row": 141
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 141
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 141,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 155
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 155
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 155,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 169
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 169
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 169,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 183
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 183
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 183,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 200
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 200
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 200,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 218
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 218
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 218,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 224
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 224
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 224,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 86,
+      "row": 227
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 77,
+      "row": 227
+    },
+    "message": "Variable `MockModel` in function should be lowercase",
+    "noqa_row": 227,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 244
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 244
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 244,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 249
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 249
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 249,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 265
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 265
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 265,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 271
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 271
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 271,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 86,
+      "row": 274
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 77,
+      "row": 274
+    },
+    "message": "Variable `MockModel` in function should be lowercase",
+    "noqa_row": 274,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 293
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 293
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 293,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 309
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 309
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 309,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 324
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 324
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 324,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 354
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
     "fix": null,
     "location": {
       "column": 71,
-      "row": 722
+      "row": 354
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 722,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 354,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "F821",
+    "code": "N806",
     "end_location": {
-      "column": 81,
-      "row": 742
+      "column": 79,
+      "row": 376
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
     "fix": null,
     "location": {
-      "column": 70,
-      "row": 742
+      "column": 71,
+      "row": 376
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 742,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "F821",
+    "code": "N806",
     "end_location": {
-      "column": 73,
-      "row": 753
+      "column": 79,
+      "row": 137
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
     "fix": null,
     "location": {
-      "column": 62,
-      "row": 753
+      "column": 71,
+      "row": 137
     },
-    "message": "Undefined name `AsyncClient`",
-    "noqa_row": 753,
-    "url": "https://docs.astral.sh/ruff/rules/undefined-name"
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 137,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
   },
   {
     "cell": null,
-    "code": "I001",
+    "code": "N806",
     "end_location": {
-      "column": 51,
-      "row": 775
+      "column": 79,
+      "row": 161
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 776
-          },
-          "location": {
-            "column": 1,
-            "row": 771
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 771
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 771,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 51,
-      "row": 812
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 813
-          },
-          "location": {
-            "column": 1,
-            "row": 807
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 807
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 807,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 16,
-      "row": 856
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import uuid\n    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n    from syndicateclaw.db.models import Principal\n",
-          "end_location": {
-            "column": 1,
-            "row": 857
-          },
-          "location": {
-            "column": 1,
-            "row": 849
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 849
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 849,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 16,
-      "row": 908
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import uuid\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz.route_registry import resolve_run_by_id\n    from syndicateclaw.db.models import WorkflowDefinition as WFModel\n    from syndicateclaw.db.models import WorkflowRun as RunModel\n",
-          "end_location": {
-            "column": 1,
-            "row": 909
-          },
-          "location": {
-            "column": 1,
-            "row": 905
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 905
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 905,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 16,
-      "row": 932
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import uuid\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz.route_registry import resolve_workflow_for_run_start\n    from syndicateclaw.db.models import WorkflowDefinition as WFModel\n",
-          "end_location": {
-            "column": 1,
-            "row": 933
-          },
-          "location": {
-            "column": 1,
-            "row": 929
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 929
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 929,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 19,
-      "row": 951
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import inspect\n    from unittest.mock import AsyncMock, MagicMock\n\n    from syndicateclaw.authz import route_registry as rr\n",
-          "end_location": {
-            "column": 1,
-            "row": 952
-          },
-          "location": {
-            "column": 1,
-            "row": 949
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 949
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 949,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "B007",
-    "end_location": {
-      "column": 13,
-      "row": 961
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "_name",
-          "end_location": {
-            "column": 13,
-            "row": 961
-          },
-          "location": {
-            "column": 9,
-            "row": 961
-          }
-        }
-      ],
-      "message": "Rename unused `name` to `_name`"
-    },
-    "location": {
-      "column": 9,
-      "row": 961
-    },
-    "message": "Loop control variable `name` not used within loop body",
-    "noqa_row": 961,
-    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 981
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 982
-          },
-          "location": {
-            "column": 1,
-            "row": 977
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 977
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 977,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 1001
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 1002
-          },
-          "location": {
-            "column": 1,
-            "row": 998
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 998
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 998,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 1008
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import MagicMock\n\n    from starlette.testclient import TestClient\n",
-          "end_location": {
-            "column": 1,
-            "row": 1009
-          },
-          "location": {
-            "column": 1,
-            "row": 1007
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1007
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1007,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "F401",
-    "end_location": {
-      "column": 48,
-      "row": 1007
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "",
-          "end_location": {
-            "column": 1,
-            "row": 1008
-          },
-          "location": {
-            "column": 1,
-            "row": 1007
-          }
-        }
-      ],
-      "message": "Remove unused import: `starlette.testclient.TestClient`"
-    },
-    "location": {
-      "column": 38,
-      "row": 1007
-    },
-    "message": "`starlette.testclient.TestClient` imported but unused",
-    "noqa_row": 1007,
-    "url": "https://docs.astral.sh/ruff/rules/unused-import"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 16,
-      "row": 1052
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import uuid\n\n    from syndicateclaw.authz.evaluator import RBACEvaluator\n",
-          "end_location": {
-            "column": 1,
-            "row": 1053
-          },
-          "location": {
-            "column": 1,
-            "row": 1051
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1051
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1051,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 1087
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 1088
-          },
-          "location": {
-            "column": 1,
-            "row": 1083
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1083
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1083,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "E401",
-    "end_location": {
-      "column": 20,
-      "row": 1103
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import os\n    import uuid",
-          "end_location": {
-            "column": 20,
-            "row": 1103
-          },
-          "location": {
-            "column": 1,
-            "row": 1103
-          }
-        }
-      ],
-      "message": "Split imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1103
-    },
-    "message": "Multiple imports on one line",
-    "noqa_row": 1103,
-    "url": "https://docs.astral.sh/ruff/rules/multiple-imports-on-one-line"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 20,
-      "row": 1103
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import os\n    import uuid\n",
-          "end_location": {
-            "column": 1,
-            "row": 1104
-          },
-          "location": {
-            "column": 1,
-            "row": 1103
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1103
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1103,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 51,
-      "row": 1118
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import AsyncMock, MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n    from syndicateclaw.db.models import Principal\n",
-          "end_location": {
-            "column": 1,
-            "row": 1119
-          },
-          "location": {
-            "column": 1,
-            "row": 1112
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1112
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1112,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 1179
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import MagicMock\n\n    from starlette.applications import Starlette\n    from starlette.responses import PlainTextResponse\n    from starlette.routing import Route\n\n    from syndicateclaw.authz.shadow_middleware import DisagreementType, ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 1180
-          },
-          "location": {
-            "column": 1,
-            "row": 1175
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1175
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1175,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 40,
-      "row": 1211
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import inspect\n    from unittest.mock import MagicMock\n\n    from syndicateclaw.authz import route_registry as rr\n",
-          "end_location": {
-            "column": 1,
-            "row": 1212
-          },
-          "location": {
-            "column": 1,
-            "row": 1209
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1209
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1209,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "B007",
-    "end_location": {
-      "column": 13,
-      "row": 1218
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "_name",
-          "end_location": {
-            "column": 13,
-            "row": 1218
-          },
-          "location": {
-            "column": 9,
-            "row": 1218
-          }
-        }
-      ],
-      "message": "Rename unused `name` to `_name`"
-    },
-    "location": {
-      "column": 9,
-      "row": 1218
-    },
-    "message": "Loop control variable `name` not used within loop body",
-    "noqa_row": 1218,
-    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 57,
-      "row": 1230
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import inspect\n\n    from syndicateclaw.authz import route_registry as rr\n",
-          "end_location": {
-            "column": 1,
-            "row": 1231
-          },
-          "location": {
-            "column": 1,
-            "row": 1229
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1229
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1229,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 51,
-      "row": 1236
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from unittest.mock import AsyncMock, MagicMock\n",
-          "end_location": {
-            "column": 1,
-            "row": 1237
-          },
-          "location": {
-            "column": 1,
-            "row": 1236
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1236
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1236,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "F401",
-    "end_location": {
-      "column": 51,
-      "row": 1236
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "from unittest.mock import MagicMock",
-          "end_location": {
-            "column": 51,
-            "row": 1236
-          },
-          "location": {
-            "column": 5,
-            "row": 1236
-          }
-        }
-      ],
-      "message": "Remove unused import: `unittest.mock.AsyncMock`"
-    },
-    "location": {
-      "column": 42,
-      "row": 1236
-    },
-    "message": "`unittest.mock.AsyncMock` imported but unused",
-    "noqa_row": 1236,
-    "url": "https://docs.astral.sh/ruff/rules/unused-import"
-  },
-  {
-    "cell": null,
-    "code": "B007",
-    "end_location": {
-      "column": 13,
-      "row": 1237
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "unsafe",
-      "edits": [
-        {
-          "content": "_name",
-          "end_location": {
-            "column": 13,
-            "row": 1237
-          },
-          "location": {
-            "column": 9,
-            "row": 1237
-          }
-        }
-      ],
-      "message": "Rename unused `name` to `_name`"
-    },
-    "location": {
-      "column": 9,
-      "row": 1237
-    },
-    "message": "Loop control variable `name` not used within loop body",
-    "noqa_row": 1237,
-    "url": "https://docs.astral.sh/ruff/rules/unused-loop-control-variable"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 72,
-      "row": 1761
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    import uuid\n\n    from starlette.applications import Starlette\n\n    from syndicateclaw.authz.evaluator import AuthzResult, Decision\n    from syndicateclaw.authz.route_registry import get_route_spec\n    from syndicateclaw.authz.shadow_middleware import (\n        DisagreementType,\n        ShadowRBACMiddleware,\n    )\n    from syndicateclaw.db.models import Principal, Role, RoleAssignment\n",
-          "end_location": {
-            "column": 1,
-            "row": 1762
-          },
-          "location": {
-            "column": 1,
-            "row": 1751
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
-    "location": {
-      "column": 5,
-      "row": 1751
-    },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1751,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
-  },
-  {
-    "cell": null,
-    "code": "F401",
-    "end_location": {
-      "column": 58,
-      "row": 1755
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "from syndicateclaw.authz.evaluator import Decision",
-          "end_location": {
-            "column": 68,
-            "row": 1755
-          },
-          "location": {
-            "column": 5,
-            "row": 1755
-          }
-        }
-      ],
-      "message": "Remove unused import: `syndicateclaw.authz.evaluator.AuthzResult`"
-    },
-    "location": {
-      "column": 47,
-      "row": 1755
-    },
-    "message": "`syndicateclaw.authz.evaluator.AuthzResult` imported but unused",
-    "noqa_row": 1755,
-    "url": "https://docs.astral.sh/ruff/rules/unused-import"
-  },
-  {
-    "cell": null,
-    "code": "E501",
-    "end_location": {
-      "column": 106,
-      "row": 1854
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
     "fix": null,
     "location": {
+      "column": 71,
+      "row": 161
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 161,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 187
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 187
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 187,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 236
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 236
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 236,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 261
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 261
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 261,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 282
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 282
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 282,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 330
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 330
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 330,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 350
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 350
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 350,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 189
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 189
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 189,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 194
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 194
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 194,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 210
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 210
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 210,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 215
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 215
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 215,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 246
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 246
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 246,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 261
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 261
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 261,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 276
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 276
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 276,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 291
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 291
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 291,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 311
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 311
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 311,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 358
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 358
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 358,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 372
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 372
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 372,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 386
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 386
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 386,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 400
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 400
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 400,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 406
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 406
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 406,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 426
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 426
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 426,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 432
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 432
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 432,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 446
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 446
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 446,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 460
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 460
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 460,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 466
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 466
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 466,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 480
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 480
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 480,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 500
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 500
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 500,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 505
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 505
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 505,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 519
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 519
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 519,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 524
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 524
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 524,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 545
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 545
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 545,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 550
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 550
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 550,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 565
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 565
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 565,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 570
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 570
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 570,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 66
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 66
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 71
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 71
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 71,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 76
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 76
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 76,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 101
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 101
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 101,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 106
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 106
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 106,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 111
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 111
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 111,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 141
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 141
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 141,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 146
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 146
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 146,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 151
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 151
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 151,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 175
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 175
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 175,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 180
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 180
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 180,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 185
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 185
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 185,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 207
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 207
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 207,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 212
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 212
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 212,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 217
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 217
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 217,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 241
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 241
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 241,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 248
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 248
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 248,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 283
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 283
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 283,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 288
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 288
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 288,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 320
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 320
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 320,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 326
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 326
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 326,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 339
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 339
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 339,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 345
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 345
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 345,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 370
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 370
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 370,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 376
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 376
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 388
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 388
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 388,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 407
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 407
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 407,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 423
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 423
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 423,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 334
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 330
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 330,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 96,
+      "row": 343
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 342
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 342,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 353
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 352
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 352,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 365
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 364
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 364,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 379
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 378
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 378,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 402
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 401
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 401,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 441
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 440
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 440,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 475
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 474
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 474,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 506
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 505
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 505,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 534
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 533
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 533,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 96,
+      "row": 578
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 577
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 577,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 587
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 586
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 586,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 597
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 596
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 596,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 85,
+      "row": 617
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 616
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 616,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 85,
+      "row": 632
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 631
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 631,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
       "column": 101,
-      "row": 1854
+      "row": 646
     },
-    "message": "Line too long (105 > 100)",
-    "noqa_row": 1854,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 45,
-      "row": 1867
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from starlette.applications import Starlette\n    from starlette.responses import Response\n\n    from syndicateclaw.authz.evaluator import Decision\n    from syndicateclaw.authz.route_registry import RouteAuthzSpec\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 1868
-          },
-          "location": {
-            "column": 1,
-            "row": 1863
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
     "location": {
       "column": 5,
-      "row": 1863
+      "row": 645
     },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1863,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 645,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
   },
   {
     "cell": null,
-    "code": "E501",
+    "code": "SIM117",
     "end_location": {
-      "column": 104,
-      "row": 1884
+      "column": 11,
+      "row": 670
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
     "fix": null,
-    "location": {
-      "column": 101,
-      "row": 1884
-    },
-    "message": "Line too long (103 > 100)",
-    "noqa_row": 1884,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
-  },
-  {
-    "cell": null,
-    "code": "E501",
-    "end_location": {
-      "column": 102,
-      "row": 1886
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": null,
-    "location": {
-      "column": 101,
-      "row": 1886
-    },
-    "message": "Line too long (101 > 100)",
-    "noqa_row": 1886,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
-  },
-  {
-    "cell": null,
-    "code": "E501",
-    "end_location": {
-      "column": 108,
-      "row": 1887
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": null,
-    "location": {
-      "column": 101,
-      "row": 1887
-    },
-    "message": "Line too long (107 > 100)",
-    "noqa_row": 1887,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
-  },
-  {
-    "cell": null,
-    "code": "I001",
-    "end_location": {
-      "column": 49,
-      "row": 1894
-    },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
-    "fix": {
-      "applicability": "safe",
-      "edits": [
-        {
-          "content": "    from starlette.applications import Starlette\n\n    from syndicateclaw.authz.evaluator import AuthzResult, Decision\n    from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware\n",
-          "end_location": {
-            "column": 1,
-            "row": 1895
-          },
-          "location": {
-            "column": 1,
-            "row": 1892
-          }
-        }
-      ],
-      "message": "Organize imports"
-    },
     "location": {
       "column": 5,
-      "row": 1892
+      "row": 667
     },
-    "message": "Import block is un-sorted or un-formatted",
-    "noqa_row": 1892,
-    "url": "https://docs.astral.sh/ruff/rules/unsorted-imports"
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 667,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
   },
   {
     "cell": null,
-    "code": "E501",
+    "code": "SIM117",
     "end_location": {
-      "column": 104,
-      "row": 1947
+      "column": 11,
+      "row": 705
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
     "fix": null,
     "location": {
-      "column": 101,
-      "row": 1947
+      "column": 5,
+      "row": 702
     },
-    "message": "Line too long (103 > 100)",
-    "noqa_row": 1947,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 702,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
   },
   {
     "cell": null,
-    "code": "E501",
+    "code": "SIM117",
     "end_location": {
-      "column": 104,
-      "row": 1951
+      "column": 11,
+      "row": 739
     },
-    "filename": "/home/mike/syndicateclaw/tests/integration/test_coverage_gaps.py",
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
     "fix": null,
     "location": {
-      "column": 101,
-      "row": 1951
+      "column": 5,
+      "row": 736
     },
-    "message": "Line too long (103 > 100)",
-    "noqa_row": 1951,
-    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 736,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 776
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 773
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 773,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 65,
+      "row": 836
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 835
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 835,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 95,
+      "row": 70
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_tools_builtin_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 69
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 69,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 95,
+      "row": 99
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_tools_builtin_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 98
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 98,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
   }
 ]

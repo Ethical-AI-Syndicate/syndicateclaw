@@ -1,4 +1,5 @@
 """Unit tests for memory/service.py — MemoryService CRUD paths."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -19,7 +20,7 @@ from syndicateclaw.models import (
 # ---------------------------------------------------------------------------
 
 
-def _make_session_factory():
+def _make_session_factory() -> Any:
     mock_session = AsyncMock()
     mock_session.__aenter__ = AsyncMock(return_value=mock_session)
     mock_session.__aexit__ = AsyncMock(return_value=False)
@@ -185,15 +186,15 @@ async def test_write_persists_record_and_returns_domain() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.create = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             result = await svc.write(_make_domain_record(), actor="user:1")
@@ -206,15 +207,15 @@ async def test_write_sets_expires_at_from_ttl() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.create = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             rec = _make_domain_record()
@@ -242,10 +243,10 @@ async def test_write_validates_provenance_before_persist() -> None:
 async def test_read_returns_none_for_missing_record() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_key = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         result = await svc.read("ns", "k", actor="user:1")
@@ -257,10 +258,10 @@ async def test_read_returns_none_for_deleted_record() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(deletion_status=MemoryDeletionStatus.MARKED_FOR_DELETION.value)
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_key = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         result = await svc.read("ns", "k", actor="user:1")
@@ -272,10 +273,10 @@ async def test_read_returns_none_for_expired_record() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(expires_at=datetime.now(UTC) - timedelta(hours=1))
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_key = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         result = await svc.read("ns", "k", actor="user:1")
@@ -287,10 +288,10 @@ async def test_read_returns_none_when_access_denied() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(access_policy="owner_only", actor="user:owner")
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_key = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         result = await svc.read("ns", "k", actor="user:other")
@@ -302,15 +303,15 @@ async def test_read_returns_record_and_emits_audit() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_key = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             result = await svc.read("ns", "k", actor="user:1")
@@ -354,10 +355,10 @@ async def test_read_cache_hit_access_denied() -> None:
 async def test_update_raises_if_not_found() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         with pytest.raises(ValueError, match="not found"):
@@ -368,10 +369,10 @@ async def test_update_raises_if_deleted() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(deletion_status=MemoryDeletionStatus.MARKED_FOR_DELETION.value)
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         with pytest.raises(ValueError, match="deleted"):
@@ -382,10 +383,10 @@ async def test_update_raises_on_invalid_field() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         with pytest.raises(ValueError, match="Cannot update field"):
@@ -396,16 +397,16 @@ async def test_update_happy_path() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=db_rec)
         mock_repo.update = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             result = await svc.update("rec-1", {"confidence": 0.8}, actor="user:1")
@@ -422,16 +423,16 @@ async def test_delete_soft_marks_for_deletion() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=db_rec)
         mock_repo.update = AsyncMock(return_value=db_rec)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             await svc.delete("rec-1", actor="user:1")
@@ -442,10 +443,10 @@ async def test_delete_soft_marks_for_deletion() -> None:
 async def test_delete_soft_raises_if_not_found() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         with pytest.raises(ValueError, match="not found"):
@@ -456,16 +457,16 @@ async def test_delete_hard_calls_repo_delete() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=db_rec)
         mock_repo.delete = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             await svc.delete("rec-1", actor="user:1", hard=True)
@@ -476,11 +477,11 @@ async def test_delete_hard_calls_repo_delete() -> None:
 async def test_delete_hard_no_op_if_not_found() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
         mock_repo.delete = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = MemoryService(factory)
         await svc.delete("missing", actor="user:1", hard=True)
@@ -496,15 +497,15 @@ async def test_delete_hard_no_op_if_not_found() -> None:
 async def test_enforce_retention_returns_purged_count() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.purge_expired = AsyncMock(return_value=7)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             count = await svc.enforce_retention()
@@ -515,15 +516,15 @@ async def test_enforce_retention_returns_purged_count() -> None:
 async def test_enforce_retention_no_purge_skips_audit() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.purge_expired = AsyncMock(return_value=0)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             count = await svc.enforce_retention()
@@ -541,15 +542,15 @@ async def test_search_filters_deleted_records() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(deletion_status=MemoryDeletionStatus.MARKED_FOR_DELETION.value)
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_namespace = AsyncMock(return_value=[db_rec])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             results = await svc.search("ns", {}, actor="user:1")
@@ -561,15 +562,15 @@ async def test_search_filters_by_access_policy() -> None:
     factory = _make_session_factory()
     db_rec = _make_db_record(access_policy="owner_only", actor="user:owner")
 
-    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as MockRepo:
+    with patch("syndicateclaw.memory.service.MemoryRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_namespace = AsyncMock(return_value=[db_rec])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.memory.service.AuditEventRepository") as MockAudit:
+        with patch("syndicateclaw.memory.service.AuditEventRepository") as mock_audit_cls:
             mock_audit = AsyncMock()
             mock_audit.append = AsyncMock()
-            MockAudit.return_value = mock_audit
+            mock_audit_cls.return_value = mock_audit
 
             svc = MemoryService(factory)
             results = await svc.search("ns", {}, actor="user:other")

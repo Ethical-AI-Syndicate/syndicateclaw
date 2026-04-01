@@ -1,4 +1,5 @@
 """Unit tests for approval/authority.py — covers missing lines 64 and 70."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, patch

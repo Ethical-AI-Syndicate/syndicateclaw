@@ -82,13 +82,15 @@ class PolicyEngine:
                         else:
                             continue
                         result = self._evaluate_condition(cond, context)
-                        condition_results.append({
-                            "field": cond.field,
-                            "operator": cond.operator,
-                            "expected": cond.value,
-                            "actual": _resolve_field(context, cond.field),
-                            "matched": result,
-                        })
+                        condition_results.append(
+                            {
+                                "field": cond.field,
+                                "operator": cond.operator,
+                                "expected": cond.value,
+                                "actual": _resolve_field(context, cond.field),
+                                "matched": result,
+                            }
+                        )
                         if not result:
                             all_match = False
                             break
@@ -232,9 +234,7 @@ class PolicyEngine:
         )
         return rule
 
-    async def update_rule(
-        self, rule_id: str, updates: dict[str, Any], actor: str
-    ) -> PolicyRule:
+    async def update_rule(self, rule_id: str, updates: dict[str, Any], actor: str) -> PolicyRule:
         """Load, update, and persist a policy rule."""
         async with self._session_factory() as session, session.begin():
             repo = PolicyRuleRepository(session)
@@ -244,10 +244,7 @@ class PolicyEngine:
 
             for key, value in updates.items():
                 if key == "conditions":
-                    value = [
-                        c.model_dump() if isinstance(c, PolicyCondition) else c
-                        for c in value
-                    ]
+                    value = [c.model_dump() if isinstance(c, PolicyCondition) else c for c in value]
                 if key == "effect" and isinstance(value, PolicyEffect):
                     value = value.value
                 if hasattr(row, key):
@@ -280,9 +277,7 @@ class PolicyEngine:
             {"rule_id": rule_id},
         )
 
-    async def list_rules(
-        self, resource_type: str | None = None
-    ) -> list[PolicyRule]:
+    async def list_rules(self, resource_type: str | None = None) -> list[PolicyRule]:
         """Return rules, optionally filtered by resource type."""
         async with self._session_factory() as session:
             repo = PolicyRuleRepository(session)
@@ -296,9 +291,7 @@ class PolicyEngine:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _evaluate_condition(
-        self, condition: PolicyCondition, context: dict[str, Any]
-    ) -> bool:
+    def _evaluate_condition(self, condition: PolicyCondition, context: dict[str, Any]) -> bool:
         """Safely evaluate a single policy condition against the context."""
         actual = _resolve_field(context, condition.field)
         expected = condition.value

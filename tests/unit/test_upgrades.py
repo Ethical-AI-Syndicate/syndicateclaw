@@ -36,7 +36,7 @@ from syndicateclaw.orchestrator.snapshots import _hash_response
 
 
 class TestDecisionLedger:
-    def test_decision_record_creation(self):
+    def test_decision_record_creation(self) -> None:
         """DecisionRecord can be created with all required fields."""
         record = DecisionRecord.new(
             domain=DecisionDomain.POLICY,
@@ -62,7 +62,7 @@ class TestDecisionLedger:
         assert len(record.rules_evaluated) == 2
         assert record.matched_rule == "r1"
 
-    def test_decision_record_context_hash(self):
+    def test_decision_record_context_hash(self) -> None:
         """Context hash is computed from inputs for integrity verification."""
         inputs = {"tool": "http_request", "action": "execute"}
         expected = hashlib.sha256(
@@ -71,7 +71,7 @@ class TestDecisionLedger:
         actual = _hash_inputs(inputs)
         assert actual == expected
 
-    def test_decision_record_all_domains(self):
+    def test_decision_record_all_domains(self) -> None:
         """All decision domains can be used."""
         for domain in DecisionDomain:
             record = DecisionRecord.new(
@@ -83,7 +83,7 @@ class TestDecisionLedger:
             )
             assert record.domain == domain
 
-    def test_decision_record_captures_non_matching_rules(self):
+    def test_decision_record_captures_non_matching_rules(self) -> None:
         """The rules_evaluated field includes rules that did NOT match, with reasons."""
         rules = [
             {
@@ -113,7 +113,7 @@ class TestDecisionLedger:
 
 
 class TestMemoryTrust:
-    def test_memory_trust_metadata_defaults(self):
+    def test_memory_trust_metadata_defaults(self) -> None:
         meta = MemoryTrustMetadata()
         assert meta.trust_score == 1.0
         assert meta.source_type == MemorySourceType.SYSTEM
@@ -121,7 +121,7 @@ class TestMemoryTrust:
         assert meta.frozen is False
         assert meta.decay_rate == 0.01
 
-    def test_memory_record_with_trust(self):
+    def test_memory_record_with_trust(self) -> None:
         """MemoryRecord now includes trust metadata."""
         record = MemoryRecord.new(
             namespace="incidents",
@@ -140,13 +140,13 @@ class TestMemoryTrust:
         assert record.trust.source_type == MemorySourceType.LLM
         assert record.trust.decay_rate == 0.05
 
-    def test_trust_score_bounds(self):
+    def test_trust_score_bounds(self) -> None:
         with pytest.raises(ValidationError):
             MemoryTrustMetadata(trust_score=1.5)
         with pytest.raises(ValidationError):
             MemoryTrustMetadata(trust_score=-0.1)
 
-    def test_trust_decay_computation(self):
+    def test_trust_decay_computation(self) -> None:
         """Trust decays linearly over time."""
         svc = MemoryTrustService.__new__(MemoryTrustService)
         svc._min_usable_trust = 0.3
@@ -160,7 +160,7 @@ class TestMemoryTrust:
         )
         assert 0.79 <= effective <= 0.81  # 1.0 - (0.02 * 10) = 0.8
 
-    def test_trust_frozen_no_decay(self):
+    def test_trust_frozen_no_decay(self) -> None:
         """Frozen records do not decay."""
         svc = MemoryTrustService.__new__(MemoryTrustService)
         svc._min_usable_trust = 0.3
@@ -174,7 +174,7 @@ class TestMemoryTrust:
         )
         assert effective == 0.9
 
-    def test_trust_usability_threshold(self):
+    def test_trust_usability_threshold(self) -> None:
         svc = MemoryTrustService.__new__(MemoryTrustService)
         svc._min_usable_trust = 0.3
         assert svc.is_usable(0.5) is True
@@ -182,12 +182,12 @@ class TestMemoryTrust:
         assert svc.is_usable(0.29) is False
         assert svc.is_usable(0.0) is False
 
-    def test_source_type_enum_completeness(self):
+    def test_source_type_enum_completeness(self) -> None:
         expected = {"HUMAN", "SYSTEM", "DERIVED", "EXTERNAL", "LLM"}
         actual = {e.value for e in MemorySourceType}
         assert expected == actual
 
-    def test_conflict_set_links_records(self):
+    def test_conflict_set_links_records(self) -> None:
         """Multiple records can share a conflict_set_id."""
         conflict_id = "conflict-abc"
         r1 = MemoryRecord.new(
@@ -212,7 +212,7 @@ class TestMemoryTrust:
 
 
 class TestReplayCorrectness:
-    def test_input_snapshot_creation(self):
+    def test_input_snapshot_creation(self) -> None:
         snap = InputSnapshot.new(
             run_id="run-1",
             node_execution_id="node-1",
@@ -225,28 +225,28 @@ class TestReplayCorrectness:
         assert snap.source_identifier == "http_request"
         assert snap.response_data["status"] == 200
 
-    def test_content_hash_deterministic(self):
+    def test_content_hash_deterministic(self) -> None:
         data = {"status": 200, "body": "hello"}
         h1 = _hash_response(data)
         h2 = _hash_response(data)
         assert h1 == h2
 
-    def test_content_hash_order_independent(self):
+    def test_content_hash_order_independent(self) -> None:
         """JSON canonical form means key order doesn't matter."""
         d1 = {"b": 2, "a": 1}
         d2 = {"a": 1, "b": 2}
         assert _hash_response(d1) == _hash_response(d2)
 
-    def test_content_hash_detects_change(self):
+    def test_content_hash_detects_change(self) -> None:
         d1 = {"status": 200}
         d2 = {"status": 201}
         assert _hash_response(d1) != _hash_response(d2)
 
-    def test_replay_mode_enum(self):
+    def test_replay_mode_enum(self) -> None:
         assert ReplayMode.LIVE.value == "LIVE"
         assert ReplayMode.DETERMINISTIC.value == "DETERMINISTIC"
 
-    def test_workflow_run_has_replay_mode(self):
+    def test_workflow_run_has_replay_mode(self) -> None:
         run = WorkflowRun.new(
             workflow_id="wf-1",
             workflow_version="1.0",
@@ -257,7 +257,7 @@ class TestReplayCorrectness:
 
 
 class TestVersioning:
-    def test_version_manifest_creation(self):
+    def test_version_manifest_creation(self) -> None:
         manifest = VersionManifest(
             workflow_version="2.1.0",
             tool_versions={"http_request": "1.0.0", "memory_write": "1.0.0"},
@@ -267,7 +267,7 @@ class TestVersioning:
         assert manifest.workflow_version == "2.1.0"
         assert len(manifest.tool_versions) == 2
 
-    def test_workflow_run_with_version_manifest(self):
+    def test_workflow_run_with_version_manifest(self) -> None:
         manifest = VersionManifest(
             workflow_version="1.0.0",
             tool_versions={"http_request": "1.0.0"},
@@ -283,7 +283,7 @@ class TestVersioning:
         assert run.version_manifest.workflow_version == "1.0.0"
         assert run.version_manifest.tool_versions["http_request"] == "1.0.0"
 
-    def test_version_manifest_serialization_roundtrip(self):
+    def test_version_manifest_serialization_roundtrip(self) -> None:
         manifest = VersionManifest(
             workflow_version="1.0",
             tool_versions={"t1": "1.0"},
@@ -296,7 +296,7 @@ class TestVersioning:
 
 
 class TestToolSandbox:
-    def test_sandbox_policy_defaults(self):
+    def test_sandbox_policy_defaults(self) -> None:
         policy = ToolSandboxPolicy()
         assert policy.allowed_domains == []
         assert policy.allowed_protocols == ["https"]
@@ -307,7 +307,7 @@ class TestToolSandbox:
         assert policy.filesystem_write is False
         assert policy.subprocess_allowed is False
 
-    def test_tool_with_sandbox_policy(self):
+    def test_tool_with_sandbox_policy(self) -> None:
         tool = Tool.new(
             name="restricted_api",
             version="1.0.0",
@@ -322,7 +322,7 @@ class TestToolSandbox:
         assert len(tool.sandbox_policy.allowed_domains) == 2
         assert "api.example.com" in tool.sandbox_policy.allowed_domains
 
-    def test_network_isolated_tool(self):
+    def test_network_isolated_tool(self) -> None:
         tool = Tool.new(
             name="compute_only",
             version="1.0.0",
@@ -332,7 +332,7 @@ class TestToolSandbox:
         assert tool.sandbox_policy.network_isolation is True
         assert tool.sandbox_policy.allowed_domains == []
 
-    def test_sandbox_policy_serialization(self):
+    def test_sandbox_policy_serialization(self) -> None:
         policy = ToolSandboxPolicy(
             allowed_domains=["example.com"],
             filesystem_read=True,
@@ -344,14 +344,14 @@ class TestToolSandbox:
 
 
 class TestScopedApprovals:
-    def test_approval_scope_defaults(self):
+    def test_approval_scope_defaults(self) -> None:
         scope = ApprovalScope()
         assert scope.scope_type == ApprovalScopeType.SINGLE_ACTION
         assert scope.allowed_actions == []
         assert scope.max_uses is None
         assert scope.context_hash == ""
 
-    def test_time_windowed_approval(self):
+    def test_time_windowed_approval(self) -> None:
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.TIME_WINDOW,
             time_window_seconds=3600,
@@ -359,14 +359,12 @@ class TestScopedApprovals:
         )
         assert scope.time_window_seconds == 3600
 
-    def test_conditional_approval_with_constraints(self):
+    def test_conditional_approval_with_constraints(self) -> None:
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.CONDITIONAL,
             conditions=[
                 PolicyCondition(field="risk_level", operator="eq", value="LOW"),
-                PolicyCondition(
-                    field="actor.role", operator="in", value=["admin", "operator"]
-                ),
+                PolicyCondition(field="actor.role", operator="in", value=["admin", "operator"]),
             ],
             max_uses=5,
             uses_remaining=5,
@@ -374,14 +372,14 @@ class TestScopedApprovals:
         assert len(scope.conditions) == 2
         assert scope.max_uses == 5
 
-    def test_approval_with_redaction(self):
+    def test_approval_with_redaction(self) -> None:
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.SINGLE_ACTION,
             redact_fields=["input.password", "input.api_key"],
         )
         assert len(scope.redact_fields) == 2
 
-    def test_approval_request_includes_scope(self):
+    def test_approval_request_includes_scope(self) -> None:
         request = ApprovalRequest.new(
             run_id="run-1",
             node_execution_id="node-1",
@@ -399,11 +397,11 @@ class TestScopedApprovals:
         assert request.scope.scope_type == ApprovalScopeType.TIME_WINDOW
         assert request.scope.context_hash == "abc123"
 
-    def test_blanket_approval_type(self):
+    def test_blanket_approval_type(self) -> None:
         scope = ApprovalScope(scope_type=ApprovalScopeType.BLANKET)
         assert scope.scope_type == ApprovalScopeType.BLANKET
 
-    def test_context_hash_triggers_reapproval(self):
+    def test_context_hash_triggers_reapproval(self) -> None:
         """Context hash should change when inputs change, triggering re-approval."""
         ctx1 = {"target": "server-a", "action": "restart"}
         ctx2 = {"target": "server-b", "action": "restart"}
@@ -413,7 +411,7 @@ class TestScopedApprovals:
 
 
 class TestDeadLetterClassification:
-    def test_dead_letter_record_creation(self):
+    def test_dead_letter_record_creation(self) -> None:
         record = DeadLetterRecord.new(
             event_type="TOOL_EXECUTION_COMPLETED",
             event_payload={"tool": "http_request", "status": "completed"},
@@ -424,7 +422,7 @@ class TestDeadLetterClassification:
         assert record.retry_count == 0
         assert record.error_category == "transient"
 
-    def test_dead_letter_status_lifecycle(self):
+    def test_dead_letter_status_lifecycle(self) -> None:
         for status in DeadLetterStatus:
             record = DeadLetterRecord.new(
                 event_type="test",
@@ -434,7 +432,7 @@ class TestDeadLetterClassification:
             )
             assert record.status == status
 
-    def test_dead_letter_permanent_classification(self):
+    def test_dead_letter_permanent_classification(self) -> None:
         record = DeadLetterRecord.new(
             event_type="INVALID_EVENT",
             event_payload={"garbage": True},
@@ -447,7 +445,7 @@ class TestDeadLetterClassification:
 
 
 class TestPolicyDecisionTraceability:
-    def test_policy_decision_full_trace(self):
+    def test_policy_decision_full_trace(self) -> None:
         decision = PolicyDecision.new(
             rule_id="r1",
             rule_name="allow_read_tools",

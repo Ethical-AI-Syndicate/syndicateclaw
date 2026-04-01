@@ -15,7 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 pytestmark = pytest.mark.integration
 
 
-_DEFAULT_DB_URL = "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+_DEFAULT_DB_URL = (
+    "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+)
 
 
 @pytest.fixture(autouse=True)
@@ -76,9 +78,10 @@ async def integration_app_client(_integration_env: None) -> AsyncClient:
 
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             yield ac
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
@@ -99,9 +102,10 @@ async def client(_integration_env: None) -> AsyncClient:
 
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             resp = await ac.get("/readyz")
             if resp.status_code != 200:
                 pytest.skip(f"Integration dependencies not ready: {resp.json()}")
@@ -120,16 +124,20 @@ async def _cancel_stale_runs(_integration_env: None) -> None:
     import os
 
     from sqlalchemy.ext.asyncio import create_async_engine
+
     url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or ""
     if not url:
         return
     try:
         engine = create_async_engine(url)
         async with engine.begin() as conn:
-            await conn.execute(text(
-                "UPDATE workflow_runs SET status='CANCELLED' "
-                "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL','WAITING_AGENT_RESPONSE')"
-            ))
+            await conn.execute(
+                text(
+                    "UPDATE workflow_runs SET status='CANCELLED' "
+                    "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL',"
+                    "'WAITING_AGENT_RESPONSE')"
+                )
+            )
         await engine.dispose()
     except Exception:
         pass  # DB not available — integration tests will skip anyway

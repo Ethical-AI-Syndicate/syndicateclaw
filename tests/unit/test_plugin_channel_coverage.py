@@ -117,8 +117,9 @@ def test_check_plugin_security_source_unavailable() -> None:
     """When inspect.getsource raises OSError, wrap in PluginSecurityViolationError."""
     import inspect
 
-    with patch.object(inspect, "getsource", side_effect=OSError("no source")), pytest.raises(
-        PluginSecurityViolationError, match="Cannot read source"
+    with (
+        patch.object(inspect, "getsource", side_effect=OSError("no source")),
+        pytest.raises(PluginSecurityViolationError, match="Cannot read source"),
     ):
         check_plugin_security(_CleanPlugin)
 
@@ -241,9 +242,7 @@ def test_plugin_registry_rejects_file_path_entry(tmp_path: Path) -> None:
 
 def test_plugin_registry_load_entry_point_colon_notation(tmp_path: Path) -> None:
     cfg = tmp_path / "plugins.yaml"
-    cfg.write_text(
-        "plugins:\n  - 'syndicateclaw.plugins.builtin.audit_trail:AuditTrailPlugin'\n"
-    )
+    cfg.write_text("plugins:\n  - 'syndicateclaw.plugins.builtin.audit_trail:AuditTrailPlugin'\n")
     reg = PluginRegistry()
     reg.load_from_config(cfg)
     assert len(reg.plugins) == 1
@@ -305,15 +304,14 @@ async def test_webhook_channel_send_http_error_raises() -> None:
     mock_resp = MagicMock(spec=httpx.Response)
     mock_resp.status_code = 500
     mock_resp.raise_for_status = MagicMock(
-        side_effect=httpx.HTTPStatusError(
-            "server error", request=MagicMock(), response=mock_resp
-        )
+        side_effect=httpx.HTTPStatusError("server error", request=MagicMock(), response=mock_resp)
     )
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.post = AsyncMock(return_value=mock_resp)
 
-    with patch("syndicateclaw.channels.webhook._validate_url"), pytest.raises(
-        httpx.HTTPStatusError
+    with (
+        patch("syndicateclaw.channels.webhook._validate_url"),
+        pytest.raises(httpx.HTTPStatusError),
     ):
         ch = WebhookChannel(base_url="https://hooks.example.com", httpx_client=mock_client)
         await ch.send("msg", recipient="u")
@@ -322,9 +320,7 @@ async def test_webhook_channel_send_http_error_raises() -> None:
 async def test_webhook_channel_receive_raises_not_implemented() -> None:
     from syndicateclaw.channels.webhook import WebhookChannel
 
-    with patch("syndicateclaw.channels.webhook._validate_url"), pytest.raises(
-        NotImplementedError
-    ):
+    with patch("syndicateclaw.channels.webhook._validate_url"), pytest.raises(NotImplementedError):
         ch = WebhookChannel(
             base_url="https://hooks.example.com",
             httpx_client=AsyncMock(spec=httpx.AsyncClient),

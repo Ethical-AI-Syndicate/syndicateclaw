@@ -75,9 +75,7 @@ async def list_pending_approvals(
         stmt = stmt.where(ARModel.status == status_filter)
     else:
         stmt = stmt.where(ARModel.status == ApprovalStatus.PENDING.value)
-    stmt = stmt.where(
-        (ARModel.assigned_to.contains([actor])) | (ARModel.requested_by == actor)
-    )
+    stmt = stmt.where((ARModel.assigned_to.contains([actor])) | (ARModel.requested_by == actor))
     if assignee:
         stmt = stmt.where(ARModel.assigned_to.contains([assignee]))
     stmt = stmt.order_by(ARModel.created_at.desc()).offset(offset).limit(limit)
@@ -145,9 +143,7 @@ async def approve_request(
     if approval.expires_at and approval.expires_at < now:
         approval.status = ApprovalStatus.EXPIRED.value
         await db.flush()
-        raise HTTPException(
-            status_code=status.HTTP_410_GONE, detail="Approval request has expired"
-        )
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="Approval request has expired")
 
     approval.status = ApprovalStatus.APPROVED.value
     approval.decided_by = actor
@@ -200,9 +196,7 @@ async def get_approvals_for_run(
     stmt = (
         select(ARModel)
         .where(ARModel.run_id == run_id)
-        .where(
-            (ARModel.assigned_to.contains([actor])) | (ARModel.requested_by == actor)
-        )
+        .where((ARModel.assigned_to.contains([actor])) | (ARModel.requested_by == actor))
         .order_by(ARModel.created_at.asc())
     )
     result = await db.execute(stmt)

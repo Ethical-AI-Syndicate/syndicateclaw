@@ -54,9 +54,7 @@ class Plugin:
     async def on_workflow_start(self, ctx: PluginContext) -> None:
         return None
 
-    async def on_node_execute(
-        self, ctx: PluginContext, node_id: str, result: Any
-    ) -> None:
+    async def on_node_execute(self, ctx: PluginContext, node_id: str, result: Any) -> None:
         return None
 
     async def on_workflow_end(self, ctx: PluginContext, status: str) -> None:

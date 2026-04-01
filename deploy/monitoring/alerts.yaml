@@ -1,0 +1,59 @@
+groups:
+  - name: syndicateclaw
+    rules:
+      - alert: HighErrorRate
+        expr: >
+          sum(rate(syndicateclaw_http_requests_total{status_code=~"5.."}[5m]))
+          / sum(rate(syndicateclaw_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate (>5%) for 5 minutes"
+
+      - alert: HighLatency
+        expr: >
+          histogram_quantile(0.95,
+            sum(rate(syndicateclaw_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 latency >2s for 5 minutes"
+
+      - alert: DeadLetterQueueGrowing
+        expr: syndicateclaw_dead_letter_queue_size > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dead letter queue has {{ $value }} items"
+
+      - alert: InferenceErrors
+        expr: >
+          sum(rate(syndicateclaw_inference_requests_total{status="error"}[5m])) by (provider)
+          > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Inference errors for provider {{ $labels.provider }}"
+
+      - alert: PolicyDenialsHigh
+        expr: >
+          sum(rate(syndicateclaw_policy_evaluations_total{result="deny"}[5m]))
+          > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate of policy denials ({{ $value }}/s)"
+
+      - alert: ServiceDown
+        expr: up{job="syndicateclaw"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SyndicateClaw instance is down"

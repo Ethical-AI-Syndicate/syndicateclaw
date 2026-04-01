@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: syndicateclaw
+  labels:
+    app.kubernetes.io/name: syndicateclaw
+    app.kubernetes.io/part-of: syndicateclaw

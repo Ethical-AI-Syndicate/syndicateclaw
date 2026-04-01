@@ -59,9 +59,7 @@ class NodeResult:
 
 @runtime_checkable
 class NodeHandler(Protocol):
-    async def __call__(
-        self, state: dict[str, Any], context: ExecutionContext
-    ) -> NodeResult: ...
+    async def __call__(self, state: dict[str, Any], context: ExecutionContext) -> NodeResult: ...
 
 
 # ---------------------------------------------------------------------------
@@ -128,9 +126,7 @@ class _ConditionParser:
                 continue
             m = _TOKEN_RE.match(expression, pos)
             if not m:
-                raise ValueError(
-                    f"Unexpected character at position {pos}: {expression[pos:]}"
-                )
+                raise ValueError(f"Unexpected character at position {pos}: {expression[pos:]}")
             kind = m.lastgroup
             assert kind is not None
             value = m.group(kind)
@@ -281,11 +277,7 @@ class WorkflowEngine:
     async def _maybe_cache_state(self, run: WorkflowRun) -> None:
         if self._state_cache is None:
             return
-        st = (
-            run.status.value
-            if isinstance(run.status, WorkflowRunStatus)
-            else str(run.status)
-        )
+        st = run.status.value if isinstance(run.status, WorkflowRunStatus) else str(run.status)
         await self._state_cache.set(run.id, dict(run.state), st)
 
     # -- public API ---------------------------------------------------------
@@ -384,9 +376,7 @@ class WorkflowEngine:
 
         return run_result
 
-    async def resume(
-        self, run_id: str, from_node: str | None = None
-    ) -> WorkflowRunResult:
+    async def resume(self, run_id: str, from_node: str | None = None) -> WorkflowRunResult:
         """Resume a paused workflow run.
 
         Caller must supply the :class:`WorkflowDefinition` via a second call
@@ -457,6 +447,7 @@ class WorkflowEngine:
 
         import hashlib as _hashlib
         import hmac as _hmac
+
         expected = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
         if not _hmac.compare_digest(expected, stored_sig):
             raise ValueError(
@@ -603,10 +594,7 @@ class WorkflowEngine:
 
         run_result.node_executions.append(execution)
         assert result is not None
-        if (
-            self._plugin_executor is not None
-            and execution.status == NodeExecutionStatus.COMPLETED
-        ):
+        if self._plugin_executor is not None and execution.status == NodeExecutionStatus.COMPLETED:
             ns = run.state.get("_namespace", "default")
             await self._plugin_executor.invoke_on_node_execute(
                 run_id=run.id,
@@ -656,11 +644,15 @@ class WorkflowEngine:
         if self._signing_key:
             import hashlib as _hashlib
             import hmac as _hmac
+
             sig = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
-            envelope = json.dumps({
-                "data": json.loads(serialized),
-                "checkpoint_hmac": sig,
-            }, default=str).encode()
+            envelope = json.dumps(
+                {
+                    "data": json.loads(serialized),
+                    "checkpoint_hmac": sig,
+                },
+                default=str,
+            ).encode()
             run.checkpoint_data = envelope
         else:
             run.checkpoint_data = serialized

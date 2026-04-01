@@ -90,9 +90,7 @@ class ApprovalAuthorityResolver:
         )
         return approvers
 
-    async def _resolve_from_policy(
-        self, tool_name: str, context: dict[str, Any]
-    ) -> list[str]:
+    async def _resolve_from_policy(self, tool_name: str, context: dict[str, Any]) -> list[str]:
         """Look up policy-defined approvers for this tool.
 
         Checks for policy rules with resource_type='tool' that contain
@@ -110,6 +108,7 @@ class ApprovalAuthorityResolver:
 
                 for rule in rules:
                     from fnmatch import fnmatch
+
                     if not fnmatch(tool_name, rule.resource_pattern):
                         continue
                     raw_co: Any = rule.conditions

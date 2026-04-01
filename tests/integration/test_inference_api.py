@@ -110,9 +110,10 @@ async def inference_mock_client(
     app.dependency_overrides[get_provider_service] = lambda: mock_svc
 
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             # Do not gate on /readyz: ProviderService is mocked; we still want
             # HTTP-layer coverage when Postgres/Redis are down (e.g. CI).
             yield ac, mock_svc
@@ -138,9 +139,7 @@ class TestInferenceAuthzRegistryAlignment:
         missing = INFERENCE_HTTP_ROUTES - registered
         assert not missing, f"FastAPI missing routes: {missing}"
 
-    def test_authz_registry_has_specs_for_inference_routes(
-        self, _integration_env: None
-    ) -> None:
+    def test_authz_registry_has_specs_for_inference_routes(self, _integration_env: None) -> None:
         for method, path in INFERENCE_HTTP_ROUTES:
             spec = get_route_spec(method, path)
             assert spec is not None, f"ROUTE_UNREGISTERED for {(method, path)}"
@@ -417,9 +416,10 @@ async def sync_models_dev_patched_client(
     monkeypatch.setattr(providers_ops, "run_models_dev_catalog_sync", fake_runner)
 
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             yield ac, pending, app
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -88,7 +89,7 @@ async def test_retry_all_marks_permanent_when_max_retries_exhausted() -> None:
     # Override get on each new session created
     call_count = 0
 
-    def make_session():
+    def make_session() -> Any:
         nonlocal call_count
         call_count += 1
         s = AsyncMock()
@@ -130,7 +131,7 @@ async def test_retry_all_increments_retry_count_on_failure() -> None:
 
     call_count = 0
 
-    def make_session():
+    def make_session() -> Any:
         nonlocal call_count
         call_count += 1
         s = AsyncMock()

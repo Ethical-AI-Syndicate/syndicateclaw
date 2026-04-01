@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from pydantic import ValidationError
 
@@ -202,7 +204,7 @@ def test_execution_timeout_category() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_manifest(skill_id: str, version: str, *, deprecated: bool = False):
+def _make_manifest(skill_id: str, version: str, *, deprecated: bool = False) -> Any:
     from syndicateclaw.runtime.contracts.skill_manifest import IntentTrigger, SkillManifest
 
     return SkillManifest(
@@ -236,11 +238,13 @@ def test_skill_registry_get_specific_version_not_found_raises() -> None:
 def test_skill_registry_list_versions_sorted() -> None:
     from syndicateclaw.runtime.registry.registry import SkillRegistry
 
-    reg = SkillRegistry([
-        _make_manifest("greet", "2.0.0"),
-        _make_manifest("greet", "1.0.0"),
-        _make_manifest("greet", "1.5.0"),
-    ])
+    reg = SkillRegistry(
+        [
+            _make_manifest("greet", "2.0.0"),
+            _make_manifest("greet", "1.0.0"),
+            _make_manifest("greet", "1.5.0"),
+        ]
+    )
     versions = reg.list_versions("greet")
     assert versions == ["1.0.0", "1.5.0", "2.0.0"]
 

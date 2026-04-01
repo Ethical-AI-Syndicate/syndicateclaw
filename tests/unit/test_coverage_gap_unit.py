@@ -1,5 +1,6 @@
 """Targeted coverage gap tests for audit/dead_letter.py, audit/events.py,
 audit/export.py, and services/subscription_service.py."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock

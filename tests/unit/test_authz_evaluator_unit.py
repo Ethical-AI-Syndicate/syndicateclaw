@@ -1,5 +1,6 @@
 """Unit tests for authz/evaluator.py — dataclass methods, scope containment,
 RBACEvaluator paths, TeamContextValidator, resolve_principal_id."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
@@ -112,6 +113,7 @@ def test_scope_contains_tenant_contains_namespace() -> None:
 
 def test_elapsed_us_returns_integer() -> None:
     import time
+
     t0 = time.monotonic()
     result = _elapsed_us(t0)
     assert isinstance(result, int)

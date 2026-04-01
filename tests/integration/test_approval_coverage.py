@@ -88,7 +88,6 @@ async def _make_workflow_run(session_factory) -> tuple[str, str]:
         return run.id, node_exec.id
 
 
-
 async def test_approval_request_created_blocks_workflow(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:

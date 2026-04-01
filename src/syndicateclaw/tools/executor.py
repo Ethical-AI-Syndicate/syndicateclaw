@@ -93,8 +93,12 @@ def _validate_schema(data: dict[str, Any], schema: dict[str, Any], label: str) -
             raise ValueError(f"{label}: missing required field '{key}'")
     properties = schema.get("properties", {})
     type_map: dict[str, type | tuple[type, ...]] = {
-        "string": str, "integer": int, "number": (int, float),
-        "boolean": bool, "array": list, "object": dict,
+        "string": str,
+        "integer": int,
+        "number": (int, float),
+        "boolean": bool,
+        "array": list,
+        "object": dict,
     }
     for key, prop in properties.items():
         if key not in data:
@@ -225,7 +229,10 @@ class ToolExecutor:
 
         if decision == PolicyEffect.DENY:
             await self._record_decision(
-                tool_name, input_data, context, "deny",
+                tool_name,
+                input_data,
+                context,
+                "deny",
                 f"Policy denied execution of tool '{tool_name}'",
                 tool_meta.side_effects,
             )
@@ -233,7 +240,10 @@ class ToolExecutor:
 
         if decision == PolicyEffect.REQUIRE_APPROVAL:
             await self._record_decision(
-                tool_name, input_data, context, "require_approval",
+                tool_name,
+                input_data,
+                context,
+                "require_approval",
                 f"Policy requires approval for tool '{tool_name}'",
                 tool_meta.side_effects,
             )
@@ -252,7 +262,10 @@ class ToolExecutor:
 
         # --- 4. Decision ledger record (MANDATORY — fail-closed) ---
         decision_record = await self._record_decision(
-            tool_name, input_data, context, "allow",
+            tool_name,
+            input_data,
+            context,
+            "allow",
             f"Policy allowed execution of tool '{tool_name}'",
             tool_meta.side_effects,
         )
@@ -315,7 +328,10 @@ class ToolExecutor:
 
         # --- 8. Capture input snapshot for replay (MANDATORY) ---
         await self._capture_snapshot(
-            context, tool_name, input_data, output,
+            context,
+            tool_name,
+            input_data,
+            output,
         )
 
         # --- 9. Audit ---
@@ -373,8 +389,7 @@ class ToolExecutor:
         if not hasattr(self._policy_engine, "evaluate"):
             return PolicyEffect.ALLOW
         actor = self._policy_actor(context)
-        policy_context = self._build_tool_policy_context(
-            tool_name, tool_meta, input_data, context)
+        policy_context = self._build_tool_policy_context(tool_name, tool_meta, input_data, context)
         try:
             result = await self._policy_engine.evaluate(
                 "tool",

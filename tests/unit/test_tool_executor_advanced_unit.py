@@ -1,7 +1,9 @@
 """Advanced unit tests for tools/executor.py — ToolExecutor methods, ApprovalRequiredError,
 enforce_response_limits, _check_policy paths, _record_decision, _capture_snapshot, _emit_audit."""
+
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -101,8 +103,11 @@ def _make_tool(
     return tool
 
 
-def _make_context(*, run_id: str = "run-1", node_id: str = "node-1", config: dict | None = None):
+def _make_context(
+    *, run_id: str = "run-1", node_id: str = "node-1", config: dict | None = None
+) -> Any:
     from syndicateclaw.orchestrator.engine import ExecutionContext
+
     ctx = MagicMock(spec=ExecutionContext)
     ctx.run_id = run_id
     ctx.node_id = node_id
@@ -112,6 +117,7 @@ def _make_context(*, run_id: str = "run-1", node_id: str = "node-1", config: dic
 
 def _make_registry(tool: Tool | None = None) -> MagicMock:
     from syndicateclaw.tools.registry import ToolDefinition, ToolRegistry
+
     registry = MagicMock(spec=ToolRegistry)
     if tool is not None:
         reg_tool = MagicMock(spec=ToolDefinition)

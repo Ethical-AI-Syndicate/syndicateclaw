@@ -57,9 +57,7 @@ class MemberRoleUpdateRequest(BaseModel):
 async def _require_org_member(session: AsyncSession, org_id: str, actor: str) -> None:
     row = (
         await session.execute(
-            text(
-                "SELECT 1 FROM organization_members WHERE organization_id = :oid AND actor = :a"
-            ),
+            text("SELECT 1 FROM organization_members WHERE organization_id = :oid AND actor = :a"),
             {"oid": org_id, "a": actor},
         )
     ).first()
@@ -206,9 +204,7 @@ async def remove_member(
 ) -> Response:
     await _require_org_manage(db, org_id, actor)
     await db.execute(
-        text(
-            "DELETE FROM organization_members WHERE organization_id = :oid AND actor = :a"
-        ),
+        text("DELETE FROM organization_members WHERE organization_id = :oid AND actor = :a"),
         {"oid": org_id, "a": member_actor},
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

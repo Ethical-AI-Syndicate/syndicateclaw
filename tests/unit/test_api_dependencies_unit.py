@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -14,7 +15,7 @@ def _make_request(
     api_key: str | None = None,
     settings_env: str = "production",
     app_state: dict | None = None,
-):
+) -> Any:
     """Build a mock FastAPI Request."""
     req = MagicMock()
     headers = {}

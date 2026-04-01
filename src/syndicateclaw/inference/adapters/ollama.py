@@ -131,9 +131,10 @@ class OllamaAdapter:
             write=cfg.timeout.connect_seconds,
             pool=cfg.timeout.connect_seconds,
         )
-        async with httpx.AsyncClient(timeout=timeout) as client, client.stream(
-            "POST", url, json=body, headers=headers
-        ) as resp:
+        async with (
+            httpx.AsyncClient(timeout=timeout) as client,
+            client.stream("POST", url, json=body, headers=headers) as resp,
+        ):
             if resp.status_code >= 400:
                 await resp.aread()
                 raise InferenceError(

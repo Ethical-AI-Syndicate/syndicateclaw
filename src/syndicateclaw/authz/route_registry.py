@@ -69,6 +69,7 @@ class RouteAuthzSpec:
 # The registry references them by string name; the shadow middleware looks them
 # up via SCOPE_RESOLVERS[name].
 
+
 async def resolve_platform(request: Request, session: AsyncSession) -> Scope | None:
     """All platform-scoped resources (tools, system endpoints)."""
     return Scope.platform()
@@ -293,7 +294,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="workflow_by_id",
         legacy_check="authenticated_only",
     ),
-
     # ── Workflow Runs ──────────────────────────────────────────────────
     ("GET", "/api/v1/workflows/runs"): RouteAuthzSpec(
         permission="run:read",
@@ -363,7 +363,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Reconnect recovery endpoint returns run-scoped audit events.",
     ),
-
     # ── Agents ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/agents"): RouteAuthzSpec(
         permission="agent:register",
@@ -422,7 +421,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Service-layer ownership/admin checks return 403 for non-owners.",
     ),
-
     # ── Messages / Topics ──────────────────────────────────────────────
     ("POST", "/api/v1/messages"): RouteAuthzSpec(
         permission="message:send",
@@ -479,7 +477,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="actor_scope",
         legacy_check="authenticated_only",
     ),
-
     # ── Organizations ─────────────────────────────────────────────────
     ("POST", "/api/v1/organizations"): RouteAuthzSpec(
         permission="admin:*",
@@ -525,7 +522,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="platform",
         legacy_check="authenticated_only",
     ),
-
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
         permission="memory:write",
@@ -560,7 +556,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="memory_record_by_id",
         legacy_check="access_policy",
     ),
-
     # ── Policies ───────────────────────────────────────────────────────
     ("GET", "/api/v1/policy/"): RouteAuthzSpec(
         permission="policy:read",
@@ -602,7 +597,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Body carries actor/resource for evaluation; no admin check.",
     ),
-
     # ── Inference / providers (Gate 1 absent; ProviderService runs 2–4) ──
     ("GET", "/api/v1/inference/"): RouteAuthzSpec(
         permission="inference:read",
@@ -641,7 +635,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Connectivity check endpoint; generic unreachable response on errors.",
     ),
-
     # ── Tools ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/tools/"): RouteAuthzSpec(
         permission="tool:read",
@@ -659,7 +652,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: executor may 403 via ToolDeniedError (policy engine, not auth).",
     ),
-
     # ── Approvals ──────────────────────────────────────────────────────
     ("GET", "/api/v1/approvals/"): RouteAuthzSpec(
         permission="approval:read",
@@ -690,7 +682,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="approval_run",
         legacy_check="approval_visibility",
     ),
-
     # ── Audit ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/audit/"): RouteAuthzSpec(
         permission="audit:read",
@@ -709,7 +700,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: no run ownership check.",
     ),
-
     # ── Admin console ──────────────────────────────────────────────────
     ("GET", "/api/v1/admin/dashboard"): RouteAuthzSpec(
         permission="admin:*",
@@ -776,7 +766,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="platform",
         legacy_check="prefix_admin",
     ),
-
     # ── Connector webhooks — authenticated by provider secrets, not RBAC ──
     ("POST", "/webhooks/telegram/update"): RouteAuthzSpec(
         permission="admin:*",
@@ -913,11 +902,7 @@ ROUTE_REGISTRY: dict[tuple[str, str], str | None] = {
     (
         method,
         path,
-    ): (
-        spec.permission
-        if spec.permission in PERMISSION_VOCABULARY
-        else "admin:*"
-    )
+    ): (spec.permission if spec.permission in PERMISSION_VOCABULARY else "admin:*")
     for (method, path), spec in ROUTE_PERMISSION_MAP.items()
 }
 ROUTE_REGISTRY.update(

@@ -1,4 +1,5 @@
 """Unit tests for inference/catalog_sync/ssrf.py — covers missing lines."""
+
 from __future__ import annotations
 
 import ipaddress
@@ -71,17 +72,23 @@ async def test_assert_safe_url_rejects_blocked_literal_ip() -> None:
 
 async def test_assert_safe_url_dns_failure_raises() -> None:
     # Lines 81-82: OSError from resolve_hostname_ips becomes SSRFBlockedError
-    with patch(
-        "syndicateclaw.inference.catalog_sync.ssrf.resolve_hostname_ips",
-        AsyncMock(side_effect=OSError("name not found")),
-    ), pytest.raises(SSRFBlockedError, match="dns_resolution_failed"):
+    with (
+        patch(
+            "syndicateclaw.inference.catalog_sync.ssrf.resolve_hostname_ips",
+            AsyncMock(side_effect=OSError("name not found")),
+        ),
+        pytest.raises(SSRFBlockedError, match="dns_resolution_failed"),
+    ):
         await assert_safe_url("https://api.models.dev/", allowed_host_suffixes=_ALLOWED)
 
 
 async def test_assert_safe_url_no_addresses_raises() -> None:
     # Line 85: empty address list raises SSRFBlockedError
-    with patch(
-        "syndicateclaw.inference.catalog_sync.ssrf.resolve_hostname_ips",
-        AsyncMock(return_value=[]),
-    ), pytest.raises(SSRFBlockedError, match="no_addresses"):
+    with (
+        patch(
+            "syndicateclaw.inference.catalog_sync.ssrf.resolve_hostname_ips",
+            AsyncMock(return_value=[]),
+        ),
+        pytest.raises(SSRFBlockedError, match="no_addresses"),
+    ):
         await assert_safe_url("https://api.models.dev/", allowed_host_suffixes=_ALLOWED)

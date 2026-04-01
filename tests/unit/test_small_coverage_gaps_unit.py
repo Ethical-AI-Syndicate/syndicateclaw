@@ -1,8 +1,10 @@
 """Tests for small coverage gaps: llm/idempotency.py, messaging/router.py,
 inference/catalog_sync/runner.py."""
+
 from __future__ import annotations
 
 import os
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -88,7 +90,7 @@ def _make_message_router_session_factory(*, row_return=None):
     return MagicMock(return_value=session)
 
 
-def _make_message(*, hop_count: int = 3):
+def _make_message(*, hop_count: int = 3) -> Any:
     msg = MagicMock()
     msg.id = "msg-1"
     msg.hop_count = hop_count
@@ -148,14 +150,14 @@ def test_message_router_relay_payload() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_catalog():
+def _make_catalog() -> Any:
     catalog = MagicMock()
     catalog.snapshot_version = "v1"
     catalog.entry_count = 5
     return catalog
 
 
-def _make_base_config():
+def _make_base_config() -> Any:
     cfg = MagicMock()
     cfg.providers = []
     cfg.static_catalog = []
@@ -171,8 +173,10 @@ async def test_runner_ssrf_blocked_returns_aborted() -> None:
     audit_service.emit = AsyncMock()
 
     with (
-        patch("syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
-              new=AsyncMock(side_effect=SSRFBlockedError("blocked"))),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
+            new=AsyncMock(side_effect=SSRFBlockedError("blocked")),
+        ),
         patch("syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync"),
         patch("syndicateclaw.inference.catalog_sync.runner.record_catalog_sync_models_dev_outcome"),
     ):
@@ -198,8 +202,10 @@ async def test_runner_generic_exception_returns_aborted() -> None:
     audit_service.emit = AsyncMock()
 
     with (
-        patch("syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
-              new=AsyncMock(side_effect=RuntimeError("network down"))),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
+            new=AsyncMock(side_effect=RuntimeError("network down")),
+        ),
         patch("syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync"),
         patch("syndicateclaw.inference.catalog_sync.runner.record_catalog_sync_models_dev_outcome"),
     ):
@@ -225,11 +231,15 @@ async def test_runner_parse_error_returns_aborted() -> None:
     audit_service.emit = AsyncMock()
 
     with (
-        patch("syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
-              new=AsyncMock(return_value=b"not valid json")),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
+            new=AsyncMock(return_value=b"not valid json"),
+        ),
         patch("syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync"),
-        patch("syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json",
-              side_effect=ValueError("bad json")),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json",
+            side_effect=ValueError("bad json"),
+        ),
         patch("syndicateclaw.inference.catalog_sync.runner.record_catalog_sync_models_dev_outcome"),
     ):
         result = await run_models_dev_catalog_sync(
@@ -267,12 +277,15 @@ async def test_runner_not_applied_not_anomaly_returns_result() -> None:
     mock_syncer.sync_from_parsed_records = MagicMock(return_value=not_applied_result)
 
     with (
-        patch("syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
-              new=AsyncMock(return_value=b'{"models": []}')),
-        patch("syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync",
-              return_value=mock_syncer),
-        patch("syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json",
-              return_value=[]),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
+            new=AsyncMock(return_value=b'{"models": []}'),
+        ),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync",
+            return_value=mock_syncer,
+        ),
+        patch("syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json", return_value=[]),
         patch("syndicateclaw.inference.catalog_sync.runner.record_catalog_sync_models_dev_outcome"),
     ):
         result = await run_models_dev_catalog_sync(
@@ -308,12 +321,15 @@ async def test_runner_success_emits_completed_audit() -> None:
     mock_syncer.sync_from_parsed_records = MagicMock(return_value=success_result)
 
     with (
-        patch("syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
-              new=AsyncMock(return_value=b'{"models": []}')),
-        patch("syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync",
-              return_value=mock_syncer),
-        patch("syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json",
-              return_value=[]),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.fetch_https_bytes_bounded",
+            new=AsyncMock(return_value=b'{"models": []}'),
+        ),
+        patch(
+            "syndicateclaw.inference.catalog_sync.runner.ModelsDevCatalogSync",
+            return_value=mock_syncer,
+        ),
+        patch("syndicateclaw.inference.catalog_sync.runner.parse_models_dev_json", return_value=[]),
         patch("syndicateclaw.inference.catalog_sync.runner.record_catalog_sync_models_dev_outcome"),
     ):
         result = await run_models_dev_catalog_sync(

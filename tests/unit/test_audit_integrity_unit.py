@@ -1,9 +1,11 @@
 """Unit tests for audit/integrity.py — IntegrityVerifier, all methods."""
+
 from __future__ import annotations
 
 import hashlib
 import json
 from datetime import UTC, datetime
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 from syndicateclaw.audit.integrity import IntegrityVerifier
@@ -32,12 +34,10 @@ def _make_session_factory(scalars_all=None):
 
 
 def _hash(data: dict) -> str:
-    return hashlib.sha256(
-        json.dumps(data, sort_keys=True, default=str).encode()
-    ).hexdigest()
+    return hashlib.sha256(json.dumps(data, sort_keys=True, default=str).encode()).hexdigest()
 
 
-def _make_decision_record(inputs, *, tampered: bool = False):
+def _make_decision_record(inputs: Any, *, tampered: bool = False) -> Any:
     rec = MagicMock()
     rec.id = "dr-1"
     rec.inputs = inputs
@@ -47,7 +47,7 @@ def _make_decision_record(inputs, *, tampered: bool = False):
     return rec
 
 
-def _make_snapshot(response_data, *, tampered: bool = False):
+def _make_snapshot(response_data: Any, *, tampered: bool = False) -> Any:
     snap = MagicMock()
     snap.id = "snap-1"
     snap.run_id = "run-1"
@@ -287,7 +287,10 @@ async def test_full_check_unhealthy_when_violations_exist() -> None:
     mock_result = MagicMock()
     # First call (decision records) returns tampered rec; rest return empty
     mock_result.scalars.return_value.all.side_effect = [
-        [rec], [], [], [],
+        [rec],
+        [],
+        [],
+        [],
     ]
 
     mock_session = AsyncMock()

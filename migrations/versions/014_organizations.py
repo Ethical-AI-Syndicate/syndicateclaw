@@ -9,6 +9,7 @@ from collections.abc import Sequence
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy import inspect
 from sqlalchemy.dialects import postgresql
 
 revision: str = "014_organizations"
@@ -18,6 +19,27 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    insp = inspect(bind)
+    existing = set(insp.get_table_names())
+    if "organizations" in existing and "organization_quotas_usage" in existing:
+        return
+    if "organizations" in existing and "organization_quotas_usage" not in existing:
+        op.create_table(
+            "organization_quotas_usage",
+            sa.Column(
+                "organization_id", sa.Text(), sa.ForeignKey("organizations.id"), primary_key=True
+            ),
+            sa.Column("storage_bytes_used", sa.BigInteger(), nullable=False, server_default="0"),
+            sa.Column(
+                "updated_at",
+                sa.DateTime(timezone=True),
+                nullable=False,
+                server_default=sa.func.now(),
+            ),
+        )
+        return
+
     op.create_table(
         "organizations",
         sa.Column("id", sa.Text(), primary_key=True, nullable=False),
@@ -48,18 +70,31 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.text("'{}'::jsonb"),
         ),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
 
     op.create_table(
         "organization_quotas_usage",
-        sa.Column("organization_id", sa.Text(), sa.ForeignKey("organizations.id"), primary_key=True),
+        sa.Column(
+            "organization_id", sa.Text(), sa.ForeignKey("organizations.id"), primary_key=True
+        ),
         sa.Column("storage_bytes_used", sa.BigInteger(), nullable=False, server_default="0"),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
     )
 
 
 def downgrade() -> None:
-    op.drop_table("organization_quotas_usage")
-    op.drop_table("organizations")
+    bind = op.get_bind()
+    insp = inspect(bind)
+    names = set(insp.get_table_names())
+    if "organization_quotas_usage" in names:
+        op.drop_table("organization_quotas_usage")
+    if "organizations" in names:
+        op.drop_table("organizations")

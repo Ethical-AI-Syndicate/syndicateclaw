@@ -26,8 +26,12 @@ def upgrade() -> None:
         sa.Column("recipient", sa.Text(), nullable=True),
         sa.Column("topic", sa.Text(), nullable=True),
         sa.Column("message_type", sa.Text(), nullable=False),
-        sa.Column("content", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")),
-        sa.Column("metadata", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")),
+        sa.Column(
+            "content", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")
+        ),
+        sa.Column(
+            "metadata", postgresql.JSONB(), nullable=False, server_default=sa.text("'{}'::jsonb")
+        ),
         sa.Column("priority", sa.Text(), nullable=False, server_default="NORMAL"),
         sa.Column("status", sa.Text(), nullable=False, server_default="PENDING"),
         sa.Column("ttl_seconds", sa.Integer(), nullable=False, server_default="3600"),
@@ -39,8 +43,12 @@ def upgrade() -> None:
             nullable=False,
             server_default=sa.text("(NOW() + INTERVAL '1 hour')"),
         ),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.Column("delivered_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("acked_at", sa.DateTime(timezone=True), nullable=True),
     )
@@ -50,9 +58,15 @@ def upgrade() -> None:
         SET expires_at = created_at + (ttl_seconds * INTERVAL '1 second')
         """
     )
-    op.create_index("idx_messages_recipient_status", "agent_messages", ["recipient", "status"], unique=False)
-    op.create_index("idx_messages_topic_status", "agent_messages", ["topic", "status"], unique=False)
-    op.create_index("idx_messages_conversation", "agent_messages", ["conversation_id"], unique=False)
+    op.create_index(
+        "idx_messages_recipient_status", "agent_messages", ["recipient", "status"], unique=False
+    )
+    op.create_index(
+        "idx_messages_topic_status", "agent_messages", ["topic", "status"], unique=False
+    )
+    op.create_index(
+        "idx_messages_conversation", "agent_messages", ["conversation_id"], unique=False
+    )
     op.create_index("idx_messages_sender", "agent_messages", ["sender"], unique=False)
     op.create_index(
         "idx_messages_expires",

@@ -1,4 +1,5 @@
 """Unit tests for api/rate_limit.py — RateLimitMiddleware dispatch paths."""
+
 from __future__ import annotations
 
 from types import SimpleNamespace
@@ -84,7 +85,7 @@ async def test_dispatch_skips_readyz() -> None:
     mw = _make_middleware()
     request = _make_request(path="/readyz")
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -92,7 +93,7 @@ async def test_dispatch_skips_docs() -> None:
     mw = _make_middleware()
     request = _make_request(path="/docs")
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -100,7 +101,7 @@ async def test_dispatch_passes_when_no_settings() -> None:
     mw = _make_middleware()
     request = _make_request(settings=None, redis_client=None)
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -109,7 +110,7 @@ async def test_dispatch_passes_when_no_redis() -> None:
     settings = _make_settings()
     request = _make_request(settings=settings, redis_client=None)
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -119,7 +120,7 @@ async def test_dispatch_passes_when_anonymous_actor() -> None:
     redis = _make_redis()
     request = _make_request(settings=settings, redis_client=redis, actor="anonymous")
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -129,7 +130,7 @@ async def test_dispatch_passes_when_no_actor_no_hint() -> None:
     redis = _make_redis()
     request = _make_request(settings=settings, redis_client=redis, actor=None, headers={})
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 
@@ -223,7 +224,7 @@ async def test_dispatch_uses_api_key_hint_when_no_actor() -> None:
         headers={"x-api-key": "sk-test12345"},
     )
     call_next = AsyncMock(return_value=Response(status_code=200))
-    response = await mw.dispatch(request, call_next)
+    await mw.dispatch(request, call_next)
     call_next.assert_awaited_once()
 
 

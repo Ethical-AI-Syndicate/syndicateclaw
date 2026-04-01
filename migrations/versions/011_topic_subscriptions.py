@@ -28,11 +28,17 @@ def upgrade() -> None:
         ),
         sa.Column("topic", sa.Text(), nullable=False),
         sa.Column("namespace", sa.Text(), nullable=False),
-        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
+        ),
         sa.UniqueConstraint("agent_id", "topic", name="uq_topic_subscriptions"),
     )
-    op.create_index("idx_topic_subs_topic", "topic_subscriptions", ["topic", "namespace"], unique=False)
+    op.create_index(
+        "idx_topic_subs_topic", "topic_subscriptions", ["topic", "namespace"], unique=False
+    )
 
 
 def downgrade() -> None:

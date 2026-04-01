@@ -143,7 +143,7 @@ class _StreamResp:
     async def aread(self) -> None:
         pass
 
-    async def aiter_lines(self):
+    async def aiter_lines(self) -> Any:
         for line in self._lines:
             yield line
 
@@ -260,6 +260,7 @@ async def test_ollama_stream_chat_http_error_raises() -> None:
     )
     patch_path = "syndicateclaw.inference.adapters.ollama.httpx.AsyncClient"
     from syndicateclaw.inference.errors import InferenceError as _InferenceError
+
     with patch(patch_path, _StreamClientFactory(resp)), pytest.raises(_InferenceError):
         async for _ in adapter.stream_chat(_cfg(), req, api_key=None, bearer_token=None):
             pass

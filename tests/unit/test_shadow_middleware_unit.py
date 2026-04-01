@@ -1,8 +1,10 @@
 """Unit tests for authz/shadow_middleware.py — covering uncovered paths."""
+
 from __future__ import annotations
 
 import json
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from starlette.responses import JSONResponse, Response
@@ -33,10 +35,10 @@ def _make_request(
     actor: str = "user:1",
     method: str = "GET",
     path: str = "/api/v1/workflows/",
-    headers: dict | None = None,
+    headers: dict[str, Any] | None = None,
     rbac_enforcement_enabled: bool = False,
-    session_factory=None,
-    redis_client=None,
+    session_factory: Any = None,
+    redis_client: Any = None,
     request_id: str | None = None,
 ) -> MagicMock:
     request = MagicMock()
@@ -55,7 +57,7 @@ def _make_request(
     return request
 
 
-def _make_session_factory():
+def _make_session_factory() -> MagicMock:
     mock_session = AsyncMock()
     mock_session.__aenter__ = AsyncMock(return_value=mock_session)
     mock_session.__aexit__ = AsyncMock(return_value=False)
@@ -103,6 +105,7 @@ def _make_authz_result(decision: Decision = Decision.ALLOW) -> AuthzResult:
 
 def test_elapsed_us_returns_positive_int() -> None:
     import time
+
     t0 = time.monotonic()
     result = _elapsed_us(t0)
     assert isinstance(result, int)
@@ -325,30 +328,39 @@ async def test_enforce_rbac_returns_none_when_no_actor() -> None:
 async def test_enforce_rbac_returns_none_for_public_route() -> None:
     mw = _make_middleware()
     request = _make_request(rbac_enforcement_enabled=True, path="/api/v1/health")
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=True):
-        with patch("syndicateclaw.authz.shadow_middleware.ShadowRBACMiddleware._resolve_route_template", return_value="/api/v1/health"):
-            result = await mw._enforce_rbac_if_enabled(request)
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=True),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.ShadowRBACMiddleware._resolve_route_template",
+            return_value="/api/v1/health",
+        ),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert result is None
 
 
 async def test_enforce_rbac_returns_none_for_exempt_route() -> None:
     mw = _make_middleware()
     request = _make_request(rbac_enforcement_enabled=True)
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=True):
-            with patch.object(mw, "_resolve_route_template", return_value="/api/v1/metrics"):
-                result = await mw._enforce_rbac_if_enabled(request)
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=True),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/metrics"),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert result is None
 
 
 async def test_enforce_rbac_returns_none_when_no_spec() -> None:
     mw = _make_middleware()
     request = _make_request(rbac_enforcement_enabled=True)
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=None):
-                with patch.object(mw, "_resolve_route_template", return_value="/unknown"):
-                    result = await mw._enforce_rbac_if_enabled(request)
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=None),
+        patch.object(mw, "_resolve_route_template", return_value="/unknown"),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert result is None
 
 
@@ -356,11 +368,13 @@ async def test_enforce_rbac_returns_none_when_no_session_factory() -> None:
     mw = _make_middleware()
     spec = _make_spec()
     request = _make_request(rbac_enforcement_enabled=True, session_factory=None)
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    result = await mw._enforce_rbac_if_enabled(request)
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert result is None
 
 
@@ -370,13 +384,17 @@ async def test_enforce_rbac_403_when_principal_not_found() -> None:
     session_factory = _make_session_factory()
     request = _make_request(rbac_enforcement_enabled=True, session_factory=session_factory)
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value=None):
-                        result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value=None,
+        ),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert isinstance(result, JSONResponse)
     assert result.status_code == 403
 
@@ -390,15 +408,25 @@ async def test_enforce_rbac_403_on_scope_resolution_failure() -> None:
     mock_validator = AsyncMock()
     mock_validator.validate = AsyncMock(return_value=(True, None))
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/wf-1"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-                        with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                            with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {"resolve_workflow_by_id": AsyncMock(side_effect=RuntimeError("db down"))}):
-                                result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/wf-1"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS",
+            {"resolve_workflow_by_id": AsyncMock(side_effect=RuntimeError("db down"))},
+        ),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert isinstance(result, JSONResponse)
     assert result.status_code == 403
 
@@ -414,16 +442,26 @@ async def test_enforce_rbac_403_on_rbac_deny() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.DENY))
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-                        with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                            with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                                with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                                    result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert isinstance(result, JSONResponse)
     assert result.status_code == 403
 
@@ -439,16 +477,26 @@ async def test_enforce_rbac_allows_when_rbac_allow() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.ALLOW))
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-                        with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                            with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                                with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                                    result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert result is None
 
 
@@ -461,15 +509,22 @@ async def test_enforce_rbac_403_team_context_multiple_teams() -> None:
     mock_validator = AsyncMock()
     mock_validator.validate = AsyncMock(return_value=(False, "principal_has_multiple_teams"))
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-                        with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                            with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                                result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert isinstance(result, JSONResponse)
     assert result.status_code == 403
 
@@ -483,15 +538,22 @@ async def test_enforce_rbac_403_team_not_in_memberships() -> None:
     mock_validator = AsyncMock()
     mock_validator.validate = AsyncMock(return_value=(False, "team_not_in_memberships"))
 
-    with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-        with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-                with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-                    with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-                        with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                            with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                                result = await mw._enforce_rbac_if_enabled(request)
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+    ):
+        result = await mw._enforce_rbac_if_enabled(request)
     assert isinstance(result, JSONResponse)
     assert result.status_code == 403
 
@@ -521,32 +583,38 @@ async def test_try_shadow_skips_public_route() -> None:
     mw = _make_middleware()
     request = _make_request()
     response = Response(status_code=200)
-    with patch.object(mw, "_resolve_route_template", return_value="/health"):
-        with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=True):
-            await mw._try_shadow(request, response)
+    with (
+        patch.object(mw, "_resolve_route_template", return_value="/health"),
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=True),
+    ):
+        await mw._try_shadow(request, response)
 
 
 async def test_try_shadow_skips_exempt_route() -> None:
     mw = _make_middleware()
     request = _make_request()
     response = Response(status_code=200)
-    with patch.object(mw, "_resolve_route_template", return_value="/metrics"):
-        with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=True):
-                await mw._try_shadow(request, response)
+    with (
+        patch.object(mw, "_resolve_route_template", return_value="/metrics"),
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=True),
+    ):
+        await mw._try_shadow(request, response)
 
 
 async def test_try_shadow_swallows_evaluation_errors() -> None:
     mw = _make_middleware()
     request = _make_request()
     response = Response(status_code=200)
-    with patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"):
-        with patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False):
-            with patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False):
-                with patch.object(mw, "_shadow_evaluate", side_effect=RuntimeError("boom")):
-                    with patch.object(mw, "_incr_metric", new=AsyncMock()):
-                        # Should not raise
-                        await mw._try_shadow(request, response)
+    with (
+        patch.object(mw, "_resolve_route_template", return_value="/api/v1/workflows/"),
+        patch("syndicateclaw.authz.shadow_middleware.is_public_route", return_value=False),
+        patch("syndicateclaw.authz.shadow_middleware.is_exempt_route", return_value=False),
+        patch.object(mw, "_shadow_evaluate", side_effect=RuntimeError("boom")),
+        patch.object(mw, "_incr_metric", new=AsyncMock()),
+    ):
+        # Should not raise
+        await mw._try_shadow(request, response)
 
 
 # ---------------------------------------------------------------------------
@@ -560,9 +628,11 @@ async def test_shadow_evaluate_unregistered_route_records_disagreement() -> None
     request = _make_request(session_factory=session_factory)
     response = Response(status_code=200)
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=None):
-        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-            await mw._shadow_evaluate(request, response, "GET", "/unknown", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=None),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/unknown", "user:1")
 
     mock_record.assert_awaited_once()
     kwargs = mock_record.call_args[1]
@@ -575,9 +645,11 @@ async def test_shadow_evaluate_returns_when_no_session_factory() -> None:
     request = _make_request(session_factory=None)
     response = Response(status_code=200)
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-            await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
 
     mock_record.assert_not_awaited()
 
@@ -589,11 +661,12 @@ async def test_shadow_evaluate_principal_not_found() -> None:
     request = _make_request(session_factory=session_factory)
     response = Response(status_code=200)
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value=None):
-            with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-                await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
-
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value=None),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
     mock_record.assert_awaited_once()
     kwargs = mock_record.call_args[1]
     assert kwargs["disagreement_type"] == DisagreementType.PRINCIPAL_NOT_FOUND
@@ -611,13 +684,24 @@ async def test_shadow_evaluate_agree_path() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.ALLOW))
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-            with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                    with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-                            await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
 
     mock_record.assert_awaited_once()
     kwargs = mock_record.call_args[1]
@@ -636,13 +720,24 @@ async def test_shadow_evaluate_disagree_legacy_allow_rbac_deny() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.DENY))
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-            with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                    with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-                            await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
 
     kwargs = mock_record.call_args[1]
     assert kwargs["disagreement_type"] == DisagreementType.LEGACY_ALLOW_RBAC_DENY
@@ -660,13 +755,27 @@ async def test_shadow_evaluate_scope_failure_type() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.ALLOW))
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-            with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {"resolve_workflow_by_id": AsyncMock(side_effect=RuntimeError("db down"))}):
-                    with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-                            await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/wf-1", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS",
+            {"resolve_workflow_by_id": AsyncMock(side_effect=RuntimeError("db down"))},
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/wf-1", "user:1")
 
     kwargs = mock_record.call_args[1]
     assert kwargs["disagreement_type"] == DisagreementType.SCOPE_RESOLUTION_FAILED
@@ -684,13 +793,24 @@ async def test_shadow_evaluate_team_context_missing_type() -> None:
     mock_evaluator = AsyncMock()
     mock_evaluator.evaluate = AsyncMock(return_value=_make_authz_result(Decision.ALLOW))
 
-    with patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec):
-        with patch("syndicateclaw.authz.shadow_middleware.resolve_principal_id", return_value="pid-1"):
-            with patch("syndicateclaw.authz.shadow_middleware.TeamContextValidator", return_value=mock_validator):
-                with patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}):
-                    with patch("syndicateclaw.authz.shadow_middleware.RBACEvaluator", return_value=mock_evaluator):
-                        with patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record:
-                            await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
+    with (
+        patch("syndicateclaw.authz.shadow_middleware.get_route_spec", return_value=spec),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.resolve_principal_id",
+            return_value="pid-1",
+        ),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.TeamContextValidator",
+            return_value=mock_validator,
+        ),
+        patch("syndicateclaw.authz.shadow_middleware.SCOPE_RESOLVERS", {}),
+        patch(
+            "syndicateclaw.authz.shadow_middleware.RBACEvaluator",
+            return_value=mock_evaluator,
+        ),
+        patch.object(mw, "_record_evaluation", new=AsyncMock()) as mock_record,
+    ):
+        await mw._shadow_evaluate(request, response, "GET", "/api/v1/workflows/", "user:1")
 
     kwargs = mock_record.call_args[1]
     assert kwargs["disagreement_type"] == DisagreementType.TEAM_CONTEXT_MISSING
@@ -736,28 +856,30 @@ async def test_record_evaluation_handles_db_write_failure() -> None:
     request = _make_request(session_factory=session_factory)
     rbac_result = _make_authz_result(Decision.ALLOW)
 
-    with patch.object(mw, "_incr_metric", new=AsyncMock()):
-        with patch.object(mw, "_emit_metrics", new=AsyncMock()):
-            # Should not raise
-            await mw._record_evaluation(
-                request=request,
-                request_id=None,
-                route_name="/api/v1/workflows/",
-                method="GET",
-                path="/api/v1/workflows/",
-                actor="user:1",
-                principal_id="pid-1",
-                team_context=None,
-                team_context_valid=True,
-                required_permission="workflow:read",
-                resolved_scope_type=None,
-                resolved_scope_id=None,
-                rbac_result=rbac_result,
-                legacy_decision=Decision.ALLOW,
-                legacy_deny_reason=None,
-                disagreement_type=None,
-                evaluation_latency_us=100,
-            )
+    with (
+        patch.object(mw, "_incr_metric", new=AsyncMock()),
+        patch.object(mw, "_emit_metrics", new=AsyncMock()),
+    ):
+        # Should not raise
+        await mw._record_evaluation(
+            request=request,
+            request_id=None,
+            route_name="/api/v1/workflows/",
+            method="GET",
+            path="/api/v1/workflows/",
+            actor="user:1",
+            principal_id="pid-1",
+            team_context=None,
+            team_context_valid=True,
+            required_permission="workflow:read",
+            resolved_scope_type=None,
+            resolved_scope_id=None,
+            rbac_result=rbac_result,
+            legacy_decision=Decision.ALLOW,
+            legacy_deny_reason=None,
+            disagreement_type=None,
+            evaluation_latency_us=100,
+        )
 
 
 # ---------------------------------------------------------------------------

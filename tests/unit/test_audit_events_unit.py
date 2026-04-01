@@ -1,4 +1,5 @@
 """Unit tests for audit — EventBus (lines 48, 59) and RunExporter error path (line 67)."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock

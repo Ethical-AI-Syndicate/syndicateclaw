@@ -92,11 +92,7 @@ async def get_events_by_trace(
 
     from syndicateclaw.db.models import AuditEvent as AEModel
 
-    stmt = (
-        select(AEModel)
-        .where(AEModel.trace_id == trace_id)
-        .order_by(AEModel.created_at.asc())
-    )
+    stmt = select(AEModel).where(AEModel.trace_id == trace_id).order_by(AEModel.created_at.asc())
     result = await db.execute(stmt)
     events = list(result.scalars().all())
     if not events:
@@ -117,10 +113,6 @@ async def get_run_timeline(
 
     from syndicateclaw.db.models import AuditEvent as AEModel
 
-    stmt = (
-        select(AEModel)
-        .where(AEModel.resource_id == run_id)
-        .order_by(AEModel.created_at.asc())
-    )
+    stmt = select(AEModel).where(AEModel.resource_id == run_id).order_by(AEModel.created_at.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())

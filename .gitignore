@@ -42,5 +42,8 @@ docker-compose.override.yml
 .DS_Store
 Thumbs.db
 
+# Local worktrees
+.worktrees/
+
 # Alembic
 migrations/versions/__pycache__/

@@ -177,8 +177,10 @@ async def _run_org_cleanup_background(org_id: str) -> None:
 
 
 async def count_workflows_for_org(session: AsyncSession, namespace: str) -> int:
-    q = select(func.count()).select_from(WorkflowDefinition).where(
-        WorkflowDefinition.namespace == namespace
+    q = (
+        select(func.count())
+        .select_from(WorkflowDefinition)
+        .where(WorkflowDefinition.namespace == namespace)
     )
     return int((await session.execute(q)).scalar() or 0)
 
@@ -189,8 +191,10 @@ async def count_agents_for_org(session: AsyncSession, namespace: str) -> int:
 
 
 async def count_schedules_for_org(session: AsyncSession, namespace: str) -> int:
-    q = select(func.count()).select_from(WorkflowSchedule).where(
-        WorkflowSchedule.namespace == namespace
+    q = (
+        select(func.count())
+        .select_from(WorkflowSchedule)
+        .where(WorkflowSchedule.namespace == namespace)
     )
     return int((await session.execute(q)).scalar() or 0)
 

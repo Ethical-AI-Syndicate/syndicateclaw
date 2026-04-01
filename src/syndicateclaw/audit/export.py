@@ -66,34 +66,46 @@ class RunExporter:
             if run is None:
                 raise ValueError(f"Run {run_id} not found")
 
-            nodes_stmt = select(DBNodeExecution).where(
-                DBNodeExecution.run_id == run_id
-            ).order_by(DBNodeExecution.created_at.asc())
+            nodes_stmt = (
+                select(DBNodeExecution)
+                .where(DBNodeExecution.run_id == run_id)
+                .order_by(DBNodeExecution.created_at.asc())
+            )
             nodes = list((await session.execute(nodes_stmt)).scalars().all())
 
-            tools_stmt = select(DBToolExecution).where(
-                DBToolExecution.run_id == run_id
-            ).order_by(DBToolExecution.created_at.asc())
+            tools_stmt = (
+                select(DBToolExecution)
+                .where(DBToolExecution.run_id == run_id)
+                .order_by(DBToolExecution.created_at.asc())
+            )
             tools = list((await session.execute(tools_stmt)).scalars().all())
 
-            decisions_stmt = select(DBDecisionRecord).where(
-                DBDecisionRecord.run_id == run_id
-            ).order_by(DBDecisionRecord.created_at.asc())
+            decisions_stmt = (
+                select(DBDecisionRecord)
+                .where(DBDecisionRecord.run_id == run_id)
+                .order_by(DBDecisionRecord.created_at.asc())
+            )
             decisions = list((await session.execute(decisions_stmt)).scalars().all())
 
-            snapshots_stmt = select(DBInputSnapshot).where(
-                DBInputSnapshot.run_id == run_id
-            ).order_by(DBInputSnapshot.captured_at.asc())
+            snapshots_stmt = (
+                select(DBInputSnapshot)
+                .where(DBInputSnapshot.run_id == run_id)
+                .order_by(DBInputSnapshot.captured_at.asc())
+            )
             snapshots = list((await session.execute(snapshots_stmt)).scalars().all())
 
-            approvals_stmt = select(DBApprovalRequest).where(
-                DBApprovalRequest.run_id == run_id
-            ).order_by(DBApprovalRequest.created_at.asc())
+            approvals_stmt = (
+                select(DBApprovalRequest)
+                .where(DBApprovalRequest.run_id == run_id)
+                .order_by(DBApprovalRequest.created_at.asc())
+            )
             approvals = list((await session.execute(approvals_stmt)).scalars().all())
 
-            audit_stmt = select(DBAuditEvent).where(
-                DBAuditEvent.resource_id == run_id
-            ).order_by(DBAuditEvent.created_at.asc())
+            audit_stmt = (
+                select(DBAuditEvent)
+                .where(DBAuditEvent.resource_id == run_id)
+                .order_by(DBAuditEvent.created_at.asc())
+            )
             audit_events = list((await session.execute(audit_stmt)).scalars().all())
 
         def _serialize_row(row: Any) -> dict[str, Any]:
@@ -133,6 +145,7 @@ class RunExporter:
 
         if self._signing_key:
             from syndicateclaw.security.signing import sign_payload
+
             bundle["bundle_hmac"] = sign_payload(bundle, self._signing_key)
 
         logger.info(

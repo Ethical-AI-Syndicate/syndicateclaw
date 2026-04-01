@@ -42,12 +42,8 @@ def sample_workflow_definition() -> WorkflowDefinition:
         owner="test-owner",
         description="A sample workflow for testing",
         nodes=[
-            NodeDefinition(
-                id="start", name="Start", node_type=NodeType.START, handler="start"
-            ),
-            NodeDefinition(
-                id="action1", name="Action", node_type=NodeType.ACTION, handler="llm"
-            ),
+            NodeDefinition(id="start", name="Start", node_type=NodeType.START, handler="start"),
+            NodeDefinition(id="action1", name="Action", node_type=NodeType.ACTION, handler="llm"),
             NodeDefinition(
                 id="decision1",
                 name="Decision",
@@ -62,9 +58,7 @@ def sample_workflow_definition() -> WorkflowDefinition:
                 handler="approval",
                 config={"description": "Needs approval", "risk_level": "MEDIUM"},
             ),
-            NodeDefinition(
-                id="end", name="End", node_type=NodeType.END, handler="end"
-            ),
+            NodeDefinition(id="end", name="End", node_type=NodeType.END, handler="end"),
         ],
         edges=[
             EdgeDefinition(source_node_id="start", target_node_id="action1"),

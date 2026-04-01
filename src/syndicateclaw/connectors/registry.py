@@ -54,7 +54,9 @@ def build_registry(settings: Any, provider_service: Any) -> ConnectorRegistry:
     if getattr(settings, "discord_bot_token", None):
         registry.register(DiscordConnector(provider_service, settings))
 
-    if getattr(settings, "slack_bot_token", None) and getattr(settings, "slack_signing_secret", None):
+    if getattr(settings, "slack_bot_token", None) and getattr(
+        settings, "slack_signing_secret", None
+    ):
         registry.register(SlackConnector(provider_service, settings))
 
     return registry

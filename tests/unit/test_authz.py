@@ -33,29 +33,30 @@ from syndicateclaw.authz.route_registry import (
 # Scope containment tests
 # ---------------------------------------------------------------------------
 
+
 class TestScopeContainment:
-    def test_platform_contains_everything(self):
+    def test_platform_contains_everything(self) -> None:
         platform = Scope(scope_type="PLATFORM", scope_id="platform")
         assert _scope_contains(platform, Scope(scope_type="TENANT", scope_id="acme"))
         assert _scope_contains(platform, Scope(scope_type="TEAM", scope_id="alpha"))
         assert _scope_contains(platform, Scope(scope_type="NAMESPACE", scope_id="ns:x"))
         assert _scope_contains(platform, platform)
 
-    def test_same_scope_same_id(self):
+    def test_same_scope_same_id(self) -> None:
         team_a = Scope(scope_type="TEAM", scope_id="alpha")
         assert _scope_contains(team_a, team_a)
 
-    def test_same_scope_different_id(self):
+    def test_same_scope_different_id(self) -> None:
         team_a = Scope(scope_type="TEAM", scope_id="alpha")
         team_b = Scope(scope_type="TEAM", scope_id="beta")
         assert not _scope_contains(team_a, team_b)
 
-    def test_narrower_does_not_contain_broader(self):
+    def test_narrower_does_not_contain_broader(self) -> None:
         team = Scope(scope_type="TEAM", scope_id="alpha")
         tenant = Scope(scope_type="TENANT", scope_id="acme")
         assert not _scope_contains(team, tenant)
 
-    def test_broader_contains_narrower(self):
+    def test_broader_contains_narrower(self) -> None:
         tenant = Scope(scope_type="TENANT", scope_id="acme")
         team = Scope(scope_type="TEAM", scope_id="alpha")
         assert _scope_contains(tenant, team)
@@ -65,47 +66,48 @@ class TestScopeContainment:
 # Route registry tests
 # ---------------------------------------------------------------------------
 
+
 class TestRouteRegistry:
-    def test_all_routes_have_permissions(self):
+    def test_all_routes_have_permissions(self) -> None:
         for (method, path), spec in ROUTE_PERMISSION_MAP.items():
             assert spec.permission, f"Route {method} {path} has no permission"
             assert ":" in spec.permission, (
                 f"Permission '{spec.permission}' must be resource:action format"
             )
 
-    def test_all_routes_have_scope_resolvers(self):
+    def test_all_routes_have_scope_resolvers(self) -> None:
         for (method, path), spec in ROUTE_PERMISSION_MAP.items():
             assert spec.scope_resolver in SCOPE_RESOLVERS, (
                 f"Route {method} {path} references unknown resolver '{spec.scope_resolver}'"
             )
 
-    def test_public_routes_not_in_permission_map(self):
+    def test_public_routes_not_in_permission_map(self) -> None:
         for method, path in PUBLIC_ROUTES:
             assert (method, path) not in ROUTE_PERMISSION_MAP
 
-    def test_get_route_spec_found(self):
+    def test_get_route_spec_found(self) -> None:
         spec = get_route_spec("POST", "/api/v1/workflows/")
         assert spec is not None
         assert spec.permission == "workflow:create"
 
-    def test_get_route_spec_not_found(self):
+    def test_get_route_spec_not_found(self) -> None:
         spec = get_route_spec("GET", "/nonexistent")
         assert spec is None
 
-    def test_is_public_route(self):
+    def test_is_public_route(self) -> None:
         assert is_public_route("GET", "/healthz")
         assert is_public_route("GET", "/readyz")
         assert not is_public_route("POST", "/api/v1/workflows/")
 
-    def test_get_scope_resolver(self):
+    def test_get_scope_resolver(self) -> None:
         resolver = get_scope_resolver("platform")
         assert callable(resolver)
 
-    def test_get_scope_resolver_unknown(self):
+    def test_get_scope_resolver_unknown(self) -> None:
         with pytest.raises(KeyError):
             get_scope_resolver("nonexistent")
 
-    def test_workflow_routes_covered(self):
+    def test_workflow_routes_covered(self) -> None:
         expected = [
             ("POST", "/api/v1/workflows/"),
             ("GET", "/api/v1/workflows/"),
@@ -115,13 +117,13 @@ class TestRouteRegistry:
         for route in expected:
             assert route in ROUTE_PERMISSION_MAP, f"Missing route: {route}"
 
-    def test_run_routes_covered(self):
+    def test_run_routes_covered(self) -> None:
         expected_actions = ["pause", "resume", "cancel", "replay"]
         for action in expected_actions:
             key = ("POST", f"/api/v1/workflows/runs/{{run_id}}/{action}")
             assert key in ROUTE_PERMISSION_MAP, f"Missing route: {key}"
 
-    def test_memory_routes_covered(self):
+    def test_memory_routes_covered(self) -> None:
         expected = [
             ("POST", "/api/v1/memory/"),
             ("GET", "/api/v1/memory/{namespace}/{key}"),
@@ -133,7 +135,7 @@ class TestRouteRegistry:
         for route in expected:
             assert route in ROUTE_PERMISSION_MAP, f"Missing route: {route}"
 
-    def test_policy_routes_covered(self):
+    def test_policy_routes_covered(self) -> None:
         expected = [
             ("POST", "/api/v1/policies/"),
             ("GET", "/api/v1/policies/"),
@@ -145,7 +147,7 @@ class TestRouteRegistry:
         for route in expected:
             assert route in ROUTE_PERMISSION_MAP, f"Missing route: {route}"
 
-    def test_policy_manage_routes_require_admin(self):
+    def test_policy_manage_routes_require_admin(self) -> None:
         admin_routes = [
             ("POST", "/api/v1/policies/"),
             ("PUT", "/api/v1/policies/{rule_id}"),
@@ -156,7 +158,7 @@ class TestRouteRegistry:
             assert spec.permission == "policy:manage"
             assert spec.legacy_check == "prefix_admin"
 
-    def test_route_count_minimum(self):
+    def test_route_count_minimum(self) -> None:
         assert len(ROUTE_PERMISSION_MAP) >= 30, (
             f"Expected at least 30 routes, got {len(ROUTE_PERMISSION_MAP)}"
         )
@@ -165,6 +167,7 @@ class TestRouteRegistry:
 # ---------------------------------------------------------------------------
 # RBAC evaluator tests
 # ---------------------------------------------------------------------------
+
 
 def _mock_session(
     assignments=None,
@@ -211,7 +214,7 @@ def _mock_session(
 
 class TestRBACEvaluator:
     @pytest.mark.asyncio
-    async def test_deny_when_no_principal(self):
+    async def test_deny_when_no_principal(self) -> None:
         session = _mock_session()
         evaluator = RBACEvaluator(session)
         result = await evaluator.evaluate(None, "workflow:read", Scope.platform())
@@ -220,10 +223,19 @@ class TestRBACEvaluator:
         assert result.deny_reason == DenyReason.NO_PRINCIPAL
 
     @pytest.mark.asyncio
-    async def test_allow_with_matching_grant(self):
+    async def test_allow_with_matching_grant(self) -> None:
         assignments = [
-            ("asgn-1", "role-1", "operator", '["workflow:read"]', "viewer",
-             "PLATFORM", "platform", "direct", None),
+            (
+                "asgn-1",
+                "role-1",
+                "operator",
+                '["workflow:read"]',
+                "viewer",
+                "PLATFORM",
+                "platform",
+                "direct",
+                None,
+            ),
         ]
         session = _mock_session(
             assignments=assignments,
@@ -238,10 +250,19 @@ class TestRBACEvaluator:
         assert result.matched_assignments[0].role_name == "operator"
 
     @pytest.mark.asyncio
-    async def test_deny_no_matching_grant(self):
+    async def test_deny_no_matching_grant(self) -> None:
         assignments = [
-            ("asgn-1", "role-1", "viewer", '["workflow:read"]', None,
-             "PLATFORM", "platform", "direct", None),
+            (
+                "asgn-1",
+                "role-1",
+                "viewer",
+                '["workflow:read"]',
+                None,
+                "PLATFORM",
+                "platform",
+                "direct",
+                None,
+            ),
         ]
         session = _mock_session(
             assignments=assignments,
@@ -254,10 +275,19 @@ class TestRBACEvaluator:
         assert result.deny_reason == DenyReason.NO_MATCHING_GRANT
 
     @pytest.mark.asyncio
-    async def test_explicit_deny_wins_over_grant(self):
+    async def test_explicit_deny_wins_over_grant(self) -> None:
         assignments = [
-            ("asgn-1", "role-1", "admin", '["policy:manage"]', "operator",
-             "PLATFORM", "platform", "direct", None),
+            (
+                "asgn-1",
+                "role-1",
+                "admin",
+                '["policy:manage"]',
+                "operator",
+                "PLATFORM",
+                "platform",
+                "direct",
+                None,
+            ),
         ]
         denies = [
             ("deny-1", "policy:manage", "PLATFORM", "platform", "under investigation", None),
@@ -271,11 +301,20 @@ class TestRBACEvaluator:
         assert len(result.matched_denies) == 1
 
     @pytest.mark.asyncio
-    async def test_expired_deny_ignored(self):
+    async def test_expired_deny_ignored(self) -> None:
         past = datetime.now(UTC) - timedelta(hours=1)
         assignments = [
-            ("asgn-1", "role-1", "admin", '["policy:manage"]', "operator",
-             "PLATFORM", "platform", "direct", None),
+            (
+                "asgn-1",
+                "role-1",
+                "admin",
+                '["policy:manage"]',
+                "operator",
+                "PLATFORM",
+                "platform",
+                "direct",
+                None,
+            ),
         ]
         denies = [
             ("deny-1", "policy:manage", "PLATFORM", "platform", "expired", past),
@@ -291,10 +330,19 @@ class TestRBACEvaluator:
         assert result.decision == Decision.ALLOW
 
     @pytest.mark.asyncio
-    async def test_scope_not_contained(self):
+    async def test_scope_not_contained(self) -> None:
         assignments = [
-            ("asgn-1", "role-1", "operator", '["workflow:read"]', "viewer",
-             "TEAM", "team-alpha", "direct", None),
+            (
+                "asgn-1",
+                "role-1",
+                "operator",
+                '["workflow:read"]',
+                "viewer",
+                "TEAM",
+                "team-alpha",
+                "direct",
+                None,
+            ),
         ]
         session = _mock_session(
             assignments=assignments,
@@ -311,11 +359,20 @@ class TestRBACEvaluator:
         assert result.deny_reason == DenyReason.NO_MATCHING_GRANT
 
     @pytest.mark.asyncio
-    async def test_expired_assignment(self):
+    async def test_expired_assignment(self) -> None:
         past = datetime.now(UTC) - timedelta(hours=1)
         assignments = [
-            ("asgn-1", "role-1", "operator", '["workflow:read"]', "viewer",
-             "PLATFORM", "platform", "direct", past),
+            (
+                "asgn-1",
+                "role-1",
+                "operator",
+                '["workflow:read"]',
+                "viewer",
+                "PLATFORM",
+                "platform",
+                "direct",
+                past,
+            ),
         ]
         session = _mock_session(
             assignments=assignments,
@@ -328,10 +385,19 @@ class TestRBACEvaluator:
         assert result.deny_reason == DenyReason.EXPIRED_ASSIGNMENTS_ONLY
 
     @pytest.mark.asyncio
-    async def test_team_inherited_assignment(self):
+    async def test_team_inherited_assignment(self) -> None:
         assignments = [
-            ("asgn-1", "role-1", "operator", '["workflow:read"]', "viewer",
-             "PLATFORM", "platform", "team:team-alpha", None),
+            (
+                "asgn-1",
+                "role-1",
+                "operator",
+                '["workflow:read"]',
+                "viewer",
+                "PLATFORM",
+                "platform",
+                "team:team-alpha",
+                None,
+            ),
         ]
         session = _mock_session(
             assignments=assignments,
@@ -346,7 +412,7 @@ class TestRBACEvaluator:
 
 class TestResolvesPrincipalId:
     @pytest.mark.asyncio
-    async def test_resolves_existing(self):
+    async def test_resolves_existing(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.first.return_value = ("pid-abc",)
@@ -356,7 +422,7 @@ class TestResolvesPrincipalId:
         assert pid == "pid-abc"
 
     @pytest.mark.asyncio
-    async def test_returns_none_for_unknown(self):
+    async def test_returns_none_for_unknown(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.first.return_value = None
@@ -368,7 +434,7 @@ class TestResolvesPrincipalId:
 
 class TestTeamContextValidator:
     @pytest.mark.asyncio
-    async def test_no_context_single_team(self):
+    async def test_no_context_single_team(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.fetchall.return_value = [("team-alpha",)]
@@ -380,7 +446,7 @@ class TestTeamContextValidator:
         assert error is None
 
     @pytest.mark.asyncio
-    async def test_no_context_multiple_teams(self):
+    async def test_no_context_multiple_teams(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.fetchall.return_value = [("team-alpha",), ("team-beta",)]
@@ -392,7 +458,7 @@ class TestTeamContextValidator:
         assert error == "principal_has_multiple_teams"
 
     @pytest.mark.asyncio
-    async def test_valid_context(self):
+    async def test_valid_context(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.fetchall.return_value = [("team-alpha",), ("team-beta",)]
@@ -403,7 +469,7 @@ class TestTeamContextValidator:
         assert valid is True
 
     @pytest.mark.asyncio
-    async def test_invalid_context(self):
+    async def test_invalid_context(self) -> None:
         session = AsyncMock()
         result = MagicMock()
         result.fetchall.return_value = [("team-alpha",)]

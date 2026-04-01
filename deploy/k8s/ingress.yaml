@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: syndicateclaw
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+    - hosts:
+        - api.syndicateclaw.dev
+      secretName: syndicateclaw-tls
+  rules:
+    - host: api.syndicateclaw.dev
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: syndicateclaw
+                port:
+                  number: 80

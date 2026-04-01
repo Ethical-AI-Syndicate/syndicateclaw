@@ -13,8 +13,7 @@ from syndicateclaw.runtime.errors import ToolNotAuthorizedError
 class ToolExecutor(Protocol):
     """Optional adapter — real tool dispatch lives outside the runtime core."""
 
-    def __call__(self, request: ToolRequest) -> dict[str, Any]:
-        ...
+    def __call__(self, request: ToolRequest) -> dict[str, Any]: ...
 
 
 class ToolInvoker:

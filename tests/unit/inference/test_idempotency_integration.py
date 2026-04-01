@@ -16,7 +16,7 @@ from syndicateclaw.inference.idempotency import IdempotencyStore
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_concurrent_acquire_single_winner(inference_session_factory):
+async def test_concurrent_acquire_single_winner(inference_session_factory) -> None:
     store = IdempotencyStore(inference_session_factory, stale_after_seconds=3600.0)
     key = f"idem-{ULID()}"
     h = "a" * 64
@@ -39,7 +39,7 @@ async def test_concurrent_acquire_single_winner(inference_session_factory):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_idempotency_hash_conflict(inference_session_factory):
+async def test_idempotency_hash_conflict(inference_session_factory) -> None:
     store = IdempotencyStore(inference_session_factory, stale_after_seconds=3600.0)
     key = f"idem-{ULID()}"
     h1 = "b" * 64
@@ -65,7 +65,7 @@ async def test_idempotency_hash_conflict(inference_session_factory):
 
 @pytest.mark.integration
 @pytest.mark.asyncio
-async def test_stale_in_progress_marked_failed(inference_session_factory):
+async def test_stale_in_progress_marked_failed(inference_session_factory) -> None:
     """After stale_after, PENDING row is failed so evidence is terminal for that key."""
     store = IdempotencyStore(inference_session_factory, stale_after_seconds=0.01)
     key = f"idem-{ULID()}"
@@ -96,7 +96,7 @@ async def test_stale_in_progress_marked_failed(inference_session_factory):
     assert row2.failure_reason == "stale_in_progress"
 
 
-def test_migration_upgrade_downgrade_script_exists():
+def test_migration_upgrade_downgrade_script_exists() -> None:
     """Ensure migration file is present (upgrade/downgrade verified manually or in CI with DB)."""
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     mig = os.path.join(root, "migrations", "versions", "005_inference_tables.py")
@@ -104,7 +104,7 @@ def test_migration_upgrade_downgrade_script_exists():
 
 
 @pytest.mark.integration
-def test_alembic_downgrade_004_shadow_upgrade_head_roundtrip():
+def test_alembic_downgrade_004_shadow_upgrade_head_roundtrip() -> None:
     """Exercise explicit downgrade() in 005_inference_tables and upgrade back to head."""
     url = os.environ.get("SYNDICATECLAW_TEST_DATABASE_URL")
     if not url:

@@ -38,14 +38,15 @@ async def test_chaos_redis_down_graceful() -> None:
 
     try:
         redis_client = None
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as client:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as client,
+        ):
             redis_client = getattr(app.state, "redis", None)
             if redis_client is None:
                 pytest.skip("No Redis client on app.state")
 
-            # Baseline: readyz should pass
+                # Baseline: readyz should pass
                 resp_before = await client.get("/readyz")
                 assert resp_before.status_code == 200
 
@@ -76,20 +77,21 @@ async def test_chaos_postgres_down_degrades_readyz() -> None:
     app = main_mod.create_app()
 
     try:
-            async with LifespanManager(app) as manager, AsyncClient(
-                transport=ASGITransport(app=manager.app), base_url="http://test"
-            ) as client:
-                # Baseline
-                resp_before = await client.get("/readyz")
-                assert resp_before.status_code == 200
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as client,
+        ):
+            # Baseline
+            resp_before = await client.get("/readyz")
+            assert resp_before.status_code == 200
 
-                # Patch sqlalchemy text to fail
-                async def fail_db(*args, **kwargs):
-                    raise OSError("mock database execute failure")
+            # Patch sqlalchemy text to fail
+            def fail_db(*args, **kwargs):
+                raise OSError("mock database execute failure")
 
-                with patch("syndicateclaw.api.main.text", side_effect=fail_db):
-                    resp_during = await client.get("/readyz")
-                    assert resp_during.status_code == 503
+            with patch("syndicateclaw.api.main.text", side_effect=fail_db):
+                resp_during = await client.get("/readyz")
+                assert resp_during.status_code == 503
     except OSError:
         pytest.skip("Integration infrastructure unavailable")
 
@@ -105,12 +107,13 @@ async def test_chaos_dlq_disk_full() -> None:
     app = main_mod.create_app()
 
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as client:
-                # Even if audit/DLQ writes fail, /healthz should still return 200
-                resp = await client.get("/healthz")
-                assert resp.status_code == 200
-                assert resp.json()["status"] == "ok"
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as client,
+        ):
+            # Even if audit/DLQ writes fail, /healthz should still return 200
+            resp = await client.get("/healthz")
+            assert resp.status_code == 200
+            assert resp.json()["status"] == "ok"
     except OSError:
         pytest.skip("Integration infrastructure unavailable")

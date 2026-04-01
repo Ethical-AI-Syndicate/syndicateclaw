@@ -234,7 +234,7 @@ async def test_audit_append() -> None:
     session = _make_session()
     session.add = MagicMock()
     repo = AuditEventRepository(session)
-    result = await repo.append(event_row)
+    await repo.append(event_row)
     session.add.assert_called_once_with(event_row)
     session.flush.assert_awaited_once()
 
@@ -302,6 +302,7 @@ async def test_approval_get_pending_by_assignee() -> None:
 
 async def test_approval_get_expired_pending() -> None:
     from datetime import UTC, datetime
+
     row = MagicMock()
     session = _make_session(scalars_return=[row])
     repo = ApprovalRequestRepository(session)
@@ -319,7 +320,7 @@ async def test_decision_record_append() -> None:
     session = _make_session()
     session.add = MagicMock()
     repo = DecisionRecordRepository(session)
-    result = await repo.append(rec)
+    await repo.append(rec)
     session.add.assert_called_once_with(rec)
 
 

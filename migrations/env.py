@@ -1,11 +1,12 @@
 import asyncio
 import os
 from logging.config import fileConfig
+
 from alembic import context
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, pool
 from sqlalchemy.dialects.postgresql import TIMESTAMP
-from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
 from syndicateclaw.db.models import Base
 
 config = context.config

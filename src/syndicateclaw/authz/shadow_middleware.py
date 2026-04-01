@@ -397,9 +397,7 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
             "permission": required_permission,
             "rbac_decision": rbac_result.decision.value if rbac_result else None,
             "legacy_decision": (
-                legacy_decision.value
-                if isinstance(legacy_decision, Decision)
-                else legacy_decision
+                legacy_decision.value if isinstance(legacy_decision, Decision) else legacy_decision
             ),
             "agreement": agreement,
             "disagreement_type": disagreement_type,

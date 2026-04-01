@@ -91,9 +91,7 @@ class WorkflowVersion(Base):
 
 class WorkflowVersionArchive(Base):
     __tablename__ = "workflow_versions_archive"
-    __table_args__ = (
-        Index("idx_workflow_versions_archive_wf", "workflow_id", "version"),
-    )
+    __table_args__ = (Index("idx_workflow_versions_archive_wf", "workflow_id", "version"),)
 
     workflow_id: Mapped[str] = mapped_column(Text, nullable=False)
     version: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -138,9 +136,7 @@ class WorkflowRun(Base):
     parent_run: Mapped[WorkflowRun | None] = relationship(
         remote_side="WorkflowRun.id", lazy="selectin"
     )
-    node_executions: Mapped[list[NodeExecution]] = relationship(
-        back_populates="run", lazy="raise"
-    )
+    node_executions: Mapped[list[NodeExecution]] = relationship(back_populates="run", lazy="raise")
     parent_schedule_id: Mapped[str | None]
     triggered_by: Mapped[str | None]
     namespace: Mapped[str] = mapped_column(Text, nullable=False, default="default")
@@ -254,9 +250,7 @@ class NodeExecution(Base):
 
 class Tool(Base):
     __tablename__ = "tools"
-    __table_args__ = (
-        UniqueConstraint("name"),
-    )
+    __table_args__ = (UniqueConstraint("name"),)
 
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text)
@@ -457,6 +451,7 @@ class AuditEvent(Base):
 
 class DecisionRecord(Base):
     """Append-only structured decision ledger."""
+
     __tablename__ = "decision_records"
     __table_args__ = (
         Index("ix_decision_records_domain", "domain"),
@@ -483,6 +478,7 @@ class DecisionRecord(Base):
 
 class InputSnapshot(Base):
     """Captures external inputs for deterministic replay."""
+
     __tablename__ = "input_snapshots"
     __table_args__ = (
         Index("ix_input_snapshots_run_id", "run_id"),
@@ -506,6 +502,7 @@ class InputSnapshot(Base):
 
 class DeadLetterRecord(Base):
     """Persistent dead letter queue with classification."""
+
     __tablename__ = "dead_letter_records"
     __table_args__ = (
         Index("ix_dead_letter_records_status", "status"),
@@ -526,6 +523,7 @@ class DeadLetterRecord(Base):
 
 class ApiKey(Base):
     """Database-backed API key with lifecycle tracking."""
+
     __tablename__ = "api_keys"
     __table_args__ = (
         Index("ix_api_keys_key_hash", "key_hash", unique=True),
@@ -563,10 +561,9 @@ class ApiKey(Base):
 
 class Principal(Base):
     """Identity record for users, service accounts, and teams."""
+
     __tablename__ = "principals"
-    __table_args__ = (
-        UniqueConstraint("principal_type", "name"),
-    )
+    __table_args__ = (UniqueConstraint("principal_type", "name"),)
 
     principal_type: Mapped[str] = mapped_column(Text, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
@@ -579,7 +576,8 @@ class Principal(Base):
         lazy="selectin",
     )
     role_assignments: Mapped[list[RoleAssignment]] = relationship(
-        back_populates="principal", lazy="selectin",
+        back_populates="principal",
+        lazy="selectin",
     )
 
 
@@ -591,10 +589,12 @@ class TeamMembership(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     team_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     granted_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(UTC),
@@ -602,18 +602,18 @@ class TeamMembership(Base):
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
 
     principal: Mapped[Principal] = relationship(
-        foreign_keys=[principal_id], lazy="selectin",
+        foreign_keys=[principal_id],
+        lazy="selectin",
     )
     team: Mapped[Principal] = relationship(
-        foreign_keys=[team_id], lazy="selectin",
+        foreign_keys=[team_id],
+        lazy="selectin",
     )
 
 
 class Role(Base):
     __tablename__ = "roles"
-    __table_args__ = (
-        UniqueConstraint("name", "scope_type"),
-    )
+    __table_args__ = (UniqueConstraint("name", "scope_type"),)
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -633,10 +633,12 @@ class RoleAssignment(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     role_id: Mapped[str] = mapped_column(
-        ForeignKey("roles.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("roles.id", ondelete="CASCADE"),
+        nullable=False,
     )
     scope_type: Mapped[str] = mapped_column(Text, nullable=False)
     scope_id: Mapped[str] = mapped_column(Text, nullable=False)
@@ -661,7 +663,8 @@ class DenyAssignment(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     permission: Mapped[str] = mapped_column(Text, nullable=False)
     scope_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -680,7 +683,8 @@ class NamespaceBinding(Base):
 
     namespace_pattern: Mapped[str] = mapped_column(Text, nullable=False)
     team_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     access_level: Mapped[str] = mapped_column(Text, nullable=False)
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
@@ -694,10 +698,12 @@ class ImpersonationSession(Base):
     )
 
     real_principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     effective_principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     approval_reference: Mapped[str | None] = mapped_column(Text)

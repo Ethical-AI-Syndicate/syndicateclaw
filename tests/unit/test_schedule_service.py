@@ -139,6 +139,7 @@ async def test_validate_once_invalid_format(
 @pytest.mark.asyncio
 async def test_create_schedule(session_factory: async_sessionmaker) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     schedule = await svc.create(
         ulid_factory=ULID,
@@ -165,6 +166,7 @@ async def test_create_schedule_interval(
     session_factory: async_sessionmaker,
 ) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     schedule = await svc.create(
         ulid_factory=ULID,
@@ -186,6 +188,7 @@ async def test_create_schedule_interval(
 @pytest.mark.asyncio
 async def test_get_schedule(session_factory: async_sessionmaker) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     schedule = await svc.create(
         ulid_factory=ULID,
@@ -215,6 +218,7 @@ async def test_get_schedule_not_found(session_factory: async_sessionmaker) -> No
 @pytest.mark.asyncio
 async def test_pause_schedule(session_factory: async_sessionmaker) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     schedule = await svc.create(
         ulid_factory=ULID,
@@ -236,6 +240,7 @@ async def test_pause_schedule(session_factory: async_sessionmaker) -> None:
 @pytest.mark.asyncio
 async def test_delete_schedule(session_factory: async_sessionmaker) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     schedule = await svc.create(
         ulid_factory=ULID,
@@ -254,9 +259,7 @@ async def test_delete_schedule(session_factory: async_sessionmaker) -> None:
     await svc.delete(schedule_id)
     async with session_factory() as session:
         result = await session.execute(
-            text(
-                "SELECT status FROM workflow_schedules WHERE id = :id"
-            ),
+            text("SELECT status FROM workflow_schedules WHERE id = :id"),
             {"id": schedule_id},
         )
         row = result.fetchone()
@@ -283,6 +286,7 @@ async def test_resume_once_requires_interval_type(
     session_factory: async_sessionmaker,
 ) -> None:
     from ulid import ULID
+
     svc = ScheduleService(session_factory)
     future = datetime.now(UTC) + timedelta(days=1)
     schedule = await svc.create(
@@ -306,9 +310,7 @@ async def test_resume_once_requires_interval_type(
 async def wf_definitions(session_factory: async_sessionmaker) -> None:
     async with session_factory() as session, session.begin():
         wf_ids = ["wf-sched-claim", "wf-sched-max", "wf-sched-concurrent"]
-        await session.execute(
-            delete(WorkflowDefinition).where(WorkflowDefinition.id.in_(wf_ids))
-        )
+        await session.execute(delete(WorkflowDefinition).where(WorkflowDefinition.id.in_(wf_ids)))
         for wf_id in wf_ids:
             wf = WorkflowDefinition(
                 id=wf_id,
@@ -326,6 +328,7 @@ async def test_scheduler_claims_due_schedule(
     wf_definitions: None,
 ) -> None:
     from ulid import ULID
+
     svc = SchedulerService(session_factory, mock_settings)
     now = datetime.now(UTC)
 
@@ -371,6 +374,7 @@ async def test_scheduler_releases_lock_on_exception(
     wf_definitions: None,
 ) -> None:
     from ulid import ULID
+
     svc = SchedulerService(session_factory, mock_settings)
     now = datetime.now(UTC)
 
@@ -396,10 +400,7 @@ async def test_scheduler_releases_lock_on_exception(
 
     async with session_factory() as session, session.begin():
         result = await session.execute(
-            text(
-                "SELECT locked_by FROM workflow_schedules "
-                "WHERE workflow_id = 'wf-nonexistent'"
-            )
+            text("SELECT locked_by FROM workflow_schedules WHERE workflow_id = 'wf-nonexistent'")
         )
         row = result.fetchone()
         assert row is not None
@@ -413,6 +414,7 @@ async def test_scheduler_max_runs_stops(
     wf_definitions: None,
 ) -> None:
     from ulid import ULID
+
     svc = SchedulerService(session_factory, mock_settings)
     now = datetime.now(UTC)
 
@@ -458,6 +460,7 @@ async def test_scheduler_concurrent_lock_no_duplicate(
     wf_definitions: None,
 ) -> None:
     from ulid import ULID
+
     now = datetime.now(UTC)
     schedule_id = str(ULID())
 
@@ -489,9 +492,7 @@ async def test_scheduler_concurrent_lock_no_duplicate(
 
     async with session_factory() as session, session.begin():
         result = await session.execute(
-            text(
-                "SELECT locked_by, run_count FROM workflow_schedules WHERE id = :id"
-            ),
+            text("SELECT locked_by, run_count FROM workflow_schedules WHERE id = :id"),
             {"id": schedule_id},
         )
         row = result.fetchone()
@@ -501,9 +502,7 @@ async def test_scheduler_concurrent_lock_no_duplicate(
 
     async with session_factory() as session, session.begin():
         result = await session.execute(
-            text(
-                "SELECT COUNT(*) FROM workflow_runs WHERE parent_schedule_id = :id"
-            ),
+            text("SELECT COUNT(*) FROM workflow_runs WHERE parent_schedule_id = :id"),
             {"id": schedule_id},
         )
         count = result.scalar()

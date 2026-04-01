@@ -6,6 +6,7 @@ import asyncio
 import ipaddress
 import socket
 from dataclasses import dataclass
+from typing import Any
 from urllib.parse import urlparse
 
 from syndicateclaw.inference.catalog_sync.errors import SSRFBlockedError
@@ -98,7 +99,7 @@ async def assert_safe_url(
             raise SSRFBlockedError(f"blocked_resolved:{a}")
 
 
-def _path_and_query_from_parsed(parsed) -> str:
+def _path_and_query_from_parsed(parsed: Any) -> str:
     path = parsed.path or "/"
     if parsed.query:
         return f"{path}?{parsed.query}"
@@ -141,11 +142,11 @@ async def resolve_safe_url(
             raise SSRFBlockedError(f"dns_resolution_failed:{e!s}") from e
 
         if not resolved_ips:
-            raise SSRFBlockedError("no_addresses")
+            raise SSRFBlockedError("no_addresses") from None
 
         blocked = [ip for ip in resolved_ips if ip_address_is_blocked(ipaddress.ip_address(ip))]
         if blocked:
-            raise SSRFBlockedError(f"blocked_resolved:{blocked[0]}")
+            raise SSRFBlockedError(f"blocked_resolved:{blocked[0]}") from None
 
         pinned_ip = sorted(resolved_ips)[0]
 

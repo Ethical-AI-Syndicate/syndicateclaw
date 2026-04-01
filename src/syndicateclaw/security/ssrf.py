@@ -4,14 +4,17 @@ import ipaddress
 import socket
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import Any
 from urllib.parse import urlparse
 
 import structlog
 
 logger = structlog.get_logger(__name__)
 
+
 class SSRFError(ValueError):
     """Raised when a URL or resolved address is not safe for outbound access."""
+
     def __init__(self, message_or_url: str, reason: str | None = None) -> None:
         if reason:
             super().__init__(f"SSRF blocked: {reason} (url={message_or_url})")
@@ -62,7 +65,7 @@ def _iter_resolved_ips(hostname: str, port: int) -> Iterable[str]:
     seen: set[str] = set()
     for info in infos:
         sockaddr = info[4]
-        ip = sockaddr[0]
+        ip = str(sockaddr[0])
         if ip not in seen:
             seen.add(ip)
             yield ip
@@ -76,7 +79,7 @@ def _default_port_for_scheme(scheme: str) -> int:
     raise SSRFError(f"Unsupported URL scheme '{scheme}'")
 
 
-def _path_and_query_from_parsed(parsed) -> str:
+def _path_and_query_from_parsed(parsed: Any) -> str:
     path = parsed.path or "/"
     if parsed.query:
         return f"{path}?{parsed.query}"
@@ -152,4 +155,6 @@ def resolve_safe_url(url: str) -> ResolvedSafeURL:
         resolved_ip=pinned_ip,
         path_and_query=_path_and_query_from_parsed(parsed),
     )
+
+
 validate_url = assert_safe_url

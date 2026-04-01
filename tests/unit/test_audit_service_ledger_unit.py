@@ -1,4 +1,5 @@
 """Unit tests for audit/service.py and audit/ledger.py — missing coverage paths."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -133,17 +134,27 @@ async def test_audit_service_emit_with_signing_key() -> None:
     factory = _make_session_factory()
     signing_key = b"test-signing-key-32-bytes-long!!"
 
-    with patch("syndicateclaw.audit.service.AuditEventRepository") as MockRepo:
+    with patch("syndicateclaw.audit.service.AuditEventRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.audit.service._resolve_principal_id", new=AsyncMock(return_value="pid-1")):
-            with patch("syndicateclaw.audit.service._resolve_resource_scope", new=AsyncMock(return_value=(None, None))):
-                with patch("syndicateclaw.security.signing.sign_record", return_value={"signed": True}) as mock_sign:
-                    svc = AuditService(factory, signing_key=signing_key)
-                    event = _make_audit_event()
-                    await svc.emit(event)
+        with (
+            patch(
+                "syndicateclaw.audit.service._resolve_principal_id",
+                new=AsyncMock(return_value="pid-1"),
+            ),
+            patch(
+                "syndicateclaw.audit.service._resolve_resource_scope",
+                new=AsyncMock(return_value=(None, None)),
+            ),
+            patch(
+                "syndicateclaw.security.signing.sign_record", return_value={"signed": True}
+            ) as mock_sign,
+        ):
+            svc = AuditService(factory, signing_key=signing_key)
+            event = _make_audit_event()
+            await svc.emit(event)
 
     mock_sign.assert_called_once()
 
@@ -152,19 +163,27 @@ async def test_audit_service_emit_dead_letter_on_failure() -> None:
     """When emit fails and dead_letter_queue is set, event is enqueued instead of raising."""
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.service.AuditEventRepository") as MockRepo:
+    with patch("syndicateclaw.audit.service.AuditEventRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock(side_effect=RuntimeError("db write failed"))
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.audit.service._resolve_principal_id", new=AsyncMock(return_value=None)):
-            with patch("syndicateclaw.audit.service._resolve_resource_scope", new=AsyncMock(return_value=(None, None))):
-                dlq = AsyncMock()
-                dlq.enqueue = AsyncMock()
+        with (
+            patch(
+                "syndicateclaw.audit.service._resolve_principal_id",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "syndicateclaw.audit.service._resolve_resource_scope",
+                new=AsyncMock(return_value=(None, None)),
+            ),
+        ):
+            dlq = AsyncMock()
+            dlq.enqueue = AsyncMock()
 
-                svc = AuditService(factory, dead_letter_queue=dlq)
-                event = _make_audit_event()
-                result = await svc.emit(event)
+            svc = AuditService(factory, dead_letter_queue=dlq)
+            event = _make_audit_event()
+            result = await svc.emit(event)
 
     dlq.enqueue.assert_awaited_once()
     assert result is event
@@ -174,19 +193,28 @@ async def test_audit_service_emit_no_dlq_reraises() -> None:
     """When emit fails and no DLQ, exception propagates."""
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.service.AuditEventRepository") as MockRepo:
+    with patch("syndicateclaw.audit.service.AuditEventRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock(side_effect=RuntimeError("db write failed"))
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.audit.service._resolve_principal_id", new=AsyncMock(return_value=None)):
-            with patch("syndicateclaw.audit.service._resolve_resource_scope", new=AsyncMock(return_value=(None, None))):
-                svc = AuditService(factory)
-                event = _make_audit_event()
+        with (
+            patch(
+                "syndicateclaw.audit.service._resolve_principal_id",
+                new=AsyncMock(return_value=None),
+            ),
+            patch(
+                "syndicateclaw.audit.service._resolve_resource_scope",
+                new=AsyncMock(return_value=(None, None)),
+            ),
+        ):
+            svc = AuditService(factory)
+            event = _make_audit_event()
 
-                import pytest
-                with pytest.raises(RuntimeError, match="db write failed"):
-                    await svc.emit(event)
+            import pytest
+
+            with pytest.raises(RuntimeError, match="db write failed"):
+                await svc.emit(event)
 
 
 # ---------------------------------------------------------------------------
@@ -218,10 +246,10 @@ def _make_decision_row(inputs: dict) -> MagicMock:
 async def test_ledger_record_policy_decision() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         result = await ledger.record_policy_decision(
@@ -243,10 +271,10 @@ async def test_ledger_record_policy_decision() -> None:
 async def test_ledger_record_tool_decision() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         result = await ledger.record_tool_decision(
@@ -264,10 +292,10 @@ async def test_ledger_record_tool_decision() -> None:
 async def test_ledger_record_memory_decision_read() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         result = await ledger.record_memory_decision(
@@ -288,10 +316,10 @@ async def test_ledger_record_memory_decision_read() -> None:
 async def test_ledger_record_memory_decision_write() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.append = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         result = await ledger.record_memory_decision(
@@ -312,10 +340,10 @@ async def test_ledger_get_run_decisions() -> None:
     factory = _make_session_factory()
     row = _make_decision_row({"x": 1})
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_run = AsyncMock(return_value=[row])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         with patch.object(
@@ -332,10 +360,10 @@ async def test_ledger_get_run_decisions() -> None:
 async def test_ledger_get_trace_decisions() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as MockRepo:
+    with patch("syndicateclaw.audit.ledger.DecisionRecordRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_trace = AsyncMock(return_value=[])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         ledger = DecisionLedger(factory)
         results = await ledger.get_trace_decisions("trace-abc")

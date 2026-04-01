@@ -1,4 +1,5 @@
 """Unit tests for inference/idempotency.py and services/streaming_token_service.py."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta

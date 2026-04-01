@@ -76,9 +76,7 @@ def validate_schedule_value(schedule_type: str, value: str) -> datetime:
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=UTC)
         if parsed <= utcnow:
-            raise InvalidScheduleError(
-                f"ONCE datetime must be in the future, got '{value}'."
-            )
+            raise InvalidScheduleError(f"ONCE datetime must be in the future, got '{value}'.")
         return parsed
 
     raise InvalidScheduleError(
@@ -155,8 +153,8 @@ class ScheduleService:
 
     async def get(self, schedule_id: str) -> WorkflowSchedule:
         async with self._session_factory() as session:
-            stmt: Select[tuple[WorkflowSchedule]] = (
-                select(WorkflowSchedule).where(WorkflowSchedule.id == schedule_id)
+            stmt: Select[tuple[WorkflowSchedule]] = select(WorkflowSchedule).where(
+                WorkflowSchedule.id == schedule_id
             )
             result = await session.execute(stmt)
             row = result.scalar_one_or_none()
@@ -191,8 +189,8 @@ class ScheduleService:
         status: str | None = None,
     ) -> WorkflowSchedule:
         async with self._session_factory() as session:
-            stmt: Select[tuple[WorkflowSchedule]] = (
-                select(WorkflowSchedule).where(WorkflowSchedule.id == schedule_id)
+            stmt: Select[tuple[WorkflowSchedule]] = select(WorkflowSchedule).where(
+                WorkflowSchedule.id == schedule_id
             )
             result = await session.execute(stmt)
             row = result.scalar_one_or_none()
@@ -226,9 +224,11 @@ class ScheduleService:
 
     async def delete(self, schedule_id: str) -> None:
         async with self._session_factory() as session:
-            stmt = update(WorkflowSchedule).where(
-                WorkflowSchedule.id == schedule_id
-            ).values(status="DELETED", updated_at=datetime.now(UTC))
+            stmt = (
+                update(WorkflowSchedule)
+                .where(WorkflowSchedule.id == schedule_id)
+                .values(status="DELETED", updated_at=datetime.now(UTC))
+            )
             result = await session.execute(stmt)
             if result.rowcount == 0:
                 raise ScheduleNotFoundError(f"Schedule '{schedule_id}' not found.")
@@ -239,8 +239,8 @@ class ScheduleService:
 
     async def resume(self, schedule_id: str) -> WorkflowSchedule:
         async with self._session_factory() as session:
-            stmt: Select[tuple[WorkflowSchedule]] = (
-                select(WorkflowSchedule).where(WorkflowSchedule.id == schedule_id)
+            stmt: Select[tuple[WorkflowSchedule]] = select(WorkflowSchedule).where(
+                WorkflowSchedule.id == schedule_id
             )
             result = await session.execute(stmt)
             row = result.scalar_one_or_none()
@@ -249,9 +249,7 @@ class ScheduleService:
             if row.schedule_type == "ONCE":
                 raise InvalidScheduleError("Cannot resume an ONCE schedule.")
             row.status = "ACTIVE"
-            row.next_run_at = _compute_next_run(
-                row.schedule_type, row.schedule_value
-            )
+            row.next_run_at = _compute_next_run(row.schedule_type, row.schedule_value)
             row.updated_at = datetime.now(UTC)
             await session.commit()
             await session.refresh(row)

@@ -17,10 +17,9 @@ logger = structlog.get_logger(__name__)
 async def _resolve_principal_id(session: AsyncSession, actor: str) -> str | None:
     """Look up principal ID from actor name. Returns None if not found."""
     from syndicateclaw.db.models import Principal
+
     try:
-        result = await session.execute(
-            select(Principal.id).where(Principal.name == actor).limit(1)
-        )
+        result = await session.execute(select(Principal.id).where(Principal.name == actor).limit(1))
         row = result.first()
         return row[0] if row else None
     except Exception:
@@ -28,7 +27,9 @@ async def _resolve_principal_id(session: AsyncSession, actor: str) -> str | None
 
 
 async def _resolve_resource_scope(
-    session: AsyncSession, resource_type: str, resource_id: str,
+    session: AsyncSession,
+    resource_type: str,
+    resource_id: str,
 ) -> tuple[str | None, str | None]:
     """Look up owning scope from the resource. Returns (scope_type, scope_id)."""
     table_map = {
@@ -81,6 +82,7 @@ class AuditService:
         details = event.details
         if self._signing_key:
             from syndicateclaw.security.signing import sign_record
+
             details = sign_record(details, self._signing_key)
 
         try:
@@ -93,7 +95,9 @@ class AuditService:
                 scope_id = event.resource_scope_id
                 if scope_type is None:
                     scope_type, scope_id = await _resolve_resource_scope(
-                        session, event.resource_type, event.resource_id,
+                        session,
+                        event.resource_type,
+                        event.resource_id,
                     )
 
                 repo = AuditEventRepository(session)

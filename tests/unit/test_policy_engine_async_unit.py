@@ -1,4 +1,5 @@
 """Unit tests for policy/engine.py async paths — evaluate, add_rule, update_rule, etc."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -15,7 +16,7 @@ from syndicateclaw.policy.engine import PolicyEngine, _resolve_field, _row_to_po
 # ---------------------------------------------------------------------------
 
 
-def _make_session_factory():
+def _make_session_factory() -> Any:
     mock_session = AsyncMock()
     mock_session.__aenter__ = AsyncMock(return_value=mock_session)
     mock_session.__aexit__ = AsyncMock(return_value=False)
@@ -62,18 +63,18 @@ async def test_evaluate_allow_when_rule_matches() -> None:
     factory = _make_session_factory()
     rule_row = _make_rule_row(effect="ALLOW")
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule_row])
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as MockDecRepo:
+        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as mock_dec_repo_cls:
             mock_dec_repo = AsyncMock()
             mock_dec_repo.create = AsyncMock()
-            MockDecRepo.return_value = mock_dec_repo
+            mock_dec_repo_cls.return_value = mock_dec_repo
 
-            with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-                MockAudit.return_value.emit = AsyncMock()
+            with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+                mock_audit_cls.return_value.emit = AsyncMock()
 
                 with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                     engine = PolicyEngine(factory)
@@ -97,18 +98,18 @@ async def test_evaluate_allow_when_rule_matches() -> None:
 async def test_evaluate_default_deny_when_no_rules_match() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(return_value=[])
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as MockDecRepo:
+        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as mock_dec_repo_cls:
             mock_dec_repo = AsyncMock()
             mock_dec_repo.create = AsyncMock()
-            MockDecRepo.return_value = mock_dec_repo
+            mock_dec_repo_cls.return_value = mock_dec_repo
 
-            with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-                MockAudit.return_value.emit = AsyncMock()
+            with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+                mock_audit_cls.return_value.emit = AsyncMock()
 
                 with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                     engine = PolicyEngine(factory)
@@ -137,18 +138,18 @@ async def test_evaluate_condition_dict_match() -> None:
         conditions=[{"field": "env", "operator": "eq", "value": "prod"}],
     )
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule_row])
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as MockDecRepo:
+        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as mock_dec_repo_cls:
             mock_dec_repo = AsyncMock()
             mock_dec_repo.create = AsyncMock()
-            MockDecRepo.return_value = mock_dec_repo
+            mock_dec_repo_cls.return_value = mock_dec_repo
 
-            with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-                MockAudit.return_value.emit = AsyncMock()
+            with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+                mock_audit_cls.return_value.emit = AsyncMock()
 
                 with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                     engine = PolicyEngine(factory)
@@ -171,18 +172,18 @@ async def test_evaluate_condition_no_match_skips_to_default_deny() -> None:
         conditions=[{"field": "env", "operator": "eq", "value": "prod"}],
     )
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule_row])
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as MockDecRepo:
+        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as mock_dec_repo_cls:
             mock_dec_repo = AsyncMock()
             mock_dec_repo.create = AsyncMock()
-            MockDecRepo.return_value = mock_dec_repo
+            mock_dec_repo_cls.return_value = mock_dec_repo
 
-            with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-                MockAudit.return_value.emit = AsyncMock()
+            with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+                mock_audit_cls.return_value.emit = AsyncMock()
 
                 with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                     engine = PolicyEngine(factory)
@@ -203,18 +204,18 @@ async def test_evaluate_condition_as_policy_condition_object() -> None:
     cond = PolicyCondition(field="role", operator="eq", value="admin")
     rule_row = _make_rule_row(effect="ALLOW", conditions=[cond])
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule_row])
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as MockDecRepo:
+        with patch("syndicateclaw.policy.engine.PolicyDecisionRepository") as mock_dec_repo_cls:
             mock_dec_repo = AsyncMock()
             mock_dec_repo.create = AsyncMock()
-            MockDecRepo.return_value = mock_dec_repo
+            mock_dec_repo_cls.return_value = mock_dec_repo
 
-            with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-                MockAudit.return_value.emit = AsyncMock()
+            with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+                mock_audit_cls.return_value.emit = AsyncMock()
 
                 with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                     engine = PolicyEngine(factory)
@@ -237,15 +238,15 @@ async def test_evaluate_condition_as_policy_condition_object() -> None:
 async def test_evaluate_exception_returns_fail_closed_deny() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRuleRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_rule_repo_cls:
         mock_rule_repo = AsyncMock()
         mock_rule_repo.get_enabled_by_resource_type = AsyncMock(
             side_effect=RuntimeError("db crash")
         )
-        MockRuleRepo.return_value = mock_rule_repo
+        mock_rule_repo_cls.return_value = mock_rule_repo
 
-        with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             with patch("syndicateclaw.policy.engine.record_policy_evaluation"):
                 engine = PolicyEngine(factory)
@@ -279,13 +280,13 @@ async def test_add_rule_persists_and_returns_rule() -> None:
         owner="system",
     )
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.create = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             engine = PolicyEngine(factory)
             result = await engine.add_rule(rule, actor="admin:1")
@@ -302,10 +303,10 @@ async def test_add_rule_persists_and_returns_rule() -> None:
 async def test_update_rule_not_found_raises() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         engine = PolicyEngine(factory)
         with pytest.raises(ValueError, match="not found"):
@@ -316,14 +317,14 @@ async def test_update_rule_happy_path() -> None:
     factory = _make_session_factory()
     row = _make_rule_row()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             engine = PolicyEngine(factory)
             result = await engine.update_rule("rule-1", {"priority": 99}, actor="admin:1")
@@ -335,14 +336,14 @@ async def test_update_rule_condition_and_effect_serialization() -> None:
     factory = _make_session_factory()
     row = _make_rule_row()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             engine = PolicyEngine(factory)
             cond = PolicyCondition(field="x", operator="eq", value="y")
@@ -366,14 +367,14 @@ async def test_delete_rule_disables_rule() -> None:
     factory = _make_session_factory()
     row = _make_rule_row(enabled=True)
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.policy.engine.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.policy.engine.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             engine = PolicyEngine(factory)
             await engine.delete_rule("rule-1", actor="admin:1")
@@ -384,10 +385,10 @@ async def test_delete_rule_disables_rule() -> None:
 async def test_delete_rule_not_found_raises() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         engine = PolicyEngine(factory)
         with pytest.raises(ValueError, match="not found"):
@@ -403,10 +404,10 @@ async def test_list_rules_unfiltered() -> None:
     factory = _make_session_factory()
     row = _make_rule_row()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.list = AsyncMock(return_value=[row])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         engine = PolicyEngine(factory)
         rules = await engine.list_rules()
@@ -419,10 +420,10 @@ async def test_list_rules_filtered_by_resource_type() -> None:
     factory = _make_session_factory()
     row = _make_rule_row()
 
-    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.policy.engine.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_enabled_by_resource_type = AsyncMock(return_value=[row])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         engine = PolicyEngine(factory)
         rules = await engine.list_rules(resource_type="tool")

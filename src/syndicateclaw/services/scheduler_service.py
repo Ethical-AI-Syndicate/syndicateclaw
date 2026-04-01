@@ -68,14 +68,17 @@ class SchedulerService:
                           schedule_value, input_state, actor, namespace,
                           max_runs, run_count
             """)
-            result = await session.execute(stmt, {
-                "instance_id": self._instance_id,
-                "locked_until": datetime.fromtimestamp(
-                    now.timestamp() + self._settings.scheduler_lock_lease_seconds, tz=UTC
-                ),
-                "now": now,
-                "batch_size": batch_size,
-            })
+            result = await session.execute(
+                stmt,
+                {
+                    "instance_id": self._instance_id,
+                    "locked_until": datetime.fromtimestamp(
+                        now.timestamp() + self._settings.scheduler_lock_lease_seconds, tz=UTC
+                    ),
+                    "now": now,
+                    "batch_size": batch_size,
+                },
+            )
             rows = result.fetchall()
 
         if not rows:
@@ -133,10 +136,7 @@ class SchedulerService:
         self, schedule_row: Any, session_factory: async_sessionmaker[AsyncSession]
     ) -> None:
         schedule_id = schedule_row.id
-        if (
-            schedule_row.max_runs is not None
-            and schedule_row.run_count >= schedule_row.max_runs
-        ):
+        if schedule_row.max_runs is not None and schedule_row.run_count >= schedule_row.max_runs:
             logger.info(
                 "scheduler.max_runs_reached",
                 schedule_id=schedule_id,

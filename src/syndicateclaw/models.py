@@ -238,7 +238,9 @@ class MemoryTrustMetadata(BaseModel):
     """Trust scoring and decay metadata for memory records."""
 
     trust_score: float = Field(
-        default=1.0, ge=0.0, le=1.0,
+        default=1.0,
+        ge=0.0,
+        le=1.0,
         description="Current trust score (decays over time, downgraded on conflict)",
     )
     source_type: MemorySourceType = Field(
@@ -253,7 +255,9 @@ class MemoryTrustMetadata(BaseModel):
         description="Links conflicting records together for resolution",
     )
     decay_rate: float = Field(
-        default=0.01, ge=0.0, le=1.0,
+        default=0.01,
+        ge=0.0,
+        le=1.0,
         description="Trust decay per day (score -= decay_rate * days_since_validation)",
     )
     frozen: bool = Field(
@@ -536,12 +540,12 @@ class ApprovalScope(BaseModel):
     allowed_actions: list[str] = Field(
         default_factory=list,
         description=(
-            "Specific action identifiers this approval covers "
-            "(empty = the one requested action)"
+            "Specific action identifiers this approval covers (empty = the one requested action)"
         ),
     )
     time_window_seconds: int | None = Field(
-        default=None, ge=1,
+        default=None,
+        ge=1,
         description="If scope_type=TIME_WINDOW, approval valid for this many seconds",
     )
     conditions: list[PolicyCondition] = Field(
@@ -593,8 +597,7 @@ class PolicyDecision(BaseEntity):
     all_rules_considered: list[dict[str, Any]] = Field(
         default_factory=list,
         description=(
-            "Every rule that was evaluated, including non-matching, "
-            "with reasons for non-match"
+            "Every rule that was evaluated, including non-matching, with reasons for non-match"
         ),
     )
     input_attributes: dict[str, Any] = Field(
@@ -686,9 +689,7 @@ class DecisionRecord(BaseEntity):
     domain: DecisionDomain = Field(..., description="Which subsystem produced this decision")
     decision_type: str = Field(
         ...,
-        description=(
-            "Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')"
-        ),
+        description=("Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')"),
     )
     actor: str = Field(..., description="Identity of the actor")
     run_id: str | None = Field(default=None, description="Associated workflow run")
@@ -700,9 +701,7 @@ class DecisionRecord(BaseEntity):
     )
     rules_evaluated: list[dict[str, Any]] = Field(
         default_factory=list,
-        description=(
-            "All rules evaluated, not just the match — includes why others didn't match"
-        ),
+        description=("All rules evaluated, not just the match — includes why others didn't match"),
     )
     matched_rule: str | None = Field(
         default=None,
@@ -743,13 +742,10 @@ class InputSnapshot(BaseEntity):
     snapshot_type: str = Field(
         ...,
         description=(
-            "What was captured: 'tool_response', 'memory_read', "
-            "'external_api', 'llm_response'"
+            "What was captured: 'tool_response', 'memory_read', 'external_api', 'llm_response'"
         ),
     )
-    source_identifier: str = Field(
-        ..., description="Tool name, memory key, API URL, etc."
-    )
+    source_identifier: str = Field(..., description="Tool name, memory key, API URL, etc.")
     request_data: dict[str, Any] = Field(default_factory=dict, description="What was requested")
     response_data: dict[str, Any] = Field(default_factory=dict, description="What was received")
     content_hash: str = Field(

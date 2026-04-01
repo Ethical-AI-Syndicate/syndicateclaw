@@ -52,7 +52,9 @@ def build_incident_triage_workflow() -> WorkflowDefinition:
             node_type=NodeType.APPROVAL,
             handler="approval",
             config={
-                "description": "Critical incident detected — approve remediation plan before execution.",
+                "description": (
+                    "Critical incident detected — approve remediation plan before execution."
+                ),
                 "risk_level": "HIGH",
                 "assigned_to": ["ops-team"],
                 "expires_hours": 4,

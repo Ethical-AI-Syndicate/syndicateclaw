@@ -34,9 +34,7 @@ class PinnedIPAsyncTransport(httpx.AsyncBaseTransport):
 
     def __init__(self, target: ResolvedSafeURL, *, timeout: float = 30.0) -> None:
         if target.scheme != "https":
-            raise PinnedHTTPSyncError(
-                "PinnedIPAsyncTransport currently supports HTTPS only"
-            )
+            raise PinnedHTTPSyncError("PinnedIPAsyncTransport currently supports HTTPS only")
 
         self._target = target
         self._timeout = timeout
@@ -101,7 +99,7 @@ class PinnedIPAsyncTransport(httpx.AsyncBaseTransport):
         return httpx.Response(
             status_code=core_response.status,
             headers=core_response.headers,
-            stream=httpx._transports.base.AsyncResponseStream(core_response.stream),
+            stream=httpx._transports.default.AsyncResponseStream(core_response.stream),  # type: ignore
             request=request,
             extensions=core_response.extensions,
         )
@@ -125,11 +123,10 @@ async def fetch_https_bytes_bounded(
 
     while True:
         try:
-            target = await resolve_safe_url(
-                current, allowed_host_suffixes=allowed_host_suffixes
-            )
+            target = await resolve_safe_url(current, allowed_host_suffixes=allowed_host_suffixes)
         except Exception as e:
             from syndicateclaw.inference.catalog_sync.errors import SSRFBlockedError
+
             if isinstance(e, SSRFBlockedError):
                 raise
             raise ModelsDevFetchError(str(e)) from e

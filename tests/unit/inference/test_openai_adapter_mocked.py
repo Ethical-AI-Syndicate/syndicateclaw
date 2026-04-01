@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -107,9 +108,7 @@ async def test_infer_chat_with_temperature_and_max_tokens() -> None:
 
 async def test_infer_chat_http_error_raises_inference_error() -> None:
     client = _mock_client(_mock_resp(429, {"error": "rate limit"}))
-    with patch(_ASYNC_CLIENT, return_value=client), pytest.raises(
-        InferenceError, match="http_429"
-    ):
+    with patch(_ASYNC_CLIENT, return_value=client), pytest.raises(InferenceError, match="http_429"):
         await OpenAICompatibleAdapter().infer_chat(
             _cfg(), _chat_req(), api_key=None, bearer_token=None
         )
@@ -149,9 +148,7 @@ async def test_infer_embedding_http_error_raises() -> None:
         actor="test-actor",
         trace_id="trace-004",
     )
-    with patch(_ASYNC_CLIENT, return_value=client), pytest.raises(
-        InferenceError, match="http_503"
-    ):
+    with patch(_ASYNC_CLIENT, return_value=client), pytest.raises(InferenceError, match="http_503"):
         await OpenAICompatibleAdapter().infer_embedding(
             _cfg(), req, api_key=None, bearer_token=None
         )
@@ -169,7 +166,7 @@ async def test_stream_chat_yields_content_chunks() -> None:
         "data: [DONE]",
     ]
 
-    async def aiter_lines():
+    async def aiter_lines() -> Any:
         for line in lines:
             yield line
 
@@ -206,8 +203,9 @@ async def test_stream_chat_http_error_raises() -> None:
     mock_client.__aexit__ = AsyncMock(return_value=False)
     mock_client.stream = MagicMock(return_value=mock_stream_resp)
 
-    with patch(_ASYNC_CLIENT, return_value=mock_client), pytest.raises(
-        InferenceError, match="stream_http_401"
+    with (
+        patch(_ASYNC_CLIENT, return_value=mock_client),
+        pytest.raises(InferenceError, match="stream_http_401"),
     ):
         async for _ in OpenAICompatibleAdapter().stream_chat(
             _cfg(), _chat_req(), api_key=None, bearer_token=None

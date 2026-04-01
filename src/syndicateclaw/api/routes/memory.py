@@ -165,16 +165,13 @@ async def read_memory(
     result = await db.execute(stmt)
     record = result.scalar_one_or_none()
     if record is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     from syndicateclaw.memory.service import MemoryService
+
     domain_record = MemoryService._db_to_domain(record)
     if not MemoryService._check_access_policy(domain_record, actor):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     return record
 
@@ -203,6 +200,7 @@ async def search_memory(
     rows = list(result.scalars().all())
 
     from syndicateclaw.memory.service import MemoryService
+
     filtered = []
     for row in rows:
         domain_record = MemoryService._db_to_domain(row)
@@ -222,16 +220,13 @@ async def update_memory(
 
     record = await db.get(MRModel, record_id)
     if record is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     from syndicateclaw.memory.service import MemoryService
+
     domain_record = MemoryService._db_to_domain(record)
     if not MemoryService._check_access_policy(domain_record, actor):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     if record.deletion_status != MemoryDeletionStatus.ACTIVE.value:
         raise HTTPException(
@@ -272,16 +267,13 @@ async def delete_memory(
 
     record = await db.get(MRModel, record_id)
     if record is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     from syndicateclaw.memory.service import MemoryService
+
     domain_record = MemoryService._db_to_domain(record)
     if not MemoryService._check_access_policy(domain_record, actor):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     record.deletion_status = MemoryDeletionStatus.MARKED_FOR_DELETION.value
     record.deleted_at = datetime.now(UTC)
@@ -299,16 +291,13 @@ async def get_memory_lineage(
 
     record = await db.get(MRModel, record_id)
     if record is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     from syndicateclaw.memory.service import MemoryService
+
     domain_record = MemoryService._db_to_domain(record)
     if not MemoryService._check_access_policy(domain_record, actor):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Memory record not found")
 
     chain: list[Any] = [record]
     lineage = record.lineage or {}

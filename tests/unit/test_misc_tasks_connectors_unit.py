@@ -1,10 +1,12 @@
 """Unit tests for tasks/agent_heartbeat.py, connectors/registry.py,
 streaming/connection_manager.py, tasks/agent_response_resume.py."""
+
 from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -39,9 +41,14 @@ async def test_run_agent_heartbeat_expiry_loop_calls_expire() -> None:
     agent_service = AsyncMock()
     agent_service.transition_stale_to_offline = AsyncMock(return_value=2)
 
-    with patch("syndicateclaw.tasks.agent_heartbeat.asyncio.sleep", new=AsyncMock(side_effect=asyncio.CancelledError)):
-        with pytest.raises(asyncio.CancelledError):
-            await run_agent_heartbeat_expiry_loop(agent_service, interval_seconds=1)
+    with (
+        patch(
+            "syndicateclaw.tasks.agent_heartbeat.asyncio.sleep",
+            new=AsyncMock(side_effect=asyncio.CancelledError),
+        ),
+        pytest.raises(asyncio.CancelledError),
+    ):
+        await run_agent_heartbeat_expiry_loop(agent_service, interval_seconds=1)
 
     agent_service.transition_stale_to_offline.assert_awaited_once()
 
@@ -53,9 +60,14 @@ async def test_run_agent_heartbeat_expiry_loop_logs_on_exception() -> None:
     agent_service = AsyncMock()
     agent_service.transition_stale_to_offline = AsyncMock(side_effect=RuntimeError("db down"))
 
-    with patch("syndicateclaw.tasks.agent_heartbeat.asyncio.sleep", new=AsyncMock(side_effect=asyncio.CancelledError)):
-        with pytest.raises(asyncio.CancelledError):
-            await run_agent_heartbeat_expiry_loop(agent_service, interval_seconds=1)
+    with (
+        patch(
+            "syndicateclaw.tasks.agent_heartbeat.asyncio.sleep",
+            new=AsyncMock(side_effect=asyncio.CancelledError),
+        ),
+        pytest.raises(asyncio.CancelledError),
+    ):
+        await run_agent_heartbeat_expiry_loop(agent_service, interval_seconds=1)
 
 
 # ---------------------------------------------------------------------------
@@ -63,7 +75,7 @@ async def test_run_agent_heartbeat_expiry_loop_logs_on_exception() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _make_connector(platform_value: str):
+def _make_connector(platform_value: str) -> Any:
     from syndicateclaw.connectors.base import ConnectorBase, ConnectorStatus, Platform
 
     platform = Platform(platform_value)
@@ -83,6 +95,7 @@ def test_connector_registry_register_and_get() -> None:
     connector = _make_connector("telegram")
     registry.register(connector)
     from syndicateclaw.connectors.base import Platform
+
     result = registry.get(Platform.TELEGRAM)
     assert result is connector
 
@@ -372,9 +385,13 @@ async def test_run_agent_response_resume_loop_calls_once_then_cancels() -> None:
 
     session_factory = MagicMock(return_value=mock_session)
 
-    with patch(
-        "syndicateclaw.tasks.agent_response_resume.asyncio.sleep",
-        new=AsyncMock(side_effect=asyncio.CancelledError),
+    with (
+        patch(
+            "syndicateclaw.tasks.agent_response_resume.asyncio.sleep",
+            new=AsyncMock(side_effect=asyncio.CancelledError),
+        ),
+        pytest.raises(asyncio.CancelledError),
     ):
-        with pytest.raises(asyncio.CancelledError):
-            await run_agent_response_resume_loop(session_factory, message_service, poll_interval_seconds=1)
+        await run_agent_response_resume_loop(
+            session_factory, message_service, poll_interval_seconds=1
+        )

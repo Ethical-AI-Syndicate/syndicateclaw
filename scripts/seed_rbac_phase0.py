@@ -9,12 +9,13 @@ Idempotent — safe to run multiple times. Existing rows are skipped.
 Usage:
     SYNDICATECLAW_DATABASE_URL=postgresql+asyncpg://... python scripts/seed_rbac_phase0.py
 """
+
 from __future__ import annotations
 
 import asyncio
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -33,8 +34,13 @@ BUILT_IN_ROLES: list[dict] = [
         "description": "Read-only access to resources within scope.",
         "inherits_from": None,
         "permissions": [
-            "workflow:read", "run:read", "memory:read", "audit:read",
-            "tool:read", "policy:read", "approval:read",
+            "workflow:read",
+            "run:read",
+            "memory:read",
+            "audit:read",
+            "tool:read",
+            "policy:read",
+            "approval:read",
         ],
     },
     {
@@ -42,9 +48,14 @@ BUILT_IN_ROLES: list[dict] = [
         "description": "Can create and execute workflows, write memory, request approvals.",
         "inherits_from": "viewer",
         "permissions": [
-            "workflow:create", "workflow:execute",
-            "run:create", "run:control", "run:replay",
-            "memory:write", "tool:execute", "approval:request",
+            "workflow:create",
+            "workflow:execute",
+            "run:create",
+            "run:control",
+            "run:replay",
+            "memory:write",
+            "tool:execute",
+            "approval:request",
         ],
     },
     {
@@ -52,17 +63,26 @@ BUILT_IN_ROLES: list[dict] = [
         "description": "Full management within scope including policy and tools.",
         "inherits_from": "operator",
         "permissions": [
-            "workflow:delete", "memory:delete",
-            "tool:manage", "policy:manage", "policy:evaluate",
-            "approval:decide", "namespace:read", "namespace:bind",
+            "workflow:delete",
+            "memory:delete",
+            "tool:manage",
+            "policy:manage",
+            "policy:evaluate",
+            "approval:decide",
+            "namespace:read",
+            "namespace:bind",
         ],
     },
     {
         "name": "tenant_admin",
-        "description": "Tenant-wide administration including audit export and principal management.",
+        "description": (
+            "Tenant-wide administration including audit export and principal management."
+        ),
         "inherits_from": "admin",
         "permissions": [
-            "audit:export", "system:manage_keys", "system:manage_principals",
+            "audit:export",
+            "system:manage_keys",
+            "system:manage_principals",
         ],
     },
     {
@@ -70,7 +90,8 @@ BUILT_IN_ROLES: list[dict] = [
         "description": "Full platform access including system configuration and impersonation.",
         "inherits_from": "tenant_admin",
         "permissions": [
-            "system:configure", "system:impersonate",
+            "system:configure",
+            "system:impersonate",
         ],
     },
 ]
@@ -89,7 +110,7 @@ def _ulid() -> str:
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 async def _extract_actors(session: AsyncSession) -> set[str]:
@@ -112,7 +133,8 @@ async def _extract_actors(session: AsyncSession) -> set[str]:
 
 
 async def _create_principals(
-    session: AsyncSession, actors: set[str],
+    session: AsyncSession,
+    actors: set[str],
 ) -> dict[str, str]:
     """Step 2: Create a principal for each actor. Returns name→id mapping."""
     existing = await session.execute(text("SELECT name, id FROM principals"))
@@ -196,6 +218,7 @@ async def _create_roles(session: AsyncSession) -> dict[str, str]:
 
 def _json_list(items: list[str]) -> str:
     import json
+
     return json.dumps(items)
 
 
@@ -219,9 +242,7 @@ async def _create_assignments(
     role_map: dict[str, str],
 ) -> None:
     """Step 4: Create role assignments mirroring current prefix conventions."""
-    existing = await session.execute(
-        text("SELECT principal_id, role_id FROM role_assignments")
-    )
+    existing = await session.execute(text("SELECT principal_id, role_id FROM role_assignments"))
     existing_pairs = {(row[0], row[1]) for row in existing.fetchall()}
 
     for actor in sorted(actors):
@@ -256,7 +277,8 @@ async def _create_assignments(
 
 
 async def _populate_principal_ids(
-    session: AsyncSession, principal_map: dict[str, str],
+    session: AsyncSession,
+    principal_map: dict[str, str],
 ) -> None:
     """Step 5: Backfill principal ID columns on existing tables."""
     updates = [
@@ -303,7 +325,8 @@ async def _verify(session: AsyncSession) -> list[str]:
     failures: list[str] = []
 
     # S1: Every actor has a principal
-    result = await session.execute(text("""
+    result = await session.execute(
+        text("""
         SELECT COUNT(*) FROM (
             SELECT owner AS a FROM workflow_definitions WHERE owner IS NOT NULL
             UNION
@@ -317,7 +340,8 @@ async def _verify(session: AsyncSession) -> list[str]:
         ) AS actors
         LEFT JOIN principals p ON p.name = actors.a
         WHERE p.id IS NULL
-    """))
+    """)
+    )
     count = result.scalar()
     if count != 0:
         failures.append(f"S1 FAILED: {count} actors without principals")
@@ -335,11 +359,13 @@ async def _verify(session: AsyncSession) -> list[str]:
         failures.append(f"S3 FAILED: expected 5 built-in roles, found {count}")
 
     # S4: Every principal has at least one assignment
-    result = await session.execute(text("""
+    result = await session.execute(
+        text("""
         SELECT COUNT(*) FROM principals p
         LEFT JOIN role_assignments ra ON ra.principal_id = p.id
         WHERE ra.id IS NULL
-    """))
+    """)
+    )
     count = result.scalar()
     if count != 0:
         failures.append(f"S4 FAILED: {count} principals without assignments")
@@ -352,17 +378,26 @@ async def _verify(session: AsyncSession) -> list[str]:
         ("audit_events", "actor", "actor_principal_id"),
         ("api_keys", "actor", "actor_principal_id"),
     ]:
-        result = await session.execute(text(f"""
+        result = await session.execute(
+            text(f"""
             SELECT COUNT(*) FROM {table}
             WHERE {actor_col} IS NOT NULL AND {pid_col} IS NULL
-        """))
+        """)
+        )
         count = result.scalar()
         if count != 0:
-            failures.append(f"S7 FAILED: {table}.{pid_col} has {count} NULLs with non-NULL {actor_col}")
+            failures.append(
+                f"S7 FAILED: {table}.{pid_col} has {count} NULLs with non-NULL {actor_col}"
+            )
 
     # S8: No NULL owning scopes
-    for table in ["workflow_definitions", "workflow_runs", "memory_records",
-                   "approval_requests", "policy_rules"]:
+    for table in [
+        "workflow_definitions",
+        "workflow_runs",
+        "memory_records",
+        "approval_requests",
+        "policy_rules",
+    ]:
         result = await session.execute(
             text(f"SELECT COUNT(*) FROM {table} WHERE owning_scope_type IS NULL")
         )
@@ -371,10 +406,12 @@ async def _verify(session: AsyncSession) -> list[str]:
             failures.append(f"S8 FAILED: {table} has {count} rows with NULL owning_scope_type")
 
     # S-service: All system:* actors are SERVICE_ACCOUNT
-    result = await session.execute(text("""
+    result = await session.execute(
+        text("""
         SELECT COUNT(*) FROM principals
         WHERE name LIKE 'system:%%' AND principal_type != 'SERVICE_ACCOUNT'
-    """))
+    """)
+    )
     count = result.scalar()
     if count != 0:
         failures.append(f"SERVICE_ACCOUNT check FAILED: {count} system: actors misclassified")
@@ -416,11 +453,11 @@ async def main() -> None:
     await engine.dispose()
 
     if failures:
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"VERIFICATION FAILED — {len(failures)} invariant(s) broken:")
         for f in failures:
             print(f"  ✗ {f}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
         sys.exit(1)
     else:
         print("\nAll invariants passed. Phase 0 seed complete.")

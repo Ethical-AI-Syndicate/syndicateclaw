@@ -81,9 +81,7 @@ async def end_handler(state: dict[str, Any], context: ExecutionContext) -> NodeR
     return NodeResult(output_state=state)
 
 
-async def checkpoint_handler(
-    state: dict[str, Any], context: ExecutionContext
-) -> NodeResult:
+async def checkpoint_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
     """Persists current state as a checkpoint."""
     if context.checkpoint_store and hasattr(context.checkpoint_store, "save"):
         await context.checkpoint_store.save(context.run_id, dict(state))
@@ -92,9 +90,7 @@ async def checkpoint_handler(
     return NodeResult(output_state=state, should_checkpoint=True)
 
 
-async def approval_handler(
-    state: dict[str, Any], context: ExecutionContext
-) -> NodeResult:
+async def approval_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
     """Creates an approval request and pauses execution until approved."""
     request = ApprovalRequest(
         run_id=context.run_id,
@@ -426,9 +422,7 @@ async def agent_send_handler(state: dict[str, Any], context: ExecutionContext) -
     raise WaitForAgentResponseError(f"Waiting for agent response on conversation {conversation_id}")
 
 
-async def decision_handler(
-    state: dict[str, Any], context: ExecutionContext
-) -> NodeResult:
+async def decision_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
     """Evaluates a condition and picks the next node."""
     condition = context.config.get("condition", "")
     true_node = context.config.get("true_node")

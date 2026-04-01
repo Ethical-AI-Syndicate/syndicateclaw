@@ -8,7 +8,6 @@ Note: idx_schedules_next_run is in 016; idx_messages_* in 010.
 
 from collections.abc import Sequence
 
-import sqlalchemy as sa
 from alembic import op
 
 revision: str = "023_performance_indexes"

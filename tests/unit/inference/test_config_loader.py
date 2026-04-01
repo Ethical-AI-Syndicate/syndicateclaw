@@ -37,12 +37,14 @@ def _write(path: Path, cfg: ProviderSystemConfig) -> None:
 def test_load_validate_roundtrip(tmp_path: Path) -> None:
     sys = minimal_system(
         provider("a"),
-        static=(StaticCatalogEntry(
-            provider_id="a",
-            model_id="m",
-            capability=InferenceCapability.CHAT,
-            descriptor=chat_descriptor("a", "m"),
-        ),),
+        static=(
+            StaticCatalogEntry(
+                provider_id="a",
+                model_id="m",
+                capability=InferenceCapability.CHAT,
+                descriptor=chat_descriptor("a", "m"),
+            ),
+        ),
     )
     _write(tmp_path / "p.yaml", sys)
     loader = ProviderConfigLoader(tmp_path / "p.yaml")

@@ -1,4 +1,5 @@
 """Unit tests for approval/service.py and approval/authority.py — missing paths."""
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -79,13 +80,13 @@ async def test_request_approval_calls_notification_callback() -> None:
     factory = _make_session_factory()
     notify = AsyncMock()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.create = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.approval.service.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.approval.service.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             svc = ApprovalService(factory, notification_callback=notify)
             req = _make_approval_request()
@@ -98,13 +99,13 @@ async def test_request_approval_notification_failure_is_swallowed() -> None:
     factory = _make_session_factory()
     notify = AsyncMock(side_effect=RuntimeError("smtp down"))
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.create = AsyncMock()
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.approval.service.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.approval.service.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             svc = ApprovalService(factory, notification_callback=notify)
             req = _make_approval_request()
@@ -137,10 +138,10 @@ async def test_request_approval_no_assigned_to_without_resolver_raises() -> None
 async def test_approve_raises_if_request_not_found() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=None)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with pytest.raises(ValueError, match="not found"):
@@ -151,10 +152,10 @@ async def test_approve_raises_if_not_pending() -> None:
     factory = _make_session_factory()
     row = _make_mock_row(status="APPROVED")
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with pytest.raises(ValueError, match="not PENDING"):
@@ -165,10 +166,10 @@ async def test_approve_raises_on_self_approval() -> None:
     factory = _make_session_factory()
     row = _make_mock_row(requested_by="admin:ops", assigned_to=["admin:ops"])
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with pytest.raises(PermissionError, match="Self-approval"):
@@ -179,10 +180,10 @@ async def test_approve_raises_if_approver_not_assigned() -> None:
     factory = _make_session_factory()
     row = _make_mock_row(assigned_to=["admin:lead"])
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with pytest.raises(PermissionError, match="not in the assigned"):
@@ -196,11 +197,11 @@ async def test_approve_raises_if_expired() -> None:
         expires_at=datetime.now(UTC) - timedelta(hours=1),
     )
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with pytest.raises(ValueError, match="expired"):
@@ -214,17 +215,17 @@ async def test_reject_delegates_to_decide() -> None:
     mock_result = MagicMock()
     mock_result.id = "req-1"
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get = AsyncMock(return_value=row)
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.approval.service.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.approval.service.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
-            with patch("syndicateclaw.approval.service.ApprovalRequest") as MockModel:
-                MockModel.model_validate = MagicMock(return_value=mock_result)
+            with patch("syndicateclaw.approval.service.ApprovalRequest") as mock_model_cls:
+                mock_model_cls.model_validate = MagicMock(return_value=mock_result)
 
                 svc = ApprovalService(factory)
                 result = await svc.reject("req-1", "admin:ops", "nope")
@@ -240,13 +241,13 @@ async def test_reject_delegates_to_decide() -> None:
 async def test_expire_stale_returns_zero_when_none_expired() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_expired_pending = AsyncMock(return_value=[])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.approval.service.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.approval.service.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
             svc = ApprovalService(factory)
             count = await svc.expire_stale()
@@ -261,17 +262,17 @@ async def test_expire_stale_expires_pending_rows() -> None:
     mock_ar = MagicMock()
     mock_ar.id = "req-1"
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_expired_pending = AsyncMock(return_value=[row])
         mock_repo.update = AsyncMock(return_value=row)
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
-        with patch("syndicateclaw.approval.service.AuditService") as MockAudit:
-            MockAudit.return_value.emit = AsyncMock()
+        with patch("syndicateclaw.approval.service.AuditService") as mock_audit_cls:
+            mock_audit_cls.return_value.emit = AsyncMock()
 
-            with patch("syndicateclaw.approval.service.ApprovalRequest") as MockModel:
-                MockModel.model_validate = MagicMock(return_value=mock_ar)
+            with patch("syndicateclaw.approval.service.ApprovalRequest") as mock_model_cls:
+                mock_model_cls.model_validate = MagicMock(return_value=mock_ar)
 
                 svc = ApprovalService(factory)
                 count = await svc.expire_stale()
@@ -289,10 +290,10 @@ async def test_get_pending_with_assignee() -> None:
     factory = _make_session_factory()
     row = _make_mock_row()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_pending_by_assignee = AsyncMock(return_value=[row])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         with patch.object(ApprovalRequest, "model_validate", return_value=MagicMock()):
@@ -305,10 +306,10 @@ async def test_get_pending_with_assignee() -> None:
 async def test_get_pending_without_assignee() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_pending = AsyncMock(return_value=[])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         results = await svc.get_pending()
@@ -320,10 +321,10 @@ async def test_get_pending_without_assignee() -> None:
 async def test_get_by_run() -> None:
     factory = _make_session_factory()
 
-    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as MockRepo:
+    with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_by_run = AsyncMock(return_value=[])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         svc = ApprovalService(factory)
         results = await svc.get_by_run("run-42")
@@ -350,10 +351,10 @@ async def test_resolve_from_policy_with_session_matching_rule() -> None:
 
     factory = MagicMock(return_value=mock_session)
 
-    with patch("syndicateclaw.db.repository.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.db.repository.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         resolver = ApprovalAuthorityResolver(session_factory=factory)
         approvers = await resolver._resolve_from_policy("privileged-tool", {})
@@ -372,10 +373,10 @@ async def test_resolve_from_policy_no_match_returns_empty() -> None:
 
     factory = MagicMock(return_value=mock_session)
 
-    with patch("syndicateclaw.db.repository.PolicyRuleRepository") as MockRepo:
+    with patch("syndicateclaw.db.repository.PolicyRuleRepository") as mock_repo_cls:
         mock_repo = AsyncMock()
         mock_repo.get_enabled_by_resource_type = AsyncMock(return_value=[rule])
-        MockRepo.return_value = mock_repo
+        mock_repo_cls.return_value = mock_repo
 
         resolver = ApprovalAuthorityResolver(session_factory=factory)
         result = await resolver._resolve_from_policy("my-tool", {})

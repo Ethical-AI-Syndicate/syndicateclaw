@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from typing import Any
 
 import httpx
@@ -110,10 +111,8 @@ class TelegramConnector(ConnectorBase):
                 "text": text or " ",
             }
             if existing_msg_id is None:
-                try:
+                with contextlib.suppress(TypeError, ValueError):
                     payload["reply_to_message_id"] = int(message.platform_message_id)
-                except (TypeError, ValueError):
-                    pass
 
         try:
             async with httpx.AsyncClient(timeout=15.0) as client:

@@ -1,4 +1,5 @@
 """Unit tests for api/middleware.py — middleware dispatch paths."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -46,12 +47,14 @@ async def test_prometheus_middleware_observes_metrics() -> None:
     response = Response(status_code=200)
     call_next = AsyncMock(return_value=response)
 
-    with patch("syndicateclaw.api.middleware.http_request_duration_seconds") as mock_hist:
-        with patch("syndicateclaw.api.middleware.http_requests_total") as mock_counter:
-            mock_hist.labels.return_value.observe = MagicMock()
-            mock_counter.labels.return_value.inc = MagicMock()
+    with (
+        patch("syndicateclaw.api.middleware.http_request_duration_seconds") as mock_hist,
+        patch("syndicateclaw.api.middleware.http_requests_total") as mock_counter,
+    ):
+        mock_hist.labels.return_value.observe = MagicMock()
+        mock_counter.labels.return_value.inc = MagicMock()
 
-            result = await mw.dispatch(request, call_next)
+        result = await mw.dispatch(request, call_next)
 
     assert result.status_code == 200
     mock_hist.labels.assert_called_once()
@@ -135,6 +138,7 @@ async def test_audit_middleware_handles_handler_exception() -> None:
     call_next = AsyncMock(side_effect=RuntimeError("internal error"))
 
     import pytest
+
     with pytest.raises(RuntimeError, match="internal error"):
         await mw.dispatch(request, call_next)
 

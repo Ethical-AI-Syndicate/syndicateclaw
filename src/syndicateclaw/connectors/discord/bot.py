@@ -180,14 +180,16 @@ class DiscordConnector(ConnectorBase):
             return None
 
         member = body.get("member") or {}
-        user_obj = member.get("user") if isinstance(member, dict) else None
-        if not isinstance(user_obj, dict):
-            user_obj = body.get("user") if isinstance(body.get("user"), dict) else {}
+        u_obj = member.get("user") if isinstance(member, dict) else None
+        if not isinstance(u_obj, dict):
+            u_obj = body.get("user") if isinstance(body.get("user"), dict) else {}
+        user_obj: dict[str, Any] = u_obj if isinstance(u_obj, dict) else {}
         user_id = str(user_obj.get("id") or "")
         if not user_id:
             return None
 
-        options = data.get("options") if isinstance(data.get("options"), list) else []
+        raw_options = data.get("options")
+        options: list[Any] = raw_options if isinstance(raw_options, list) else []
         option_map = {
             str(opt.get("name")): opt.get("value")
             for opt in options

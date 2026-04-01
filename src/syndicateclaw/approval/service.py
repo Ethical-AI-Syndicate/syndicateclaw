@@ -36,9 +36,7 @@ class ApprovalService:
     # Public API
     # ------------------------------------------------------------------
 
-    async def request_approval(
-        self, request: ApprovalRequest, actor: str
-    ) -> ApprovalRequest:
+    async def request_approval(self, request: ApprovalRequest, actor: str) -> ApprovalRequest:
         """Create and persist a new approval request.
 
         If an authority resolver is configured, it overrides any client-supplied
@@ -100,15 +98,11 @@ class ApprovalService:
 
         return request
 
-    async def approve(
-        self, request_id: str, approver: str, reason: str
-    ) -> ApprovalRequest:
+    async def approve(self, request_id: str, approver: str, reason: str) -> ApprovalRequest:
         """Approve a pending request."""
         return await self._decide(request_id, approver, reason, ApprovalStatus.APPROVED)
 
-    async def reject(
-        self, request_id: str, approver: str, reason: str
-    ) -> ApprovalRequest:
+    async def reject(self, request_id: str, approver: str, reason: str) -> ApprovalRequest:
         """Reject a pending request."""
         return await self._decide(request_id, approver, reason, ApprovalStatus.REJECTED)
 
@@ -138,9 +132,7 @@ class ApprovalService:
             logger.info("approvals_expired", count=count)
         return count
 
-    async def get_pending(
-        self, assignee: str | None = None
-    ) -> list[ApprovalRequest]:
+    async def get_pending(self, assignee: str | None = None) -> list[ApprovalRequest]:
         """Return pending approval requests, optionally filtered by assignee."""
         async with self._session_factory() as session:
             repo = ApprovalRequestRepository(session)
@@ -177,9 +169,7 @@ class ApprovalService:
                 raise ValueError(f"Approval request {request_id} not found")
 
             if row.status != ApprovalStatus.PENDING.value:
-                raise ValueError(
-                    f"Request {request_id} is {row.status}, not PENDING"
-                )
+                raise ValueError(f"Request {request_id} is {row.status}, not PENDING")
 
             if approver == row.requested_by:
                 raise PermissionError(
@@ -187,13 +177,9 @@ class ApprovalService:
                 )
 
             at_raw: Any = row.assigned_to
-            assigned: list[str] = (
-                [str(x) for x in at_raw] if isinstance(at_raw, list) else []
-            )
+            assigned: list[str] = [str(x) for x in at_raw] if isinstance(at_raw, list) else []
             if approver not in assigned:
-                raise PermissionError(
-                    f"{approver} is not in the assigned approvers list"
-                )
+                raise PermissionError(f"{approver} is not in the assigned approvers list")
 
             if row.expires_at and row.expires_at <= now:
                 row.status = ApprovalStatus.EXPIRED.value

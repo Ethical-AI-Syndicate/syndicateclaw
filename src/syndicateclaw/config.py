@@ -56,15 +56,18 @@ class Settings(BaseSettings):
         default=86400 * 30, ge=1, description="Default TTL for memory records (30 days)"
     )
     memory_max_value_bytes: int = Field(
-        default=1_048_576, ge=1,
+        default=1_048_576,
+        ge=1,
         description="Maximum size in bytes for a memory record value (1MB default)",
     )
     memory_max_key_length: int = Field(
-        default=256, ge=1,
+        default=256,
+        ge=1,
         description="Maximum length of a memory key string",
     )
     memory_max_namespace_length: int = Field(
-        default=128, ge=1,
+        default=128,
+        ge=1,
         description="Maximum length of a memory namespace string",
     )
     max_workflow_depth: int = Field(
@@ -166,8 +169,7 @@ class Settings(BaseSettings):
         default=60,
         ge=1,
         description=(
-            "Heartbeat staleness timeout in seconds before ONLINE "
-            "agents are marked OFFLINE."
+            "Heartbeat staleness timeout in seconds before ONLINE agents are marked OFFLINE."
         ),
     )
     scheduler_enabled: bool = Field(

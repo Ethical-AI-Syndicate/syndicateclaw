@@ -57,7 +57,9 @@ from syndicateclaw.tools.registry import ToolRegistry
 
 def _make_tool(name: str = "test_tool", **overrides: Any) -> Tool:
     defaults = dict(
-        name=name, version="1.0.0", owner="test",
+        name=name,
+        version="1.0.0",
+        owner="test",
         risk_level=ToolRiskLevel.LOW,
         sandbox_policy=ToolSandboxPolicy(allowed_protocols=["https"]),
     )
@@ -115,7 +117,7 @@ class TestScenario_UnauthorizedPolicyModification:  # noqa: N801
     """A regular user actor attempts to create, modify, and delete policy rules.
     All three operations must be blocked with 403."""
 
-    def test_regular_user_cannot_create_policy_rule(self):
+    def test_regular_user_cannot_create_policy_rule(self) -> None:
         from fastapi import HTTPException
 
         from syndicateclaw.api.routes.policy import _require_policy_admin
@@ -125,13 +127,13 @@ class TestScenario_UnauthorizedPolicyModification:  # noqa: N801
                 _require_policy_admin(actor)
             assert exc_info.value.status_code == 403
 
-    def test_admin_prefixed_actors_can_manage_policies(self):
+    def test_admin_prefixed_actors_can_manage_policies(self) -> None:
         from syndicateclaw.api.routes.policy import _require_policy_admin
 
         for actor in ["admin:root", "policy:editor", "system:bootstrap"]:
             _require_policy_admin(actor)  # Should not raise
 
-    def test_privilege_escalation_via_similar_prefix_blocked(self):
+    def test_privilege_escalation_via_similar_prefix_blocked(self) -> None:
         """Actor names containing 'admin' but not starting with 'admin:' are blocked."""
         from fastapi import HTTPException
 
@@ -152,7 +154,7 @@ class TestScenario_StaleApprovalReplay:  # noqa: N801
     """An approval was granted for context A. The context has since drifted
     to context B. The system must detect the mismatch."""
 
-    def test_context_hash_detects_drift(self):
+    def test_context_hash_detects_drift(self) -> None:
         original_context = {
             "tool": "http_request",
             "target": "https://api.internal.com/safe-endpoint",
@@ -173,10 +175,11 @@ class TestScenario_StaleApprovalReplay:  # noqa: N801
         )
 
         drifted_hash = _hash_inputs(drifted_context)
-        assert scope.context_hash != drifted_hash, \
+        assert scope.context_hash != drifted_hash, (
             "Context drift must be detectable via hash mismatch"
+        )
 
-    def test_uses_exhausted_prevents_reuse(self):
+    def test_uses_exhausted_prevents_reuse(self) -> None:
         """After an approval is used once, uses_remaining=0 blocks reuse."""
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.SINGLE_ACTION,
@@ -186,7 +189,7 @@ class TestScenario_StaleApprovalReplay:  # noqa: N801
         assert scope.uses_remaining == 0
         assert scope.max_uses == 1
 
-    def test_time_windowed_approval_expires(self):
+    def test_time_windowed_approval_expires(self) -> None:
         """A time-windowed approval granted 2 hours ago with 1-hour window is expired."""
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.TIME_WINDOW,
@@ -196,7 +199,7 @@ class TestScenario_StaleApprovalReplay:  # noqa: N801
         window_end = approval_time + timedelta(seconds=scope.time_window_seconds)
         assert window_end < datetime.now(UTC), "Approval window must have expired"
 
-    def test_conditional_approval_invalidated_by_risk_escalation(self):
+    def test_conditional_approval_invalidated_by_risk_escalation(self) -> None:
         """Approval was conditional on risk_level=LOW. If risk escalates, condition fails."""
         scope = ApprovalScope(
             scope_type=ApprovalScopeType.CONDITIONAL,
@@ -217,7 +220,7 @@ class TestScenario_PoisonedMemoryRetrieval:  # noqa: N801
     """An attacker injects a record into a namespace. A different actor
     attempts to read it. The access policy must block retrieval."""
 
-    def test_restricted_record_invisible_to_other_actors(self):
+    def test_restricted_record_invisible_to_other_actors(self) -> None:
         """Record with access_policy=restricted is invisible to non-owners."""
         record = _make_memory_record(
             access_policy="restricted",
@@ -229,7 +232,7 @@ class TestScenario_PoisonedMemoryRetrieval:  # noqa: N801
         assert MemoryService._check_access_policy(record, "user:attacker") is False
         assert MemoryService._check_access_policy(record, "system:trusted-pipeline") is True
 
-    def test_owner_only_blocks_system_actors(self):
+    def test_owner_only_blocks_system_actors(self) -> None:
         """Even system actors are blocked from owner_only records of other actors."""
         record = _make_memory_record(
             access_policy="owner_only",
@@ -239,7 +242,7 @@ class TestScenario_PoisonedMemoryRetrieval:  # noqa: N801
         assert MemoryService._check_access_policy(record, "admin:root") is False
         assert MemoryService._check_access_policy(record, "user:alice") is True
 
-    def test_poisoned_low_trust_record_identifiable(self):
+    def test_poisoned_low_trust_record_identifiable(self) -> None:
         """A record from an external source with low trust is identifiable."""
         from syndicateclaw.memory.trust import MemoryTrustService
 
@@ -264,10 +267,9 @@ class TestScenario_PoisonedMemoryRetrieval:  # noqa: N801
             record.trust.last_validated_at,
             record.trust.frozen,
         )
-        assert not svc.is_usable(effective), \
-            "Poisoned record must be flagged as unusable"
+        assert not svc.is_usable(effective), "Poisoned record must be flagged as unusable"
 
-    def test_unknown_access_policy_fails_closed(self):
+    def test_unknown_access_policy_fails_closed(self) -> None:
         """If an attacker manages to set an unknown policy name, it is denied."""
         for policy in ["admin_bypass", "public", "all_access", ""]:
             record = _make_memory_record(access_policy=policy, actor="user:alice")
@@ -283,21 +285,21 @@ class TestScenario_DependencyOutage:  # noqa: N801
     """When critical dependencies are unavailable, the readiness probe
     must report degraded status."""
 
-    def test_missing_policy_engine_degrades_readiness(self):
+    def test_missing_policy_engine_degrades_readiness(self) -> None:
         """If policy_engine is None on app state, readiness should flag it."""
         checks: dict[str, str] = {}
         pe = None
         checks["policy_engine"] = "ok" if pe is not None else "missing"
         assert checks["policy_engine"] == "missing"
 
-    def test_missing_decision_ledger_degrades_readiness(self):
+    def test_missing_decision_ledger_degrades_readiness(self) -> None:
         """If decision_ledger is None, readiness should flag it."""
         checks: dict[str, str] = {}
         dl = None
         checks["decision_ledger"] = "ok" if dl is not None else "missing"
         assert checks["decision_ledger"] == "missing"
 
-    def test_readiness_check_logic_comprehensive(self):
+    def test_readiness_check_logic_comprehensive(self) -> None:
         """All four dependency checks must pass for healthy=True."""
         healthy = True
         checks: dict[str, str] = {}
@@ -325,7 +327,7 @@ class TestScenario_DbOutageDuringWrites:  # noqa: N801
     """When the database is down, the system must not silently proceed."""
 
     @pytest.mark.asyncio
-    async def test_ledger_failure_blocks_tool_execution(self):
+    async def test_ledger_failure_blocks_tool_execution(self) -> None:
         """If the decision ledger cannot write, tool execution is denied."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -346,7 +348,7 @@ class TestScenario_DbOutageDuringWrites:  # noqa: N801
             await executor.execute("test_tool", {}, ctx)
 
     @pytest.mark.asyncio
-    async def test_no_ledger_at_all_blocks_execution(self):
+    async def test_no_ledger_at_all_blocks_execution(self) -> None:
         """If no ledger is configured, all tool execution is blocked."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -362,7 +364,7 @@ class TestScenario_DbOutageDuringWrites:  # noqa: N801
             await executor.execute("test_tool", {}, ctx)
 
     @pytest.mark.asyncio
-    async def test_no_policy_engine_blocks_even_with_ledger(self):
+    async def test_no_policy_engine_blocks_even_with_ledger(self) -> None:
         """Even with a working ledger, missing policy engine → DENY."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -397,7 +399,7 @@ class TestScenario_ConcurrentRunFlood:  # noqa: N801
     """An attacker attempts to launch many runs simultaneously.
     The admission control must reject runs above the limit."""
 
-    def test_admission_check_logic(self):
+    def test_admission_check_logic(self) -> None:
         """When active_count >= max_concurrent_runs, new runs are rejected."""
         max_concurrent = 5
         for active_count in range(10):
@@ -406,7 +408,7 @@ class TestScenario_ConcurrentRunFlood:  # noqa: N801
             else:
                 assert active_count < max_concurrent
 
-    def test_active_statuses_include_all_non_terminal(self):
+    def test_active_statuses_include_all_non_terminal(self) -> None:
         """Admission control counts all waiting states as active."""
         active_statuses = {
             "PENDING",
@@ -416,8 +418,9 @@ class TestScenario_ConcurrentRunFlood:  # noqa: N801
         }
         terminal_statuses = {"COMPLETED", "FAILED", "CANCELLED"}
         assert active_statuses.isdisjoint(terminal_statuses)
-        assert "PAUSED" not in active_statuses, \
+        assert "PAUSED" not in active_statuses, (
             "PAUSED runs should not count toward concurrency limit"
+        )
 
 
 # ===========================================================================
@@ -429,7 +432,7 @@ class TestScenario_SelfApproval:  # noqa: N801
     """An actor creates an approval request and tries to approve it themselves."""
 
     @pytest.mark.asyncio
-    async def test_service_layer_blocks_self_approval(self):
+    async def test_service_layer_blocks_self_approval(self) -> None:
         from syndicateclaw.approval.service import ApprovalService
 
         mock_row = MagicMock()
@@ -464,12 +467,14 @@ class TestScenario_SelfApproval:  # noqa: N801
             pytest.raises(PermissionError, match="Self-approval prohibited"),
         ):
             await service._decide(
-                "req-attack", "user:mallory", "I approve myself",
+                "req-attack",
+                "user:mallory",
+                "I approve myself",
                 ApprovalStatus.APPROVED,
             )
 
     @pytest.mark.asyncio
-    async def test_legitimate_cross_approval_succeeds(self):
+    async def test_legitimate_cross_approval_succeeds(self) -> None:
         """A different assigned approver CAN approve the request."""
         from syndicateclaw.approval.service import ApprovalService
 
@@ -510,12 +515,18 @@ class TestScenario_SelfApproval:  # noqa: N801
             ),
             patch("syndicateclaw.approval.service.ApprovalRequest") as mock_ar,
         ):
-            mock_ar.model_validate = MagicMock(return_value=MagicMock(
-                id="req-1", run_id="run-1", tool_name="test",
-                status=ApprovalStatus.APPROVED,
-            ))
+            mock_ar.model_validate = MagicMock(
+                return_value=MagicMock(
+                    id="req-1",
+                    run_id="run-1",
+                    tool_name="test",
+                    status=ApprovalStatus.APPROVED,
+                )
+            )
             result = await service._decide(
-                "req-1", "user:bob", "looks good",
+                "req-1",
+                "user:bob",
+                "looks good",
                 ApprovalStatus.APPROVED,
             )
             assert result is not None
@@ -530,7 +541,7 @@ class TestScenario_FullToolExecutionCascade:  # noqa: N801
     """Run a tool through the full pipeline with all controls active."""
 
     @pytest.mark.asyncio
-    async def test_full_pipeline_success(self):
+    async def test_full_pipeline_success(self) -> None:
         """With all controls present and passing, execution succeeds."""
         registry = ToolRegistry()
         tool = _make_tool(
@@ -551,7 +562,7 @@ class TestScenario_FullToolExecutionCascade:  # noqa: N801
         assert result == {"result": "ok"}
 
     @pytest.mark.asyncio
-    async def test_sandbox_blocks_before_policy_check(self):
+    async def test_sandbox_blocks_before_policy_check(self) -> None:
         """Sandbox violation stops execution before policy is even evaluated."""
         registry = ToolRegistry()
         tool = _make_tool(
@@ -572,11 +583,12 @@ class TestScenario_FullToolExecutionCascade:  # noqa: N801
         mock_policy.evaluate.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_policy_deny_blocks_before_execution(self):
+    async def test_policy_deny_blocks_before_execution(self) -> None:
         """Policy DENY prevents tool handler from running."""
         registry = ToolRegistry()
 
         call_count = 0
+
         async def tracking_handler(data: dict) -> dict:
             nonlocal call_count
             call_count += 1
@@ -610,9 +622,10 @@ class TestScenario_FullToolExecutionCascade:  # noqa: N801
         assert call_count == 0, "Handler must not have been called after DENY"
 
     @pytest.mark.asyncio
-    async def test_handler_crash_preserves_decision_record(self):
+    async def test_handler_crash_preserves_decision_record(self) -> None:
         """If the handler crashes, the decision record still exists."""
         registry = ToolRegistry()
+
         async def crashing_handler(data: dict) -> dict:
             raise RuntimeError("Handler crashed catastrophically")
 
@@ -641,21 +654,21 @@ class TestScenario_DeadLetterAdversarial:  # noqa: N801
     """Verify that DLQ classification prevents retry of permanent errors
     and correctly handles transient errors."""
 
-    def test_permanent_error_gets_zero_retries(self):
+    def test_permanent_error_gets_zero_retries(self) -> None:
         error = "Schema validation failed: missing required field 'action'"
         category = _classify_error(error)
         assert category == "permanent"
         max_retries = 3 if category == "transient" else 0
         assert max_retries == 0
 
-    def test_transient_error_gets_bounded_retries(self):
+    def test_transient_error_gets_bounded_retries(self) -> None:
         error = "Connection timed out after 30s"
         category = _classify_error(error)
         assert category == "transient"
         max_retries = 3 if category == "transient" else 0
         assert max_retries == 3
 
-    def test_adversarial_error_message_classified_safely(self):
+    def test_adversarial_error_message_classified_safely(self) -> None:
         """An attacker crafting error messages cannot force permanent classification."""
         tricky_errors = [
             "Server returned 502: bad gateway",
@@ -664,5 +677,6 @@ class TestScenario_DeadLetterAdversarial:  # noqa: N801
         ]
         for error in tricky_errors:
             category = _classify_error(error)
-            assert category == "transient", \
+            assert category == "transient", (
                 f"Error '{error}' should be transient but was classified as {category}"
+            )

@@ -1,4 +1,5 @@
 """Unit tests for services/subscription_service.py and tasks/org_cleanup.py."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock

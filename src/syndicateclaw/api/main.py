@@ -41,6 +41,7 @@ VERSION = __version__
 async def configure_system_engine(session_factory: Any) -> None:
     """Ensure system:engine has run:control + tool:execute before serving traffic."""
     from sqlalchemy import select
+    from sqlalchemy.exc import IntegrityError
 
     from syndicateclaw.db.models import Principal, Role, RoleAssignment
 
@@ -60,7 +61,19 @@ async def configure_system_engine(session_factory: Any) -> None:
                 enabled=True,
             )
             session.add(principal)
-            await session.flush()
+            try:
+                await session.flush()
+            except IntegrityError:
+                await session.rollback()
+                session.begin()
+                principal = (
+                    await session.execute(
+                        select(Principal).where(
+                            Principal.principal_type == "service",
+                            Principal.name == "system:engine",
+                        )
+                    )
+                ).scalar_one_or_none()
 
         role = (
             await session.execute(
@@ -199,6 +212,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     asymmetric_keypair = None
     if settings.ed25519_private_key_path:
         from syndicateclaw.security.signing import SigningKeyPair
+
         key_path = Path(settings.ed25519_private_key_path)
         if not key_path.exists():
             raise RuntimeError(
@@ -231,6 +245,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     policy_engine = PolicyEngine(session_factory)
     from syndicateclaw.approval.authority import ApprovalAuthorityResolver
+
     authority_resolver = ApprovalAuthorityResolver(session_factory=session_factory)
     approval_service = ApprovalService(
         session_factory,
@@ -245,7 +260,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     tool_registry = ToolRegistry()
     tool_executor = ToolExecutor(
-        tool_registry, policy_engine, audit_service,
+        tool_registry,
+        policy_engine,
+        audit_service,
         decision_ledger=decision_ledger,
         snapshot_store=snapshot_store,
     )
@@ -459,8 +476,7 @@ def create_app() -> FastAPI:
         title="SyndicateClaw",
         version=VERSION,
         description=(
-            "Production-oriented agent orchestration platform with "
-            "stateful graph-based workflows"
+            "Production-oriented agent orchestration platform with stateful graph-based workflows"
         ),
         lifespan=lifespan,
     )

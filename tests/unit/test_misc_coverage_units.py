@@ -335,9 +335,10 @@ async def test_message_delivery_loop_delivers_message() -> None:
 
     mock_factory = MagicMock()
 
-    with patch(
-        "syndicateclaw.tasks.message_delivery.asyncio.sleep", side_effect=fake_sleep
-    ), pytest.raises(asyncio.CancelledError):
+    with (
+        patch("syndicateclaw.tasks.message_delivery.asyncio.sleep", side_effect=fake_sleep),
+        pytest.raises(asyncio.CancelledError),
+    ):
         await run_message_delivery_loop(svc, mock_factory, poll_interval_seconds=1)
 
     svc.mark_delivered.assert_awaited_once_with("msg-001")
@@ -373,9 +374,10 @@ async def test_message_delivery_loop_dead_letters_on_failure() -> None:
     mock_session.add = MagicMock()
     mock_factory = MagicMock(return_value=mock_session)
 
-    with patch(
-        "syndicateclaw.tasks.message_delivery.asyncio.sleep", side_effect=fake_sleep
-    ), pytest.raises(asyncio.CancelledError):
+    with (
+        patch("syndicateclaw.tasks.message_delivery.asyncio.sleep", side_effect=fake_sleep),
+        pytest.raises(asyncio.CancelledError),
+    ):
         await run_message_delivery_loop(svc, mock_factory, poll_interval_seconds=1)
 
     svc.mark_delivery_failed.assert_awaited_once_with("msg-fail")

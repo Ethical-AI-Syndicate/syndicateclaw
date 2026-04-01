@@ -1,4 +1,5 @@
 """Unit tests for authz/route_registry.py scope resolvers and get_required_permission."""
+
 from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock
@@ -112,9 +113,7 @@ async def test_resolve_run_by_id_not_found_returns_none() -> None:
 
 async def test_resolve_workflow_for_run_start_delegates_to_workflow() -> None:
     session = _make_session(row=("PLATFORM", "platform"))
-    scope = await resolve_workflow_for_run_start(
-        _make_request({"workflow_id": "wf-1"}), session
-    )
+    scope = await resolve_workflow_for_run_start(_make_request({"workflow_id": "wf-1"}), session)
     assert scope is not None
 
 
@@ -197,9 +196,7 @@ async def test_resolve_policy_by_id_no_param_returns_none() -> None:
 
 
 async def test_resolve_policy_by_id_not_found_returns_none() -> None:
-    scope = await resolve_policy_by_id(
-        _make_request({"rule_id": "x"}), _make_session(row=None)
-    )
+    scope = await resolve_policy_by_id(_make_request({"rule_id": "x"}), _make_session(row=None))
     assert scope is None
 
 
@@ -243,9 +240,7 @@ async def test_resolve_approval_run_no_param_returns_none() -> None:
 
 
 async def test_resolve_approval_run_not_found_returns_none() -> None:
-    scope = await resolve_approval_run(
-        _make_request({"run_id": "x"}), _make_session(row=None)
-    )
+    scope = await resolve_approval_run(_make_request({"run_id": "x"}), _make_session(row=None))
     assert scope is None
 
 
@@ -381,5 +376,6 @@ def test_get_scope_resolver_platform() -> None:
 
 def test_get_scope_resolver_unknown_raises() -> None:
     import pytest
+
     with pytest.raises(KeyError):
         get_scope_resolver("nonexistent_resolver")

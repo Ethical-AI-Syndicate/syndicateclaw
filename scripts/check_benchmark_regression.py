@@ -51,9 +51,7 @@ def main() -> int:
             continue
         if m_cur > m_base * 1.10:
             pct = (m_cur / m_base - 1) * 100
-            print(
-                f"REGRESSION {name}: {m_cur:.4f}s vs baseline {m_base:.4f}s (+{pct:.1f}%)"
-            )
+            print(f"REGRESSION {name}: {m_cur:.4f}s vs baseline {m_base:.4f}s (+{pct:.1f}%)")
             regressions += 1
 
     if regressions:

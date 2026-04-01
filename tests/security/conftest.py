@@ -10,7 +10,9 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import ArgumentError
 
-_DEFAULT_DB_URL = "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+_DEFAULT_DB_URL = (
+    "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+)
 
 
 @pytest.fixture
@@ -33,10 +35,13 @@ async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -
     importlib.reload(main_mod)
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app),
-            base_url="http://test",
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(
+                transport=ASGITransport(app=manager.app),
+                base_url="http://test",
+            ) as ac,
+        ):
             yield ac
     except OSError as exc:
         pytest.skip(f"Pentest infrastructure unavailable: {exc}")
@@ -68,9 +73,10 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     importlib.reload(main_mod)
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             resp = await ac.get("/readyz")
             if resp.status_code != 200:
                 pytest.skip(f"Integration dependencies not ready: {resp.json()}")

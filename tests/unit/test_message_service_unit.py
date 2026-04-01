@@ -59,7 +59,7 @@ def _make_svc(factory, *, redis=None):
 
 async def test_enforce_broadcast_rate_limit_under_cap() -> None:
     redis = AsyncMock()
-    pipe = AsyncMock()
+    pipe = MagicMock()
     pipe.execute = AsyncMock(return_value=[None, None, 5, None])  # count=5, under 10
     redis.pipeline = MagicMock(return_value=pipe)
 
@@ -75,7 +75,7 @@ async def test_enforce_broadcast_rate_limit_under_cap() -> None:
 
 async def test_enforce_broadcast_rate_limit_over_cap_raises() -> None:
     redis = AsyncMock()
-    pipe = AsyncMock()
+    pipe = MagicMock()
     pipe.execute = AsyncMock(return_value=[None, None, 11, None])  # count=11, over 10
     redis.pipeline = MagicMock(return_value=pipe)
 
