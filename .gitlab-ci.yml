@@ -13,15 +13,13 @@ lint_and_test:
     PIP_DISABLE_PIP_VERSION_CHECK: "1"
     PIP_NO_CACHE_DIR: "1"
     POSTGRES_USER: syndicateclaw
+    POSTGRES_HOST_AUTH_METHOD: "trust"
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:${POSTGRES_PASSWORD}@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
   services:
     - postgres:16
     - redis:7
-  secrets:
-    POSTGRES_PASSWORD:
-      vault: ci/syndicateclaw/postgres_password@secret
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -116,13 +114,11 @@ pentest:
     - redis:7
   variables:
     POSTGRES_USER: syndicateclaw
+    POSTGRES_HOST_AUTH_METHOD: "trust"
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:${POSTGRES_PASSWORD}@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
-  secrets:
-    POSTGRES_PASSWORD:
-      vault: ci/syndicateclaw/postgres_password@secret
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -239,12 +235,10 @@ integration_tests:
     - postgres:16
   variables:
     POSTGRES_USER: syndicateclaw
+    POSTGRES_HOST_AUTH_METHOD: "trust"
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:${POSTGRES_PASSWORD}@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
-  secrets:
-    POSTGRES_PASSWORD:
-      vault: ci/syndicateclaw/postgres_password@secret
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
