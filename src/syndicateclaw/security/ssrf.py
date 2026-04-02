@@ -86,7 +86,7 @@ def _path_and_query_from_parsed(parsed: Any) -> str:
     return path
 
 
-def assert_safe_url(url: str) -> None:
+def assert_safe_url(url: str) -> bool:
     """
     Validate a URL for outbound use.
 
