@@ -27,7 +27,7 @@ class InvalidScheduleError(ValueError):
 
 def _parse_interval(value: str) -> int | None:
     try:
-        import pytimeparse
+        import pytimeparse  # type: ignore[import-untyped]
 
         result = pytimeparse.parse(value)
         if result is not None:

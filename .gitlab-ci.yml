@@ -18,8 +18,8 @@ lint_and_test:
     - pip install -e ".[dev]"
   script:
     - ruff check src
-    - mypy src --ignore-missing-imports
-    - pytest tests/ -q --tb=line -m "not perf" -n auto --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
+    - mypy src
+    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH'
