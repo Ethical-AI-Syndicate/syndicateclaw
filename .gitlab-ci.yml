@@ -92,8 +92,8 @@ semgrep_scan:
       echo "High/critical findings: $HIGH_COUNT"
       test \"$HIGH_COUNT\" -le 5 || exit 1
   artifacts:
-    reports:
-      semgrep: semgrep_report.json
+    paths:
+      - semgrep_report.json
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH == "main"'
@@ -343,7 +343,7 @@ mutation_test:
     - mutmut run --paths-to-mutate src/syndicateclaw/policy/,src/syndicateclaw/audit/,src/syndicateclaw/approval/ --tests-dir tests/unit/ --runner "pytest -x -q"
     - mutmut results | tee mutation_results.txt
     - SCORE=$(mutmut results | grep -c "Survived" || true)
-    - echo "Survived mutations: $SCORE"
+    - "echo \"Survived mutations: $SCORE\""
     - test "$SCORE" -le 10 || (echo "Too many survived mutations" && exit 1)
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
