@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, cast
 
 import structlog
@@ -28,12 +28,12 @@ CACHE_TTL_SECONDS = 60
 SCOPE_CONTAINMENT_ORDER = ["PLATFORM", "TENANT", "TEAM", "NAMESPACE"]
 
 
-class Decision(str, Enum):
+class Decision(StrEnum):
     ALLOW = "ALLOW"
     DENY = "DENY"
 
 
-class DenyReason(str, Enum):
+class DenyReason(StrEnum):
     NO_PRINCIPAL = "no_principal"
     NO_MATCHING_GRANT = "no_matching_grant"
     EXPLICIT_DENY = "explicit_deny"

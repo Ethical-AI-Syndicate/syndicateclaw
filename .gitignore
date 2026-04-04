@@ -47,3 +47,17 @@ Thumbs.db
 
 # Alembic
 migrations/versions/__pycache__/
+
+# Local scratchpads and generated reports
+patch_*.py
+fix_*.py
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!.releaserc.json
+!openapi.json
+mutants/
+console/node_modules/
+.remember/
+patch.py

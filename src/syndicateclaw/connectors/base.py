@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, ClassVar
 
 import structlog
@@ -18,7 +18,7 @@ def _utcnow() -> datetime:
     return datetime.now(UTC)
 
 
-class Platform(str, Enum):
+class Platform(StrEnum):
     TELEGRAM = "telegram"
     DISCORD = "discord"
     SLACK = "slack"

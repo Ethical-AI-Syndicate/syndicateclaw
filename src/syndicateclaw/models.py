@@ -12,7 +12,7 @@ from ulid import ULID
 # ---------------------------------------------------------------------------
 
 
-class WorkflowRunStatus(str, enum.Enum):
+class WorkflowRunStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     PAUSED = "PAUSED"
@@ -23,7 +23,7 @@ class WorkflowRunStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
 
 
-class NodeExecutionStatus(str, enum.Enum):
+class NodeExecutionStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -31,7 +31,7 @@ class NodeExecutionStatus(str, enum.Enum):
     SKIPPED = "SKIPPED"
 
 
-class NodeType(str, enum.Enum):
+class NodeType(enum.StrEnum):
     START = "START"
     END = "END"
     ACTION = "ACTION"
@@ -41,14 +41,14 @@ class NodeType(str, enum.Enum):
     CHECKPOINT = "CHECKPOINT"
 
 
-class ToolRiskLevel(str, enum.Enum):
+class ToolRiskLevel(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
 
-class ToolExecutionStatus(str, enum.Enum):
+class ToolExecutionStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -56,32 +56,32 @@ class ToolExecutionStatus(str, enum.Enum):
     TIMED_OUT = "TIMED_OUT"
 
 
-class PolicyEffect(str, enum.Enum):
+class PolicyEffect(enum.StrEnum):
     ALLOW = "ALLOW"
     DENY = "DENY"
     REQUIRE_APPROVAL = "REQUIRE_APPROVAL"
 
 
-class ApprovalStatus(str, enum.Enum):
+class ApprovalStatus(enum.StrEnum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     EXPIRED = "EXPIRED"
 
 
-class MemoryType(str, enum.Enum):
+class MemoryType(enum.StrEnum):
     EPISODIC = "EPISODIC"
     SEMANTIC = "SEMANTIC"
     STRUCTURED = "STRUCTURED"
 
 
-class MemoryDeletionStatus(str, enum.Enum):
+class MemoryDeletionStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     MARKED_FOR_DELETION = "MARKED_FOR_DELETION"
     DELETED = "DELETED"
 
 
-class AuditEventType(str, enum.Enum):
+class AuditEventType(enum.StrEnum):
     # Workflow events
     WORKFLOW_CREATED = "WORKFLOW_CREATED"
     WORKFLOW_STARTED = "WORKFLOW_STARTED"
@@ -165,7 +165,7 @@ class AuditEventType(str, enum.Enum):
     PLUGIN_SECURITY_VIOLATION = "plugin.security_violation"
 
 
-class MemorySourceType(str, enum.Enum):
+class MemorySourceType(enum.StrEnum):
     HUMAN = "HUMAN"
     SYSTEM = "SYSTEM"
     DERIVED = "DERIVED"
@@ -173,7 +173,7 @@ class MemorySourceType(str, enum.Enum):
     LLM = "LLM"
 
 
-class DecisionDomain(str, enum.Enum):
+class DecisionDomain(enum.StrEnum):
     POLICY = "POLICY"
     TOOL_EXECUTION = "TOOL_EXECUTION"
     MEMORY_WRITE = "MEMORY_WRITE"
@@ -182,19 +182,19 @@ class DecisionDomain(str, enum.Enum):
     WORKFLOW_ROUTING = "WORKFLOW_ROUTING"
 
 
-class ReplayMode(str, enum.Enum):
+class ReplayMode(enum.StrEnum):
     LIVE = "LIVE"
     DETERMINISTIC = "DETERMINISTIC"
 
 
-class ApprovalScopeType(str, enum.Enum):
+class ApprovalScopeType(enum.StrEnum):
     SINGLE_ACTION = "SINGLE_ACTION"
     TIME_WINDOW = "TIME_WINDOW"
     CONDITIONAL = "CONDITIONAL"
     BLANKET = "BLANKET"
 
 
-class DeadLetterStatus(str, enum.Enum):
+class DeadLetterStatus(enum.StrEnum):
     PENDING = "PENDING"
     RETRIED = "RETRIED"
     FAILED_PERMANENT = "FAILED_PERMANENT"

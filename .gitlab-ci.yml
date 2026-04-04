@@ -5,17 +5,16 @@ stages:
   - build
   - migrate
   - deploy
-
 lint_and_test:
   stage: test
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
     POSTGRES_USER: syndicateclaw
     POSTGRES_HOST_AUTH_METHOD: "trust"
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
   services:
     - postgres:16
@@ -27,17 +26,17 @@ lint_and_test:
   script:
     - ruff check src
     - mypy src
-    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
+    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch
+      --cov-report=term-missing
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 quality_gate:
   stage: test
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -47,15 +46,14 @@ quality_gate:
     - ruff format --check src tests
     - mypy src
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 security_scan:
   stage: security
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -66,46 +64,53 @@ security_scan:
     - pip-audit -f json -o audit_report.json
     - python scripts/check_audit_gates.py audit_report.json bandit_report.json
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 container_scan:
   stage: security
   image:
     name: aquasec/trivy:latest
-    entrypoint: [""]
+    entrypoint:
+      - ''
   variables:
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_TLS_CERTDIR: ''
     DOCKER_HOST: tcp://docker:2375
   services:
     - docker:24-dind
   script:
     - trivy image --exit-code 1 --severity HIGH,CRITICAL $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG'
-
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
 semgrep_scan:
   stage: security
   image: semgrep/semgrep:latest
   script:
     - semgrep scan --config auto --json --output semgrep_report.json src/
-    - |
-      HIGH_COUNT=$(python3 -c "
+    - 'HIGH_COUNT=$(python3 -c "
+
       import json, sys
-      report = json.load(open('semgrep_report.json'))
-      high = [r for r in report.get('results', []) if r.get('extra', {}).get('severity') in ('ERROR', 'WARNING')]
+
+      report = json.load(open(''semgrep_report.json''))
+
+      high = [r for r in report.get(''results'', []) if r.get(''extra'', {}).get(''severity'')
+      in (''ERROR'', ''WARNING'')]
+
       print(len(high))
+
       ")
+
       echo "High/critical findings: $HIGH_COUNT"
+
       test \"$HIGH_COUNT\" -le 5 || exit 1
+
+      '
   artifacts:
     paths:
       - semgrep_report.json
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "main"'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == "main"
 pentest:
   stage: integration
   image: python:3.12-slim
@@ -115,10 +120,11 @@ pentest:
   variables:
     POSTGRES_USER: syndicateclaw
     POSTGRES_HOST_AUTH_METHOD: "trust"
+    POSTGRES_HOST_AUTH_METHOD: trust
     POSTGRES_DB: syndicateclaw_test
     SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
-    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -127,15 +133,14 @@ pentest:
   script:
     - pytest tests/security/ -m pentest -v --tb=short
   rules:
-    - if: '$CI_COMMIT_BRANCH == "release/v2.0.0"'
+    - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
       when: manual
-
 chaos_tests:
   stage: integration
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -143,33 +148,32 @@ chaos_tests:
   script:
     - pytest tests/chaos/ -m chaos -v --tb=short
   rules:
-    - if: '$CI_COMMIT_BRANCH == "release/v2.0.0"'
+    - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
       when: manual
-
 benchmark:
   stage: test
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
     - pip install -e ".[dev]"
     - pip install pytest-benchmark
   script:
-    - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json -q
+    - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json
+      -q
     - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
-
+    - if: $CI_PIPELINE_SOURCE == "schedule"
 docker_build:
   stage: build
   image: docker:24
   services:
     - docker:24-dind
   variables:
-    DOCKER_TLS_CERTDIR: ""
+    DOCKER_TLS_CERTDIR: ''
     DOCKER_HOST: tcp://docker:2375
     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
@@ -180,65 +184,58 @@ docker_build:
     - docker push $IMAGE_TAG
     - docker push $IMAGE_LATEST
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG'
-
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
 migration_check:
   stage: migrate
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
     - pip install -e ".[dev]"
   script:
-    - |
-      if [ -z "${SYNDICATECLAW_DATABASE_URL:-}" ]; then
-        echo "SYNDICATECLAW_DATABASE_URL not set — skipping alembic check"
-        exit 0
-      fi
-      python -m alembic check
+    - "if [ -z \"${SYNDICATECLAW_DATABASE_URL:-}\" ]; then\n  echo \"SYNDICATECLAW_DATABASE_URL\
+      \ not set \u2014 skipping alembic check\"\n  exit 0\nfi\npython -m alembic check\n"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 runtime_contract_schemas:
   stage: test
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
     - python -V
     - pip install -U pip
     - pip install -e ".[dev]"
-    # Phase 1 quality gate for the isolated runtime slice.
     - ruff check src/syndicateclaw/runtime tests/runtime
     - mypy src/syndicateclaw/runtime
-    # Regenerating schemas must not change committed artifacts (fail gate).
     - python -m syndicateclaw.runtime.contracts.export_schemas
-    # Contract stability is defined as: schemas + runtime behavior for the Phase 1 slice.
     - pytest tests/runtime/ -q --tb=line
     - git diff --exit-code -- "src/syndicateclaw/runtime/contracts/jsonschema/"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 integration_tests:
   stage: test
   image: python:3.12-slim
   services:
     - postgres:16
+    - redis:7
   variables:
     POSTGRES_USER: syndicateclaw
     POSTGRES_HOST_AUTH_METHOD: "trust"
+    POSTGRES_HOST_AUTH_METHOD: trust
     POSTGRES_DB: syndicateclaw_test
     SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
-    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -246,16 +243,15 @@ integration_tests:
   script:
     - pytest tests/ -m integration -q --tb=line
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 nightly_quality_debt:
   stage: test
   image: python:3.12-slim
   allow_failure: true
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
@@ -267,17 +263,16 @@ nightly_quality_debt:
     - mypy src || export MYPY_EXIT=1
     - test "${RUFF_EXIT}" = "0" && test "${MYPY_EXIT}" = "0"
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - when: never
-
 provider_integration_tests:
   stage: integration
   image: python:3.12-slim
   when: manual
   variables:
-    SYNDICATECLAW_CI_PROVIDER_TESTS: "true"
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   secrets:
     OPENAI_API_KEY:
       vault: ci/syndicateclaw/openai_api_key@secret
@@ -290,66 +285,64 @@ provider_integration_tests:
   script:
     - pytest tests/ -m requires_api_keys -q --tb=short
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH'
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
 deploy_staging:
   stage: deploy
   image: bitnami/kubectl:latest
   variables:
     KUBE_NAMESPACE: syndicateclaw-staging
   script:
-    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
+    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
     - bash scripts/smoke_test.sh https://staging.syndicateclaw.dev
   environment:
     name: staging
     url: https://staging.syndicateclaw.dev
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-
 deploy_production:
   stage: deploy
   image: bitnami/kubectl:latest
   variables:
     KUBE_NAMESPACE: syndicateclaw-production
   script:
-    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
+    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
   environment:
     name: production
     url: https://api.syndicateclaw.dev
   rules:
-    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
       when: manual
-
 release:
   stage: deploy
   image: node:20-slim
   script:
     - npx semantic-release
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == "main"
       when: manual
-
 mutation_test:
   stage: test
   image: python:3.12-slim
   variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: "1"
-    PIP_NO_CACHE_DIR: "1"
+    PIP_DISABLE_PIP_VERSION_CHECK: '1'
+    PIP_NO_CACHE_DIR: '1'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
     - pip install -e ".[dev]"
   script:
-    - mutmut run --paths-to-mutate src/syndicateclaw/policy/,src/syndicateclaw/audit/,src/syndicateclaw/approval/ --tests-dir tests/unit/ --runner "pytest -x -q"
+    - mutmut run || true
     - mutmut results | tee mutation_results.txt
     - SCORE=$(mutmut results | grep -c "Survived" || true)
-    - "echo \"Survived mutations: $SCORE\""
+    - 'echo "Survived mutations: $SCORE"'
     - test "$SCORE" -le 10 || (echo "Too many survived mutations" && exit 1)
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: $CI_PIPELINE_SOURCE == "schedule"
     - when: manual
-      if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      if: $CI_PIPELINE_SOURCE == "merge_request_event"

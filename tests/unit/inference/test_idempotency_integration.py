@@ -98,7 +98,11 @@ async def test_stale_in_progress_marked_failed(inference_session_factory) -> Non
 
 def test_migration_upgrade_downgrade_script_exists() -> None:
     """Ensure migration file is present (upgrade/downgrade verified manually or in CI with DB)."""
-    root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+    # Fix for mutmut testing: if running from mutants/, look at the real root
+    if "mutants" in __file__:
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+    else:
+        root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
     mig = os.path.join(root, "migrations", "versions", "005_inference_tables.py")
     assert os.path.isfile(mig)
 

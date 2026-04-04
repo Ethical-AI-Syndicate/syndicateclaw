@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any, cast
+from typing import Any
 
 import jwt
 import structlog
@@ -98,7 +98,7 @@ def decode_access_token(
             }
             if audience:
                 kw["audience"] = audience
-            return cast(dict[str, Any], jwt.decode(token, try_key, **kw))
+            return jwt.decode(token, try_key, **kw)
         except jwt.exceptions.PyJWTError as exc:
             last_error = exc
             continue
