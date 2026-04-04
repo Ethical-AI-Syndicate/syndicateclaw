@@ -105,7 +105,7 @@ class StreamingTokenService:
         record = await self._repo.get(token)
         if record is None:
             raise InvalidTokenError("Token not found")
-        if record.token_type != "streaming":
+        if record.token_type != "streaming":  # nosec B105
             raise InvalidTokenError("Wrong token type")
         if record.used_at is not None:
             raise InvalidTokenError("Token already consumed")

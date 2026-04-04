@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     database_url: str = Field(..., description="Async PostgreSQL DSN (e.g. postgresql+asyncpg://…)")
     redis_url: str = Field(default="redis://localhost:6379/0", description="Redis connection URL")
-    api_host: str = Field(default="0.0.0.0", description="Host to bind the API server")
+    api_host: str = Field(default="127.0.0.1", description="Host to bind the API server")
     api_port: int = Field(default=8000, ge=1, le=65535, description="Port for the API server")
     log_level: str = Field(default="INFO", description="Logging level (DEBUG, INFO, WARNING, …)")
     otel_endpoint: str | None = Field(

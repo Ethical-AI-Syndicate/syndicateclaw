@@ -128,7 +128,8 @@ class _ConditionParser:
             if not m:
                 raise ValueError(f"Unexpected character at position {pos}: {expression[pos:]}")
             kind = m.lastgroup
-            assert kind is not None
+            if kind is None:
+                raise ValueError(f"Regex match missing group name at position {pos}")
             value = m.group(kind)
             self._tokens.append((kind, value))
             pos = m.end()
@@ -593,8 +594,13 @@ class WorkflowEngine:
                     delay *= multiplier
 
         run_result.node_executions.append(execution)
-        assert result is not None
-        if self._plugin_executor is not None and execution.status == NodeExecutionStatus.COMPLETED:
+        if result is None:
+            raise RuntimeError(f"Handler for node {node.id} returned None")
+
+        if (
+            self._plugin_executor is not None
+            and execution.status == NodeExecutionStatus.COMPLETED
+        ):
             ns = run.state.get("_namespace", "default")
             await self._plugin_executor.invoke_on_node_execute(
                 run_id=run.id,

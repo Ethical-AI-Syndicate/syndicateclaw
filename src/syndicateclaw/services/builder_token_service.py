@@ -42,7 +42,7 @@ class BuilderTokenService:
         record = await self._repo.get(token)
         if record is None:
             raise InvalidTokenError("Token not found")
-        if record.token_type != "builder":
+        if record.token_type != "builder":  # nosec B105
             raise InvalidTokenError("Wrong token type")
         if record.expires_at < datetime.now(UTC):
             raise InvalidTokenError("Token expired")

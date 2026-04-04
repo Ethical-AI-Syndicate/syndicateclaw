@@ -180,12 +180,12 @@ async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeR
         llm_tokens_used_total.labels(
             provider=provider_label,
             model=model_label,
-            token_type="prompt",
+            token_type="prompt",  # nosec B106
         ).inc(float(getattr(usage, "prompt_tokens", 0) or 0))
         llm_tokens_used_total.labels(
             provider=provider_label,
             model=model_label,
-            token_type="completion",
+            token_type="completion",  # nosec B106
         ).inc(float(getattr(usage, "completion_tokens", 0) or 0))
 
     cost_usd = getattr(response, "cost_usd", None)
