@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import typing
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -148,9 +149,9 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
 
 
 @pytest.fixture(scope="session")
-async def db_engine() -> AsyncEngine:
+async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
     database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test"
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
     )
     engine = None
     import asyncio
@@ -159,10 +160,25 @@ async def db_engine() -> AsyncEngine:
         engine = create_async_engine(database_url, future=True)
         for attempt in range(10):
             try:
-                async with engine.begin() as conn:
-                    # Recreate schema so new columns match ORM; create_all does not ALTER.
-                    await conn.run_sync(Base.metadata.drop_all)
-                    await conn.run_sync(Base.metadata.create_all)
+                # ONLY the first worker drops and recreates the schema
+                if worker_id in ("master", "gw0"):
+                    async with engine.begin() as conn:
+                        await conn.run_sync(Base.metadata.drop_all)
+                        await conn.run_sync(Base.metadata.create_all)
+
+                    from alembic import command
+                    from alembic.config import Config
+
+                    alembic_cfg = Config("alembic.ini")
+                    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+
+                    def stamp_head(cfg: Config = alembic_cfg) -> None:
+                        command.stamp(cfg, "head")
+
+                    await asyncio.to_thread(stamp_head)
+                else:
+                    # Other workers just wait briefly to ensure tables are created
+                    await asyncio.sleep(2)
                 break
             except Exception as e:
                 if attempt == 9:
@@ -180,7 +196,7 @@ async def db_engine() -> AsyncEngine:
 
 
 @pytest.fixture()
-async def db_session(db_engine: AsyncEngine) -> AsyncSession:
+async def db_session(db_engine: AsyncEngine) -> typing.AsyncGenerator[AsyncSession, None]:
     connection = await db_engine.connect()
     transaction = await connection.begin()
     session_factory = async_sessionmaker(bind=connection, expire_on_commit=False)
