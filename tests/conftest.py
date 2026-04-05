@@ -182,7 +182,7 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     for _ in range(60):
                         try:
-                            # Wait until both alembic_version AND principals exist and can be queried.
+                            # Wait until both alembic_version AND principals exist and are queried.
                             async with engine.begin() as conn:
                                 await conn.execute(text("SELECT 1 FROM principals LIMIT 1"))
                                 await conn.execute(text("SELECT 1 FROM alembic_version LIMIT 1"))
