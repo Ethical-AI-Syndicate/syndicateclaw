@@ -40,7 +40,8 @@ async def _wait_for_services() -> None:
             async with engine.begin() as conn:
                 await conn.execute(text("SELECT 1"))
             break
-        except Exception:
+        except Exception as e:
+            print(f"Postgres wait failed: {e}")
             await asyncio.sleep(2)
     else:
         await engine.dispose()
@@ -53,7 +54,8 @@ async def _wait_for_services() -> None:
         try:
             await client.ping()
             break
-        except Exception:
+        except Exception as e:
+            print(f"Redis wait failed: {e}")
             await asyncio.sleep(2)
     else:
         await client.aclose()

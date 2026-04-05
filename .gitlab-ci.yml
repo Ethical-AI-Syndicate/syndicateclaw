@@ -22,7 +22,9 @@ lint_and_test:
     - name: redis:7-alpine
       alias: redis
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git iputils-ping netcat-traditional && rm -rf /var/lib/apt/lists/*
+    - ping -c 3 postgres || true
+    - nc -zv postgres 5432 || true
     - pip install -U pip
     - pip install -e ".[dev]"
   script:
