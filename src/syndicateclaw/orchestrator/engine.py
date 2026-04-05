@@ -597,10 +597,7 @@ class WorkflowEngine:
         if result is None:
             raise RuntimeError(f"Handler for node {node.id} returned None")
 
-        if (
-            self._plugin_executor is not None
-            and execution.status == NodeExecutionStatus.COMPLETED
-        ):
+        if self._plugin_executor is not None and execution.status == NodeExecutionStatus.COMPLETED:
             ns = run.state.get("_namespace", "default")
             await self._plugin_executor.invoke_on_node_execute(
                 run_id=run.id,
