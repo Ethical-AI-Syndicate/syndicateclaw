@@ -182,21 +182,38 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     # Mark initialization complete
                     async with engine.begin() as conn:
+                        import os
+
+                        run_id = os.environ.get("CI_PIPELINE_ID", "local")
                         await conn.execute(
-                            text("CREATE TABLE IF NOT EXISTS _pytest_schema_ready (id int)")
+                            text("CREATE TABLE IF NOT EXISTS _pytest_schema_ready (id int, r text)")
+                        )
+                        await conn.execute(
+                            text("INSERT INTO _pytest_schema_ready (id, r) VALUES (1, :r)"),
+                            {"r": run_id},
                         )
 
                 else:
-                    # Other workers wait for the marker table
+                    # Wait for master worker to create tables.
+                    import os
+
                     from sqlalchemy import text
+
+                    run_id = os.environ.get("CI_PIPELINE_ID", "local")
 
                     for _ in range(120):
                         try:
                             async with engine.begin() as conn:
-                                await conn.execute(
-                                    text("SELECT 1 FROM _pytest_schema_ready LIMIT 1")
+                                # Query for the run_id inside the marker table!
+                                result = await conn.execute(
+                                    text(
+                                        "SELECT id FROM _pytest_schema_ready WHERE r = :r LIMIT 1"
+                                    ),
+                                    {"r": run_id},
                                 )
-                            break
+                                if result.scalar() == 1:
+                                    break
+                            await asyncio.sleep(2)
                         except Exception:
                             await asyncio.sleep(2)
                     else:
