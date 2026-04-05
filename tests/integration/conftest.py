@@ -10,7 +10,7 @@ from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.exc import ArgumentError
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
 
@@ -64,7 +64,7 @@ async def _wait_for_services() -> None:
 
 
 @pytest.fixture(autouse=True)
-def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
+def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) -> None:
     """Ensure required env vars are set for Settings() construction."""
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
