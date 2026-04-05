@@ -11,6 +11,7 @@ lint_and_test:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
@@ -25,6 +26,7 @@ lint_and_test:
     - apt-get update && apt-get install -y --no-install-recommends git iputils-ping netcat-traditional && rm -rf /var/lib/apt/lists/*
     - ping -c 3 postgres || true
     - nc -zv postgres 5432 || true
+    - nc -zv redis 6379 || true
     - pip install -U pip
     - pip install -e ".[dev]"
   script:
@@ -40,6 +42,7 @@ quality_gate:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -57,6 +60,7 @@ security_scan:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -145,6 +149,7 @@ chaos_tests:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -160,6 +165,7 @@ benchmark:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -196,6 +202,7 @@ migration_check:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -212,6 +219,7 @@ runtime_contract_schemas:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
@@ -257,6 +265,7 @@ nightly_quality_debt:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
@@ -278,6 +287,7 @@ provider_integration_tests:
     SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   secrets:
     OPENAI_API_KEY:
       vault: ci/syndicateclaw/openai_api_key@secret
@@ -337,6 +347,7 @@ mutation_test:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
+    FF_NETWORK_PER_BUILD: "1"
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
