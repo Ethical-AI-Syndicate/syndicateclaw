@@ -1171,7 +1171,7 @@ async def test_rbac_evaluator_cache_with_redis(session_factory) -> None:
     """Cache get/set with Redis exercises the full cache path."""
     import os
 
-    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
     try:
         import redis.asyncio as aioredis
 
@@ -1208,7 +1208,7 @@ async def test_shadow_middleware_incr_metric_with_redis(session_factory) -> None
     """_incr_metric increments a Redis counter."""
     import os
 
-    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
     try:
         import redis.asyncio as aioredis
 
@@ -1244,7 +1244,7 @@ async def test_shadow_evaluate_full_path_with_principal_and_redis(session_factor
     import os
     import uuid
 
-    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
     try:
         import redis.asyncio as aioredis
 
@@ -1311,7 +1311,7 @@ async def test_shadow_update_metrics_with_redis(session_factory) -> None:
     """_update_shadow_metrics exercises the Redis pipeline path."""
     import os
 
-    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
     try:
         import redis.asyncio as aioredis
 

@@ -9,9 +9,9 @@ def _unit_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
         os.environ.get("SYNDICATECLAW_DATABASE_URL")
-        or "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        or "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0",
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
     )

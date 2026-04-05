@@ -285,7 +285,7 @@ def test_audit_log_has_no_update_or_delete_api_surface(
     monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "k" * 40)
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://u:p@postgres:5432/db",
+        "postgresql+asyncpg://u:p@localhost:5432/db",
     )
     import syndicateclaw.api.main as main_mod
 
