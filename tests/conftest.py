@@ -182,9 +182,9 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     # Mark initialization complete
                     async with engine.begin() as conn:
-                        import os
+                        import os as _os
 
-                        run_id = os.environ.get("CI_PIPELINE_ID", "local")
+                        run_id = _os.environ.get("CI_PIPELINE_ID", "local")
                         await conn.execute(
                             text("CREATE TABLE IF NOT EXISTS _pytest_schema_ready (id int, r text)")
                         )
@@ -195,11 +195,11 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                 else:
                     # Wait for master worker to create tables.
-                    import os
+                    import os as _os
 
                     from sqlalchemy import text
 
-                    run_id = os.environ.get("CI_PIPELINE_ID", "local")
+                    run_id = _os.environ.get("CI_PIPELINE_ID", "local")
 
                     for _ in range(120):
                         try:
