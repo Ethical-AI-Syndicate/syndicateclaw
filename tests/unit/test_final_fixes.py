@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
 os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-secret-key-for-tests")
 
 

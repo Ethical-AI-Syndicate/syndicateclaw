@@ -367,7 +367,7 @@ class TestReadinessProbeDesign:
         import os
 
         env_overrides = {
-            "SYNDICATECLAW_DATABASE_URL": "postgresql+asyncpg://test:test@localhost/test",
+            "SYNDICATECLAW_DATABASE_URL": "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
             "SYNDICATECLAW_SECRET_KEY": "test-secret-key-for-testing",
         }
         with patch.dict(os.environ, env_overrides):

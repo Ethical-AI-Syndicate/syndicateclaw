@@ -538,7 +538,7 @@ class TestSigningKeyWiring:
 
     @pytest.fixture(autouse=True)
     def _env_vars(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-secret-key")
 
     def _get_lifespan_source(self) -> Any:
