@@ -152,7 +152,6 @@ pentest:
     - pytest tests/security/ -m pentest -v --tb=short
   rules:
     - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
-      when: manual
 chaos_tests:
   stage: integration
   image: python:3.12-slim
@@ -172,7 +171,6 @@ chaos_tests:
     - pytest tests/chaos/ -m chaos -v --tb=short
   rules:
     - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
-      when: manual
 benchmark:
   stage: test
   image: python:3.12-slim
@@ -307,7 +305,6 @@ nightly_quality_debt:
 provider_integration_tests:
   stage: integration
   image: python:3.12-slim
-  when: manual
   variables:
     SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
