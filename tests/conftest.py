@@ -182,13 +182,16 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     for _ in range(30):
                         try:
-                            async with engine.connect() as conn:
-                                await conn.execute(text("SELECT 1 FROM principals LIMIT 1"))
-                                break
+                            # We query using a transaction in async mode.
+                            # and we must check alembic_version instead of principals,
+                            # Wait for ALEMBIC STAMPING to finish
+                            async with engine.begin() as conn:
+                                await conn.execute(text("SELECT 1 FROM alembic_version LIMIT 1"))
+                            break
                         except Exception:
                             await asyncio.sleep(2)
                     else:
-                        raise Exception("Timeout waiting for DB schema")
+                        raise Exception("Timeout waiting for DB schema and alembic stamp")
                 break
             except Exception as e:
                 if attempt == 9:
