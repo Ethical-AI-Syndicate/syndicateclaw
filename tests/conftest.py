@@ -177,7 +177,21 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     await asyncio.to_thread(stamp_head)
                 else:
-                    await asyncio.sleep(2)
+                    # Wait for master worker to create tables. We poll for "principals" table.
+                    from sqlalchemy import inspect
+
+                    def check_tables(conn: typing.Any) -> bool:
+                        insp = inspect(conn)
+                        return "principals" in insp.get_table_names()
+
+                    for _ in range(10):
+                        async with engine.connect() as conn:
+                            exists = await conn.run_sync(check_tables)
+                            if exists:
+                                break
+                        await asyncio.sleep(1)
+                    else:
+                        raise Exception("Timeout waiting for DB schema")
                 break
             except Exception as e:
                 if attempt == 9:
