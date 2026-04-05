@@ -20,6 +20,46 @@ _DEFAULT_DB_URL = (
 )
 
 
+@pytest.fixture(scope="session", autouse=True)
+async def _wait_for_services() -> None:
+    """Wait for database and redis to be reachable before starting tests."""
+    import os
+    import asyncio
+    from sqlalchemy.ext.asyncio import create_async_engine
+    from sqlalchemy import text
+    import redis.asyncio as redis
+
+    db_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0"
+
+    # Wait for Postgres
+    engine = create_async_engine(db_url, future=True)
+    for _ in range(15):
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text("SELECT 1"))
+            break
+        except Exception:
+            await asyncio.sleep(2)
+    else:
+        await engine.dispose()
+        pytest.skip("Postgres failed to become reachable in time.")
+    await engine.dispose()
+
+    # Wait for Redis
+    client = redis.from_url(redis_url)
+    for _ in range(15):
+        try:
+            await client.ping()
+            break
+        except Exception:
+            await asyncio.sleep(2)
+    else:
+        await client.aclose()
+        pytest.skip("Redis failed to become reachable in time.")
+    await client.aclose()
+
+
 @pytest.fixture(autouse=True)
 def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
     """Ensure required env vars are set for Settings() construction."""

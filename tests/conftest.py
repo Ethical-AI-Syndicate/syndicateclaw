@@ -152,12 +152,21 @@ async def db_engine() -> AsyncEngine:
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
     )
     engine = None
+    import asyncio
+
     try:
         engine = create_async_engine(database_url, future=True)
-        async with engine.begin() as conn:
-            # Recreate schema so new columns (e.g. namespace) match ORM; create_all does not ALTER.
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
+        for attempt in range(10):
+            try:
+                async with engine.begin() as conn:
+                    # Recreate schema so new columns match ORM; create_all does not ALTER.
+                    await conn.run_sync(Base.metadata.drop_all)
+                    await conn.run_sync(Base.metadata.create_all)
+                break
+            except Exception as e:
+                if attempt == 9:
+                    raise e
+                await asyncio.sleep(2)
     except Exception as exc:
         if engine is not None:
             with contextlib.suppress(Exception):
