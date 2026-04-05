@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
-import os
+import typing
 from typing import Any
 
 import pytest
-from sqlalchemy import delete, select, text
-from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 from ulid import ULID
 
 from syndicateclaw.db.models import (
@@ -20,25 +19,8 @@ from syndicateclaw.services.versioning_service import VersioningService
 
 
 @pytest.fixture()
-async def engine() -> AsyncEngine:
-    url = os.environ.get(
-        "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test",
-    )
-    db_engine = None
-    try:
-        db_engine = create_async_engine(url)
-        async with db_engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))
-    except Exception as exc:
-        if db_engine is not None:
-            with contextlib.suppress(Exception):
-                await db_engine.dispose()
-        pytest.skip(f"Database unavailable: {exc}")
-    try:
-        yield db_engine
-    finally:
-        await db_engine.dispose()
+async def engine(db_engine: AsyncEngine) -> typing.AsyncGenerator[AsyncEngine, None]:
+    yield db_engine
 
 
 @pytest.fixture()
