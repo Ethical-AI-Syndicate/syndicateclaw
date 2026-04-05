@@ -1,0 +1,829 @@
+2026-04-05T04:59:22.316967Z 00O [0KRunning with gitlab-runner 18.10.0 (ac71f4d8)[0;m
+2026-04-05T04:59:22.316979Z 00O [0K  on Mike-Desktop DvbXICxfh, system ID: s_42036bb067b8[0;m
+2026-04-05T04:59:22.317003Z 00O [0K  feature flags: FF_NETWORK_PER_BUILD:true, FF_USE_FASTZIP:true[0;m
+2026-04-05T04:59:22.317025Z 00O section_start:1775365162:prepare_executor
+2026-04-05T04:59:22.317026Z 00O+[0K[0K[36;1mPreparing the "docker" executor[0;m[0;m
+2026-04-05T04:59:22.361198Z 00O [0KUsing Docker executor with image python:3.12-slim ...[0;m
+2026-04-05T04:59:23.810589Z 00O [0KStarting service postgres:16-alpine...[0;m
+2026-04-05T04:59:23.810604Z 00O [0KUsing effective pull policy of [if-not-present always] for container postgres:16-alpine[0;m
+2026-04-05T04:59:23.929100Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
+2026-04-05T04:59:23.929114Z 00O [0KUsing docker image sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416 for postgres:16-alpine with digest postgres@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416 ...[0;m
+2026-04-05T04:59:24.589272Z 00O [0;33mWARNING: Service postgres:16-alpine is already created. Ignoring.[0;m
+2026-04-05T04:59:24.589330Z 00O [0KStarting service redis:7-alpine...[0;m
+2026-04-05T04:59:24.589341Z 00O [0KUsing effective pull policy of [if-not-present always] for container redis:7-alpine[0;m
+2026-04-05T04:59:24.663624Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
+2026-04-05T04:59:24.663635Z 00O [0KUsing docker image sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08 for redis:7-alpine with digest redis@sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08 ...[0;m
+2026-04-05T04:59:25.408427Z 00O [0;33mWARNING: Service redis:7-alpine is already created. Ignoring.[0;m
+2026-04-05T04:59:25.408490Z 00O [0KWaiting for services to be up and running (timeout 30 seconds)...[0;m
+2026-04-05T04:59:57.615458Z 00E 
+2026-04-05T04:59:57.615465Z 00E [0;33m*** WARNING:[0;m Service runner-dvbxicxfh-project-18-concurrent-1-cbed7a0a9ff9aebc-redis-1 probably didn't start properly.
+2026-04-05T04:59:57.615466Z 00E 
+2026-04-05T04:59:57.615466Z 00E Health check error:
+2026-04-05T04:59:57.615467Z 00E service "runner-dvbxicxfh-project-18-concurrent-1-cbed7a0a9ff9aebc-redis-1-wait-for-service" timeout
+2026-04-05T04:59:57.615468Z 00E 
+2026-04-05T04:59:57.615468Z 00E Health check container logs:
+2026-04-05T04:59:57.615469Z 00E 2026-04-05T04:59:26.009011056Z waiting for TCP connection to 051d10334389 on [6379]...
+2026-04-05T04:59:57.615469Z 00E 2026-04-05T04:59:26.009041058Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615470Z 00E 2026-04-05T04:59:31.000864882Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615470Z 00E 2026-04-05T04:59:35.883496459Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615471Z 00E 2026-04-05T04:59:40.748637961Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615472Z 00E 2026-04-05T04:59:45.702684882Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615472Z 00E 2026-04-05T04:59:50.555054558Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615473Z 00E 2026-04-05T04:59:55.534473181Z dialing 051d10334389:6379...
+2026-04-05T04:59:57.615473Z 00E 
+2026-04-05T04:59:57.615474Z 00E Service container logs:
+2026-04-05T04:59:57.615474Z 00E 2026-04-05T04:59:25.377170503Z 1:C 05 Apr 2026 04:59:25.375 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2026-04-05T04:59:57.615475Z 00E 2026-04-05T04:59:25.377227008Z 1:C 05 Apr 2026 04:59:25.376 * Redis version=7.4.5, bits=64, commit=00000000, modified=0, pid=1, just started
+2026-04-05T04:59:57.615476Z 00E 2026-04-05T04:59:25.377230708Z 1:C 05 Apr 2026 04:59:25.377 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+2026-04-05T04:59:57.615477Z 00E 2026-04-05T04:59:25.378256189Z 1:M 05 Apr 2026 04:59:25.378 * monotonic clock: POSIX clock_gettime
+2026-04-05T04:59:57.615477Z 00E 2026-04-05T04:59:25.379358375Z 1:M 05 Apr 2026 04:59:25.379 * Running mode=standalone, port=6379.
+2026-04-05T04:59:57.615478Z 00E 2026-04-05T04:59:25.380737283Z 1:M 05 Apr 2026 04:59:25.379 * Server initialized
+2026-04-05T04:59:57.615478Z 00E 2026-04-05T04:59:25.380775586Z 1:M 05 Apr 2026 04:59:25.380 * Ready to accept connections tcp
+2026-04-05T04:59:57.615479Z 00E 
+2026-04-05T04:59:57.615479Z 00E [0;33m*********[0;m
+2026-04-05T04:59:57.615480Z 00E 
+2026-04-05T04:59:57.676609Z 00E 
+2026-04-05T04:59:57.676616Z 00E [0;33m*** WARNING:[0;m Service runner-dvbxicxfh-project-18-concurrent-1-cbed7a0a9ff9aebc-postgres-0 probably didn't start properly.
+2026-04-05T04:59:57.676617Z 00E 
+2026-04-05T04:59:57.676617Z 00E Health check error:
+2026-04-05T04:59:57.676618Z 00E service "runner-dvbxicxfh-project-18-concurrent-1-cbed7a0a9ff9aebc-postgres-0-wait-for-service" timeout
+2026-04-05T04:59:57.676619Z 00E 
+2026-04-05T04:59:57.676619Z 00E Health check container logs:
+2026-04-05T04:59:57.676620Z 00E 2026-04-05T04:59:26.085715705Z waiting for TCP connection to 7b60c3624666 on [5432]...
+2026-04-05T04:59:57.676620Z 00E 2026-04-05T04:59:26.085819013Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676621Z 00E 2026-04-05T04:59:31.093257979Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676622Z 00E 2026-04-05T04:59:35.959122195Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676622Z 00E 2026-04-05T04:59:40.810199947Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676623Z 00E 2026-04-05T04:59:45.762961222Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676623Z 00E 2026-04-05T04:59:50.616926498Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676624Z 00E 2026-04-05T04:59:55.609082027Z dialing 7b60c3624666:5432...
+2026-04-05T04:59:57.676624Z 00E 
+2026-04-05T04:59:57.676625Z 00E Service container logs:
+2026-04-05T04:59:57.676638Z 00E 2026-04-05T04:59:24.595034726Z The files belonging to this database system will be owned by user "postgres".
+2026-04-05T04:59:57.676639Z 00E 2026-04-05T04:59:24.595193638Z This user must also own the server process.
+2026-04-05T04:59:57.676640Z 00E 2026-04-05T04:59:24.595198538Z 
+2026-04-05T04:59:57.676640Z 00E 2026-04-05T04:59:24.595202638Z The database cluster will be initialized with locale "en_US.utf8".
+2026-04-05T04:59:57.676641Z 00E 2026-04-05T04:59:24.595204339Z The default database encoding has accordingly been set to "UTF8".
+2026-04-05T04:59:57.676641Z 00E 2026-04-05T04:59:24.595205739Z The default text search configuration will be set to "english".
+2026-04-05T04:59:57.676642Z 00E 2026-04-05T04:59:24.595207239Z 
+2026-04-05T04:59:57.676643Z 00E 2026-04-05T04:59:24.595208439Z Data page checksums are disabled.
+2026-04-05T04:59:57.676643Z 00E 2026-04-05T04:59:24.595209739Z 
+2026-04-05T04:59:57.676644Z 00E 2026-04-05T04:59:24.600998572Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-04-05T04:59:57.676644Z 00E 2026-04-05T04:59:24.602978421Z creating subdirectories ... ok
+2026-04-05T04:59:57.676645Z 00E 2026-04-05T04:59:24.602988921Z selecting dynamic shared memory implementation ... posix
+2026-04-05T04:59:57.676645Z 00E 2026-04-05T04:59:24.616990269Z selecting default max_connections ... 100
+2026-04-05T04:59:57.676646Z 00E 2026-04-05T04:59:24.638505380Z selecting default shared_buffers ... 128MB
+2026-04-05T04:59:57.676647Z 00E 2026-04-05T04:59:24.744638925Z selecting default time zone ... UTC
+2026-04-05T04:59:57.676647Z 00E 2026-04-05T04:59:24.744654926Z creating configuration files ... ok
+2026-04-05T04:59:57.676648Z 00E 2026-04-05T04:59:24.940379778Z running bootstrap script ... ok
+2026-04-05T04:59:57.676648Z 00E 2026-04-05T04:59:25.245435878Z sh: locale: not found
+2026-04-05T04:59:57.676649Z 00E 2026-04-05T04:59:25.246822886Z 2026-04-05 04:59:25.245 UTC [35] WARNING:  no usable system locales were found
+2026-04-05T04:59:57.676650Z 00E 2026-04-05T04:59:25.931947489Z performing post-bootstrap initialization ... ok
+2026-04-05T04:59:57.676650Z 00E 2026-04-05T04:59:26.218103390Z initdb: warning: enabling "trust" authentication for local connections
+2026-04-05T04:59:57.676651Z 00E 2026-04-05T04:59:26.218148994Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-04-05T04:59:57.676652Z 00E 2026-04-05T04:59:26.218103590Z syncing data to disk ... ok
+2026-04-05T04:59:57.676652Z 00E 2026-04-05T04:59:26.218161195Z 
+2026-04-05T04:59:57.676653Z 00E 2026-04-05T04:59:26.218163595Z 
+2026-04-05T04:59:57.676653Z 00E 2026-04-05T04:59:26.218165495Z Success. You can now start the database server using:
+2026-04-05T04:59:57.676654Z 00E 2026-04-05T04:59:26.218167395Z 
+2026-04-05T04:59:57.676654Z 00E 2026-04-05T04:59:26.218169195Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-04-05T04:59:57.676655Z 00E 2026-04-05T04:59:26.218171195Z 
+2026-04-05T04:59:57.676655Z 00E 2026-04-05T04:59:26.259636874Z waiting for server to start....2026-04-05 04:59:26.259 UTC [41] LOG:  starting PostgreSQL 16.13 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-04-05T04:59:57.676656Z 00E 2026-04-05T04:59:26.262155379Z 2026-04-05 04:59:26.262 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-05T04:59:57.676657Z 00E 2026-04-05T04:59:26.269761698Z 2026-04-05 04:59:26.269 UTC [44] LOG:  database system was shut down at 2026-04-05 04:59:25 UTC
+2026-04-05T04:59:57.676658Z 00E 2026-04-05T04:59:26.275524868Z 2026-04-05 04:59:26.275 UTC [41] LOG:  database system is ready to accept connections
+2026-04-05T04:59:57.676658Z 00E 2026-04-05T04:59:26.339892212Z  done
+2026-04-05T04:59:57.676659Z 00E 2026-04-05T04:59:26.339916114Z server started
+2026-04-05T04:59:57.676660Z 00E 2026-04-05T04:59:26.425348274Z CREATE DATABASE
+2026-04-05T04:59:57.676660Z 00E 2026-04-05T04:59:26.425924021Z 
+2026-04-05T04:59:57.676661Z 00E 2026-04-05T04:59:26.425932121Z 
+2026-04-05T04:59:57.676665Z 00E 2026-04-05T04:59:26.426057832Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-04-05T04:59:57.676665Z 00E 2026-04-05T04:59:26.426064632Z 
+2026-04-05T04:59:57.676666Z 00E 2026-04-05T04:59:26.427207525Z waiting for server to shut down...2026-04-05 04:59:26.427 UTC [41] LOG:  received fast shutdown request
+2026-04-05T04:59:57.676667Z 00E 2026-04-05T04:59:26.435918835Z .2026-04-05 04:59:26.435 UTC [41] LOG:  aborting any active transactions
+2026-04-05T04:59:57.676667Z 00E 2026-04-05T04:59:26.438236724Z 2026-04-05 04:59:26.438 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+2026-04-05T04:59:57.676668Z 00E 2026-04-05T04:59:26.438255925Z 2026-04-05 04:59:26.438 UTC [42] LOG:  shutting down
+2026-04-05T04:59:57.676669Z 00E 2026-04-05T04:59:26.451470402Z 2026-04-05 04:59:26.451 UTC [42] LOG:  checkpoint starting: shutdown immediate
+2026-04-05T04:59:57.676669Z 00E 2026-04-05T04:59:26.563191504Z 2026-04-05 04:59:26.562 UTC [42] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.022 s, sync=0.081 s, total=0.125 s; sync files=301, longest=0.012 s, average=0.001 s; distance=4272 kB, estimate=4272 kB; lsn=0/191E940, redo lsn=0/191E940
+2026-04-05T04:59:57.676671Z 00E 2026-04-05T04:59:26.569549322Z 2026-04-05 04:59:26.569 UTC [41] LOG:  database system is shut down
+2026-04-05T04:59:57.676671Z 00E 2026-04-05T04:59:26.627860972Z  done
+2026-04-05T04:59:57.676672Z 00E 2026-04-05T04:59:26.627901575Z server stopped
+2026-04-05T04:59:57.676672Z 00E 2026-04-05T04:59:26.629223683Z 
+2026-04-05T04:59:57.676673Z 00E 2026-04-05T04:59:26.629236484Z PostgreSQL init process complete; ready for start up.
+2026-04-05T04:59:57.676673Z 00E 2026-04-05T04:59:26.629238384Z 
+2026-04-05T04:59:57.676674Z 00E 2026-04-05T04:59:26.653805786Z 2026-04-05 04:59:26.653 UTC [1] LOG:  starting PostgreSQL 16.13 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-04-05T04:59:57.676675Z 00E 2026-04-05T04:59:26.653842089Z 2026-04-05 04:59:26.653 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-04-05T04:59:57.676675Z 00E 2026-04-05T04:59:26.653844489Z 2026-04-05 04:59:26.653 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-04-05T04:59:57.676676Z 00E 2026-04-05T04:59:26.662367383Z 2026-04-05 04:59:26.662 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-05T04:59:57.676677Z 00E 2026-04-05T04:59:26.674043235Z 2026-04-05 04:59:26.673 UTC [57] LOG:  database system was shut down at 2026-04-05 04:59:26 UTC
+2026-04-05T04:59:57.676677Z 00E 2026-04-05T04:59:26.681465539Z 2026-04-05 04:59:26.681 UTC [1] LOG:  database system is ready to accept connections
+2026-04-05T04:59:57.676678Z 00E 
+2026-04-05T04:59:57.676678Z 00E [0;33m*********[0;m
+2026-04-05T04:59:57.676679Z 00E 
+2026-04-05T04:59:57.732247Z 00O [0KUsing effective pull policy of [if-not-present always] for container python:3.12-slim[0;m
+2026-04-05T04:59:57.849783Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
+2026-04-05T04:59:57.849799Z 00O [0KUsing docker image sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 for python:3.12-slim with digest python@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 ...[0;m
+2026-04-05T04:59:57.849806Z 00O section_end:1775365197:prepare_executor
+2026-04-05T04:59:57.849808Z 00O+[0Ksection_start:1775365197:prepare_script
+2026-04-05T04:59:57.849933Z 00O+[0K[0K[36;1mPreparing environment[0;m[0;m
+2026-04-05T04:59:57.908936Z 00O [0KUsing effective pull policy of [if-not-present always] for container sha256:daca1eb7b060f7d22c498b14aaa5b2470360f437cd1fd46e2091b8e8100f2f3f[0;m
+2026-04-05T04:59:58.542375Z 01O Running on runner-dvbxicxfh-project-18-concurrent-1 via Mike-Desktop...
+2026-04-05T04:59:58.815478Z 00O section_end:1775365198:prepare_script
+2026-04-05T04:59:58.815484Z 00O+[0Ksection_start:1775365198:get_sources
+2026-04-05T04:59:58.815901Z 00O+[0K[0K[36;1mGetting source from Git repository[0;m[0;m
+2026-04-05T04:59:59.450516Z 01O [32;1mGitaly correlation ID: 01KNE050SVMYBCRZT117MD4GD1[0;m
+2026-04-05T04:59:59.485225Z 01O [32;1mFetching changes with git depth set to 20...[0;m
+2026-04-05T04:59:59.492964Z 01O Reinitialized existing Git repository in /builds/ai-syndicate/syndicateclaw/.git/
+2026-04-05T04:59:59.497174Z 01O [32;1mCreated fresh repository.[0;m
+2026-04-05T04:59:59.987171Z 01O [32;1mChecking out 3384bd9f as detached HEAD (ref is release/v2.0.0)...[0;m
+2026-04-05T05:00:00.185159Z 01O Removing .mypy_cache/
+2026-04-05T05:00:00.185384Z 01O Removing .ruff_cache/
+2026-04-05T05:00:00.280885Z 01O 
+2026-04-05T05:00:00.280893Z 01O [32;1mSkipping Git submodules setup[0;m
+2026-04-05T05:00:00.748136Z 00O section_end:1775365200:get_sources
+2026-04-05T05:00:00.748142Z 00O+[0Ksection_start:1775365200:step_script
+2026-04-05T05:00:00.749051Z 00O+[0K[0K[36;1mExecuting "step_script" stage of the job script[0;m[0;m
+2026-04-05T05:00:00.749072Z 00O [0KUsing effective pull policy of [if-not-present always] for container python:3.12-slim[0;m
+2026-04-05T05:00:00.844874Z 00O [0KUsing docker image sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 for python:3.12-slim with digest python@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 ...[0;m
+2026-04-05T05:00:01.958944Z 01O [32;1m$ apt-get update && apt-get install -y --no-install-recommends git iputils-ping netcat-traditional && rm -rf /var/lib/apt/lists/*[0;m
+2026-04-05T05:00:02.072836Z 01O Hit:1 http://deb.debian.org/debian trixie InRelease
+2026-04-05T05:00:02.072845Z 01O Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+2026-04-05T05:00:02.074638Z 01O Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+2026-04-05T05:00:02.122569Z 01O Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9671 kB]
+2026-04-05T05:00:03.195981Z 01O Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [5412 B]
+2026-04-05T05:00:03.195990Z 01O Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [119 kB]
+2026-04-05T05:00:04.289086Z 01O Fetched 9886 kB in 2s (4304 kB/s)
+2026-04-05T05:00:04.289095Z 01O Reading package lists...
+2026-04-05T05:00:05.319061Z 01O Reading package lists...
+2026-04-05T05:00:06.414312Z 01O Building dependency tree...
+2026-04-05T05:00:06.668516Z 01O Reading state information...
+2026-04-05T05:00:07.015943Z 01O The following additional packages will be installed:
+2026-04-05T05:00:07.016090Z 01O   git-man libbrotli1 libcom-err2 libcurl3t64-gnutls liberror-perl libexpat1
+2026-04-05T05:00:07.016404Z 01O   libgdbm-compat4t64 libgnutls30t64 libgssapi-krb5-2 libidn2-0 libk5crypto3
+2026-04-05T05:00:07.017386Z 01O   libkeyutils1 libkrb5-3 libkrb5support0 libldap2 libnghttp2-14 libnghttp3-9
+2026-04-05T05:00:07.017483Z 01O   libngtcp2-16 libngtcp2-crypto-gnutls8 libp11-kit0 libperl5.40 libpsl5t64
+2026-04-05T05:00:07.018884Z 01O   librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1t64 libtasn1-6
+2026-04-05T05:00:07.019862Z 01O   libunistring5 perl perl-modules-5.40
+2026-04-05T05:00:07.022904Z 01O Suggested packages:
+2026-04-05T05:00:07.022911Z 01O   gettext-base git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki
+2026-04-05T05:00:07.022912Z 01O   git-svn gnutls-bin krb5-doc krb5-user sensible-utils perl-doc
+2026-04-05T05:00:07.022913Z 01O   libterm-readline-gnu-perl | libterm-readline-perl-perl make
+2026-04-05T05:00:07.022914Z 01O   libtap-harness-archive-perl
+2026-04-05T05:00:07.022914Z 01O Recommended packages:
+2026-04-05T05:00:07.022915Z 01O   patch less ssh-client linux-sysctl-defaults krb5-locales libldap-common
+2026-04-05T05:00:07.022915Z 01O   publicsuffix libsasl2-modules
+2026-04-05T05:00:07.328429Z 01O The following NEW packages will be installed:
+2026-04-05T05:00:07.332618Z 01O   git git-man iputils-ping libbrotli1 libcom-err2 libcurl3t64-gnutls
+2026-04-05T05:00:07.332628Z 01O   liberror-perl libexpat1 libgdbm-compat4t64 libgnutls30t64 libgssapi-krb5-2
+2026-04-05T05:00:07.332629Z 01O   libidn2-0 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+2026-04-05T05:00:07.332649Z 01O   libnghttp2-14 libnghttp3-9 libngtcp2-16 libngtcp2-crypto-gnutls8 libp11-kit0
+2026-04-05T05:00:07.332649Z 01O   libperl5.40 libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1t64
+2026-04-05T05:00:07.332650Z 01O   libtasn1-6 libunistring5 netcat-traditional perl perl-modules-5.40
+2026-04-05T05:00:07.720986Z 01O 0 upgraded, 33 newly installed, 0 to remove and 0 not upgraded.
+2026-04-05T05:00:07.720994Z 01O Need to get 23.8 MB of archives.
+2026-04-05T05:00:07.720996Z 01O After this operation, 119 MB of additional disk space will be used.
+2026-04-05T05:00:07.720996Z 01O Get:1 http://deb.debian.org/debian trixie/main amd64 libexpat1 amd64 2.7.1-2 [108 kB]
+2026-04-05T05:00:07.889593Z 01O Get:2 http://deb.debian.org/debian trixie/main amd64 libunistring5 amd64 1.3-2 [477 kB]
+2026-04-05T05:00:08.004391Z 01O Get:3 http://deb.debian.org/debian trixie/main amd64 libidn2-0 amd64 2.3.8-2 [109 kB]
+2026-04-05T05:00:08.022057Z 01O Get:4 http://deb.debian.org/debian trixie/main amd64 iputils-ping amd64 3:20240905-3 [51.2 kB]
+2026-04-05T05:00:08.036492Z 01O Get:5 http://deb.debian.org/debian trixie/main amd64 netcat-traditional amd64 1.10-50 [63.2 kB]
+2026-04-05T05:00:08.081825Z 01O Get:6 http://deb.debian.org/debian trixie/main amd64 perl-modules-5.40 all 5.40.1-6 [3019 kB]
+2026-04-05T05:00:08.374488Z 01O Get:7 http://deb.debian.org/debian trixie/main amd64 libgdbm-compat4t64 amd64 1.24-2 [50.3 kB]
+2026-04-05T05:00:08.374497Z 01O Get:8 http://deb.debian.org/debian trixie/main amd64 libperl5.40 amd64 5.40.1-6 [4341 kB]
+2026-04-05T05:00:08.589188Z 01O Get:9 http://deb.debian.org/debian trixie/main amd64 perl amd64 5.40.1-6 [267 kB]
+2026-04-05T05:00:08.599648Z 01O Get:10 http://deb.debian.org/debian trixie/main amd64 libbrotli1 amd64 1.1.0-2+b7 [307 kB]
+2026-04-05T05:00:08.622829Z 01O Get:11 http://deb.debian.org/debian trixie/main amd64 libp11-kit0 amd64 0.25.5-3 [425 kB]
+2026-04-05T05:00:08.647781Z 01O Get:12 http://deb.debian.org/debian trixie/main amd64 libtasn1-6 amd64 4.20.0-2 [49.9 kB]
+2026-04-05T05:00:08.648301Z 01O Get:13 http://deb.debian.org/debian trixie/main amd64 libgnutls30t64 amd64 3.8.9-3+deb13u2 [1468 kB]
+2026-04-05T05:00:08.719326Z 01O Get:14 http://deb.debian.org/debian trixie/main amd64 libkrb5support0 amd64 1.21.3-5 [33.0 kB]
+2026-04-05T05:00:08.723943Z 01O Get:15 http://deb.debian.org/debian trixie/main amd64 libcom-err2 amd64 1.47.2-3+b10 [25.0 kB]
+2026-04-05T05:00:08.725850Z 01O Get:16 http://deb.debian.org/debian trixie/main amd64 libk5crypto3 amd64 1.21.3-5 [81.5 kB]
+2026-04-05T05:00:08.730510Z 01O Get:17 http://deb.debian.org/debian trixie/main amd64 libkeyutils1 amd64 1.6.3-6 [9456 B]
+2026-04-05T05:00:08.730839Z 01O Get:18 http://deb.debian.org/debian trixie/main amd64 libkrb5-3 amd64 1.21.3-5 [326 kB]
+2026-04-05T05:00:08.748221Z 01O Get:19 http://deb.debian.org/debian trixie/main amd64 libgssapi-krb5-2 amd64 1.21.3-5 [138 kB]
+2026-04-05T05:00:08.760593Z 01O Get:20 http://deb.debian.org/debian trixie/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg1-9 [19.8 kB]
+2026-04-05T05:00:08.761161Z 01O Get:21 http://deb.debian.org/debian trixie/main amd64 libsasl2-2 amd64 2.1.28+dfsg1-9 [57.5 kB]
+2026-04-05T05:00:08.768391Z 01O Get:22 http://deb.debian.org/debian trixie/main amd64 libldap2 amd64 2.6.10+dfsg-1 [194 kB]
+2026-04-05T05:00:08.796965Z 01O Get:23 http://deb.debian.org/debian trixie/main amd64 libnghttp2-14 amd64 1.64.0-1.1 [76.0 kB]
+2026-04-05T05:00:08.799611Z 01O Get:24 http://deb.debian.org/debian trixie/main amd64 libnghttp3-9 amd64 1.8.0-1 [67.7 kB]
+2026-04-05T05:00:08.803804Z 01O Get:25 http://deb.debian.org/debian trixie/main amd64 libngtcp2-16 amd64 1.11.0-1 [131 kB]
+2026-04-05T05:00:08.809715Z 01O Get:26 http://deb.debian.org/debian trixie/main amd64 libngtcp2-crypto-gnutls8 amd64 1.11.0-1 [29.3 kB]
+2026-04-05T05:00:08.809723Z 01O Get:27 http://deb.debian.org/debian trixie/main amd64 libpsl5t64 amd64 0.21.2-1.1+b1 [57.2 kB]
+2026-04-05T05:00:08.813317Z 01O Get:28 http://deb.debian.org/debian trixie/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b5 [58.8 kB]
+2026-04-05T05:00:08.815643Z 01O Get:29 http://deb.debian.org/debian trixie/main amd64 libssh2-1t64 amd64 1.11.1-1 [245 kB]
+2026-04-05T05:00:08.828169Z 01O Get:30 http://deb.debian.org/debian trixie/main amd64 libcurl3t64-gnutls amd64 8.14.1-2+deb13u2 [383 kB]
+2026-04-05T05:00:08.853736Z 01O Get:31 http://deb.debian.org/debian trixie/main amd64 liberror-perl all 0.17030-1 [26.9 kB]
+2026-04-05T05:00:08.854854Z 01O Get:32 http://deb.debian.org/debian trixie/main amd64 git-man all 1:2.47.3-0+deb13u1 [2205 kB]
+2026-04-05T05:00:09.001962Z 01O Get:33 http://deb.debian.org/debian trixie/main amd64 git amd64 1:2.47.3-0+deb13u1 [8862 kB]
+2026-04-05T05:00:10.024194Z 01E debconf: unable to initialize frontend: Dialog
+2026-04-05T05:00:10.024203Z 01E debconf: (TERM is not set, so the dialog frontend is not usable.)
+2026-04-05T05:00:10.024204Z 01E debconf: falling back to frontend: Readline
+2026-04-05T05:00:10.024549Z 01E debconf: unable to initialize frontend: Readline
+2026-04-05T05:00:10.024553Z 01E debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 33.)
+2026-04-05T05:00:10.024555Z 01E debconf: falling back to frontend: Teletype
+2026-04-05T05:00:10.035009Z 01E debconf: unable to initialize frontend: Teletype
+2026-04-05T05:00:10.035019Z 01E debconf: (This frontend requires a controlling tty.)
+2026-04-05T05:00:10.035020Z 01E debconf: falling back to frontend: Noninteractive
+2026-04-05T05:00:12.075771Z 01O Fetched 23.8 MB in 2s (9762 kB/s)
+2026-04-05T05:00:12.113412Z 01O Selecting previously unselected package libexpat1:amd64.
+2026-04-05T05:00:12.113420Z 01O (Reading database ... 
+2026-04-05T05:00:12.114071Z 01O+(Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-04-05T05:00:12.115703Z 01O+(Reading database ... 75%
+2026-04-05T05:00:12.116118Z 01O+(Reading database ... 80%
+2026-04-05T05:00:12.116614Z 01O+(Reading database ... 85%
+2026-04-05T05:00:12.116918Z 01O+(Reading database ... 90%
+2026-04-05T05:00:12.117184Z 01O+(Reading database ... 95%(Reading database ... 100%(Reading database ... 5645 files and directories currently installed.)
+2026-04-05T05:00:12.117666Z 01O Preparing to unpack .../00-libexpat1_2.7.1-2_amd64.deb ...
+2026-04-05T05:00:12.127188Z 01O Unpacking libexpat1:amd64 (2.7.1-2) ...
+2026-04-05T05:00:12.171576Z 01O Selecting previously unselected package libunistring5:amd64.
+2026-04-05T05:00:12.172254Z 01O Preparing to unpack .../01-libunistring5_1.3-2_amd64.deb ...
+2026-04-05T05:00:12.176469Z 01O Unpacking libunistring5:amd64 (1.3-2) ...
+2026-04-05T05:00:12.243376Z 01O Selecting previously unselected package libidn2-0:amd64.
+2026-04-05T05:00:12.244740Z 01O Preparing to unpack .../02-libidn2-0_2.3.8-2_amd64.deb ...
+2026-04-05T05:00:12.249697Z 01O Unpacking libidn2-0:amd64 (2.3.8-2) ...
+2026-04-05T05:00:12.292369Z 01O Selecting previously unselected package iputils-ping.
+2026-04-05T05:00:12.293085Z 01O Preparing to unpack .../03-iputils-ping_3%3a20240905-3_amd64.deb ...
+2026-04-05T05:00:12.298999Z 01O Unpacking iputils-ping (3:20240905-3) ...
+2026-04-05T05:00:12.339345Z 01O Selecting previously unselected package netcat-traditional.
+2026-04-05T05:00:12.339990Z 01O Preparing to unpack .../04-netcat-traditional_1.10-50_amd64.deb ...
+2026-04-05T05:00:12.346360Z 01O Unpacking netcat-traditional (1.10-50) ...
+2026-04-05T05:00:12.388039Z 01O Selecting previously unselected package perl-modules-5.40.
+2026-04-05T05:00:12.388855Z 01O Preparing to unpack .../05-perl-modules-5.40_5.40.1-6_all.deb ...
+2026-04-05T05:00:12.407102Z 01O Unpacking perl-modules-5.40 (5.40.1-6) ...
+2026-04-05T05:00:12.785251Z 01O Selecting previously unselected package libgdbm-compat4t64:amd64.
+2026-04-05T05:00:12.786199Z 01O Preparing to unpack .../06-libgdbm-compat4t64_1.24-2_amd64.deb ...
+2026-04-05T05:00:12.791067Z 01O Unpacking libgdbm-compat4t64:amd64 (1.24-2) ...
+2026-04-05T05:00:12.833611Z 01O Selecting previously unselected package libperl5.40:amd64.
+2026-04-05T05:00:12.834443Z 01O Preparing to unpack .../07-libperl5.40_5.40.1-6_amd64.deb ...
+2026-04-05T05:00:12.840040Z 01O Unpacking libperl5.40:amd64 (5.40.1-6) ...
+2026-04-05T05:00:13.137382Z 01O Selecting previously unselected package perl.
+2026-04-05T05:00:13.138403Z 01O Preparing to unpack .../08-perl_5.40.1-6_amd64.deb ...
+2026-04-05T05:00:13.142613Z 01O Unpacking perl (5.40.1-6) ...
+2026-04-05T05:00:13.203562Z 01O Selecting previously unselected package libbrotli1:amd64.
+2026-04-05T05:00:13.204308Z 01O Preparing to unpack .../09-libbrotli1_1.1.0-2+b7_amd64.deb ...
+2026-04-05T05:00:13.208778Z 01O Unpacking libbrotli1:amd64 (1.1.0-2+b7) ...
+2026-04-05T05:00:13.272466Z 01O Selecting previously unselected package libp11-kit0:amd64.
+2026-04-05T05:00:13.273148Z 01O Preparing to unpack .../10-libp11-kit0_0.25.5-3_amd64.deb ...
+2026-04-05T05:00:13.278860Z 01O Unpacking libp11-kit0:amd64 (0.25.5-3) ...
+2026-04-05T05:00:13.356799Z 01O Selecting previously unselected package libtasn1-6:amd64.
+2026-04-05T05:00:13.357613Z 01O Preparing to unpack .../11-libtasn1-6_4.20.0-2_amd64.deb ...
+2026-04-05T05:00:13.366687Z 01O Unpacking libtasn1-6:amd64 (4.20.0-2) ...
+2026-04-05T05:00:13.439218Z 01O Selecting previously unselected package libgnutls30t64:amd64.
+2026-04-05T05:00:13.440047Z 01O Preparing to unpack .../12-libgnutls30t64_3.8.9-3+deb13u2_amd64.deb ...
+2026-04-05T05:00:13.444402Z 01O Unpacking libgnutls30t64:amd64 (3.8.9-3+deb13u2) ...
+2026-04-05T05:00:13.542601Z 01O Selecting previously unselected package libkrb5support0:amd64.
+2026-04-05T05:00:13.543272Z 01O Preparing to unpack .../13-libkrb5support0_1.21.3-5_amd64.deb ...
+2026-04-05T05:00:13.551430Z 01O Unpacking libkrb5support0:amd64 (1.21.3-5) ...
+2026-04-05T05:00:13.606338Z 01O Selecting previously unselected package libcom-err2:amd64.
+2026-04-05T05:00:13.607228Z 01O Preparing to unpack .../14-libcom-err2_1.47.2-3+b10_amd64.deb ...
+2026-04-05T05:00:13.612193Z 01O Unpacking libcom-err2:amd64 (1.47.2-3+b10) ...
+2026-04-05T05:00:13.671421Z 01O Selecting previously unselected package libk5crypto3:amd64.
+2026-04-05T05:00:13.672352Z 01O Preparing to unpack .../15-libk5crypto3_1.21.3-5_amd64.deb ...
+2026-04-05T05:00:13.677654Z 01O Unpacking libk5crypto3:amd64 (1.21.3-5) ...
+2026-04-05T05:00:13.733650Z 01O Selecting previously unselected package libkeyutils1:amd64.
+2026-04-05T05:00:13.733854Z 01O Preparing to unpack .../16-libkeyutils1_1.6.3-6_amd64.deb ...
+2026-04-05T05:00:13.740678Z 01O Unpacking libkeyutils1:amd64 (1.6.3-6) ...
+2026-04-05T05:00:13.800886Z 01O Selecting previously unselected package libkrb5-3:amd64.
+2026-04-05T05:00:13.801950Z 01O Preparing to unpack .../17-libkrb5-3_1.21.3-5_amd64.deb ...
+2026-04-05T05:00:13.807980Z 01O Unpacking libkrb5-3:amd64 (1.21.3-5) ...
+2026-04-05T05:00:13.891623Z 01O Selecting previously unselected package libgssapi-krb5-2:amd64.
+2026-04-05T05:00:13.892502Z 01O Preparing to unpack .../18-libgssapi-krb5-2_1.21.3-5_amd64.deb ...
+2026-04-05T05:00:13.900894Z 01O Unpacking libgssapi-krb5-2:amd64 (1.21.3-5) ...
+2026-04-05T05:00:13.981974Z 01O Selecting previously unselected package libsasl2-modules-db:amd64.
+2026-04-05T05:00:13.983041Z 01O Preparing to unpack .../19-libsasl2-modules-db_2.1.28+dfsg1-9_amd64.deb ...
+2026-04-05T05:00:13.990357Z 01O Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T05:00:14.043198Z 01O Selecting previously unselected package libsasl2-2:amd64.
+2026-04-05T05:00:14.044122Z 01O Preparing to unpack .../20-libsasl2-2_2.1.28+dfsg1-9_amd64.deb ...
+2026-04-05T05:00:14.051205Z 01O Unpacking libsasl2-2:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T05:00:14.109307Z 01O Selecting previously unselected package libldap2:amd64.
+2026-04-05T05:00:14.110041Z 01O Preparing to unpack .../21-libldap2_2.6.10+dfsg-1_amd64.deb ...
+2026-04-05T05:00:14.116521Z 01O Unpacking libldap2:amd64 (2.6.10+dfsg-1) ...
+2026-04-05T05:00:14.178706Z 01O Selecting previously unselected package libnghttp2-14:amd64.
+2026-04-05T05:00:14.179185Z 01O Preparing to unpack .../22-libnghttp2-14_1.64.0-1.1_amd64.deb ...
+2026-04-05T05:00:14.186523Z 01O Unpacking libnghttp2-14:amd64 (1.64.0-1.1) ...
+2026-04-05T05:00:14.238957Z 01O Selecting previously unselected package libnghttp3-9:amd64.
+2026-04-05T05:00:14.239862Z 01O Preparing to unpack .../23-libnghttp3-9_1.8.0-1_amd64.deb ...
+2026-04-05T05:00:14.244687Z 01O Unpacking libnghttp3-9:amd64 (1.8.0-1) ...
+2026-04-05T05:00:14.316923Z 01O Selecting previously unselected package libngtcp2-16:amd64.
+2026-04-05T05:00:14.317830Z 01O Preparing to unpack .../24-libngtcp2-16_1.11.0-1_amd64.deb ...
+2026-04-05T05:00:14.323828Z 01O Unpacking libngtcp2-16:amd64 (1.11.0-1) ...
+2026-04-05T05:00:14.397724Z 01O Selecting previously unselected package libngtcp2-crypto-gnutls8:amd64.
+2026-04-05T05:00:14.399128Z 01O Preparing to unpack .../25-libngtcp2-crypto-gnutls8_1.11.0-1_amd64.deb ...
+2026-04-05T05:00:14.409408Z 01O Unpacking libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+2026-04-05T05:00:14.487309Z 01O Selecting previously unselected package libpsl5t64:amd64.
+2026-04-05T05:00:14.488117Z 01O Preparing to unpack .../26-libpsl5t64_0.21.2-1.1+b1_amd64.deb ...
+2026-04-05T05:00:14.494497Z 01O Unpacking libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+2026-04-05T05:00:14.559493Z 01O Selecting previously unselected package librtmp1:amd64.
+2026-04-05T05:00:14.560350Z 01O Preparing to unpack .../27-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_amd64.deb ...
+2026-04-05T05:00:14.567379Z 01O Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+2026-04-05T05:00:14.634714Z 01O Selecting previously unselected package libssh2-1t64:amd64.
+2026-04-05T05:00:14.635625Z 01O Preparing to unpack .../28-libssh2-1t64_1.11.1-1_amd64.deb ...
+2026-04-05T05:00:14.643963Z 01O Unpacking libssh2-1t64:amd64 (1.11.1-1) ...
+2026-04-05T05:00:14.742360Z 01O Selecting previously unselected package libcurl3t64-gnutls:amd64.
+2026-04-05T05:00:14.742367Z 01O Preparing to unpack .../29-libcurl3t64-gnutls_8.14.1-2+deb13u2_amd64.deb ...
+2026-04-05T05:00:14.771791Z 01O Unpacking libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+2026-04-05T05:00:14.871957Z 01O Selecting previously unselected package liberror-perl.
+2026-04-05T05:00:14.871966Z 01O Preparing to unpack .../30-liberror-perl_0.17030-1_all.deb ...
+2026-04-05T05:00:14.880739Z 01O Unpacking liberror-perl (0.17030-1) ...
+2026-04-05T05:00:14.962200Z 01O Selecting previously unselected package git-man.
+2026-04-05T05:00:14.962721Z 01O Preparing to unpack .../31-git-man_1%3a2.47.3-0+deb13u1_all.deb ...
+2026-04-05T05:00:14.975188Z 01O Unpacking git-man (1:2.47.3-0+deb13u1) ...
+2026-04-05T05:00:15.158342Z 01O Selecting previously unselected package git.
+2026-04-05T05:00:15.158635Z 01O Preparing to unpack .../32-git_1%3a2.47.3-0+deb13u1_amd64.deb ...
+2026-04-05T05:00:15.176909Z 01O Unpacking git (1:2.47.3-0+deb13u1) ...
+2026-04-05T05:00:15.661718Z 01O Setting up libexpat1:amd64 (2.7.1-2) ...
+2026-04-05T05:00:15.685290Z 01O Setting up libkeyutils1:amd64 (1.6.3-6) ...
+2026-04-05T05:00:15.705519Z 01O Setting up netcat-traditional (1.10-50) ...
+2026-04-05T05:00:15.727188Z 01O update-alternatives: using /bin/nc.traditional to provide /bin/nc (nc) in auto mode
+2026-04-05T05:00:15.727671Z 01O update-alternatives: warning: skip creation of /usr/share/man/man1/nc.1.gz because associated file /usr/share/man/man1/nc.traditional.1.gz (of link group nc) doesn't exist
+2026-04-05T05:00:15.727675Z 01O update-alternatives: warning: skip creation of /usr/share/man/man1/netcat.1.gz because associated file /usr/share/man/man1/nc.traditional.1.gz (of link group nc) doesn't exist
+2026-04-05T05:00:15.741092Z 01O Setting up libgdbm-compat4t64:amd64 (1.24-2) ...
+2026-04-05T05:00:15.764584Z 01O Setting up libbrotli1:amd64 (1.1.0-2+b7) ...
+2026-04-05T05:00:15.789501Z 01O Setting up libnghttp2-14:amd64 (1.64.0-1.1) ...
+2026-04-05T05:00:15.807948Z 01O Setting up libcom-err2:amd64 (1.47.2-3+b10) ...
+2026-04-05T05:00:15.831273Z 01O Setting up libkrb5support0:amd64 (1.21.3-5) ...
+2026-04-05T05:00:15.855023Z 01O Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T05:00:15.876072Z 01O Setting up libp11-kit0:amd64 (0.25.5-3) ...
+2026-04-05T05:00:15.900478Z 01O Setting up libunistring5:amd64 (1.3-2) ...
+2026-04-05T05:00:15.921663Z 01O Setting up libk5crypto3:amd64 (1.21.3-5) ...
+2026-04-05T05:00:15.946969Z 01O Setting up libsasl2-2:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T05:00:15.974094Z 01O Setting up libnghttp3-9:amd64 (1.8.0-1) ...
+2026-04-05T05:00:16.007814Z 01O Setting up perl-modules-5.40 (5.40.1-6) ...
+2026-04-05T05:00:16.036513Z 01O Setting up libtasn1-6:amd64 (4.20.0-2) ...
+2026-04-05T05:00:16.055591Z 01O Setting up git-man (1:2.47.3-0+deb13u1) ...
+2026-04-05T05:00:16.079410Z 01O Setting up libngtcp2-16:amd64 (1.11.0-1) ...
+2026-04-05T05:00:16.103468Z 01O Setting up libkrb5-3:amd64 (1.21.3-5) ...
+2026-04-05T05:00:16.129367Z 01O Setting up libssh2-1t64:amd64 (1.11.1-1) ...
+2026-04-05T05:00:16.155047Z 01O Setting up libldap2:amd64 (2.6.10+dfsg-1) ...
+2026-04-05T05:00:16.177326Z 01O Setting up libidn2-0:amd64 (2.3.8-2) ...
+2026-04-05T05:00:16.198968Z 01O Setting up libperl5.40:amd64 (5.40.1-6) ...
+2026-04-05T05:00:16.222952Z 01O Setting up perl (5.40.1-6) ...
+2026-04-05T05:00:16.258850Z 01O Setting up libgssapi-krb5-2:amd64 (1.21.3-5) ...
+2026-04-05T05:00:16.291847Z 01O Setting up iputils-ping (3:20240905-3) ...
+2026-04-05T05:00:16.315509Z 01O Setting up libgnutls30t64:amd64 (3.8.9-3+deb13u2) ...
+2026-04-05T05:00:16.336405Z 01O Setting up libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+2026-04-05T05:00:16.357533Z 01O Setting up liberror-perl (0.17030-1) ...
+2026-04-05T05:00:16.380914Z 01O Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+2026-04-05T05:00:16.400905Z 01O Setting up libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+2026-04-05T05:00:16.428534Z 01O Setting up libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+2026-04-05T05:00:16.453277Z 01O Setting up git (1:2.47.3-0+deb13u1) ...
+2026-04-05T05:00:16.492773Z 01O Processing triggers for libc-bin (2.41-12+deb13u2) ...
+2026-04-05T05:00:16.569969Z 01O [32;1m$ ping -c 3 postgres || true[0;m
+2026-04-05T05:00:20.552034Z 01E ping: postgres: Name or service not known
+2026-04-05T05:00:20.552312Z 01O [32;1m$ nc -zv postgres 5432 || true[0;m
+2026-04-05T05:00:24.404983Z 01E postgres: forward host lookup failed: Unknown host
+2026-04-05T05:00:24.405101Z 01O [32;1m$ nc -zv redis 6379 || true[0;m
+2026-04-05T05:00:28.405506Z 01E redis: forward host lookup failed: Unknown host
+2026-04-05T05:00:28.405829Z 01O [32;1m$ pip install -U pip[0;m
+2026-04-05T05:00:30.353336Z 01O Requirement already satisfied: pip in /usr/local/lib/python3.12/site-packages (25.0.1)
+2026-04-05T05:00:30.433095Z 01O Collecting pip
+2026-04-05T05:00:30.498360Z 01O   Downloading pip-26.0.1-py3-none-any.whl.metadata (4.7 kB)
+2026-04-05T05:00:30.525126Z 01O Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+2026-04-05T05:00:30.692107Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 13.5 MB/s eta 0:00:00
+2026-04-05T05:00:30.712487Z 01O Installing collected packages: pip
+2026-04-05T05:00:30.712500Z 01O   Attempting uninstall: pip
+2026-04-05T05:00:30.715203Z 01O     Found existing installation: pip 25.0.1
+2026-04-05T05:00:30.799159Z 01O     Uninstalling pip-25.0.1:
+2026-04-05T05:00:31.139943Z 01O       Successfully uninstalled pip-25.0.1
+2026-04-05T05:00:32.306253Z 01O Successfully installed pip-26.0.1
+2026-04-05T05:00:32.306387Z 01E WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-04-05T05:00:32.393271Z 01O [32;1m$ pip install -e ".[dev]"[0;m
+2026-04-05T05:00:32.765025Z 01O Obtaining file:///builds/ai-syndicate/syndicateclaw
+2026-04-05T05:00:32.767337Z 01O   Installing build dependencies: started
+2026-04-05T05:00:33.729698Z 01O   Installing build dependencies: finished with status 'done'
+2026-04-05T05:00:33.730521Z 01O   Checking if build backend supports build_editable: started
+2026-04-05T05:00:33.774865Z 01O   Checking if build backend supports build_editable: finished with status 'done'
+2026-04-05T05:00:33.776479Z 01O   Getting requirements to build editable: started
+2026-04-05T05:00:33.999046Z 01O   Getting requirements to build editable: finished with status 'done'
+2026-04-05T05:00:34.000512Z 01O   Installing backend dependencies: started
+2026-04-05T05:00:34.649671Z 01O   Installing backend dependencies: finished with status 'done'
+2026-04-05T05:00:34.650566Z 01O   Preparing editable metadata (pyproject.toml): started
+2026-04-05T05:00:34.851859Z 01O   Preparing editable metadata (pyproject.toml): finished with status 'done'
+2026-04-05T05:00:34.917160Z 01O Collecting alembic==1.15.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:34.999436Z 01O   Downloading alembic-1.15.1-py3-none-any.whl.metadata (7.2 kB)
+2026-04-05T05:00:35.052771Z 01O Collecting asyncpg==0.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.071875Z 01O   Downloading asyncpg-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.0 kB)
+2026-04-05T05:00:35.097636Z 01O Collecting croniter>=2.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.114832Z 01O   Downloading croniter-6.2.2-py3-none-any.whl.metadata (22 kB)
+2026-04-05T05:00:35.436260Z 01O Collecting cryptography==46.0.6 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.454113Z 01O   Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (5.7 kB)
+2026-04-05T05:00:35.516894Z 01O Collecting fastapi>=0.115.14 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.545124Z 01O   Downloading fastapi-0.135.3-py3-none-any.whl.metadata (28 kB)
+2026-04-05T05:00:35.583049Z 01O Collecting httpx==0.28.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.599455Z 01O   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-04-05T05:00:35.618400Z 01O Collecting jinja2==3.1.6 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.635265Z 01O   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T05:00:35.662299Z 01O Collecting jsonschema==4.23.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.681639Z 01O   Downloading jsonschema-4.23.0-py3-none-any.whl.metadata (7.9 kB)
+2026-04-05T05:00:35.732155Z 01O Collecting opentelemetry-api==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.750530Z 01O   Downloading opentelemetry_api-1.30.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T05:00:35.767797Z 01O Collecting opentelemetry-exporter-otlp==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.787721Z 01O   Downloading opentelemetry_exporter_otlp-1.30.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T05:00:35.807410Z 01O Collecting opentelemetry-instrumentation-fastapi==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.829045Z 01O   Downloading opentelemetry_instrumentation_fastapi-0.51b0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T05:00:35.847175Z 01O Collecting opentelemetry-instrumentation-httpx==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.865716Z 01O   Downloading opentelemetry_instrumentation_httpx-0.51b0-py3-none-any.whl.metadata (7.1 kB)
+2026-04-05T05:00:35.885074Z 01O Collecting opentelemetry-instrumentation-sqlalchemy==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.905624Z 01O   Downloading opentelemetry_instrumentation_sqlalchemy-0.51b0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T05:00:35.932961Z 01O Collecting opentelemetry-sdk==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.952242Z 01O   Downloading opentelemetry_sdk-1.30.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T05:00:35.966714Z 01O Collecting packaging==24.2 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:35.983646Z 01O   Downloading packaging-24.2-py3-none-any.whl.metadata (3.2 kB)
+2026-04-05T05:00:35.997402Z 01O Collecting passlib==1.7.4 (from passlib[bcrypt]==1.7.4->syndicateclaw==2.0.0)
+2026-04-05T05:00:36.018850Z 01O   Downloading passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-04-05T05:00:36.037525Z 01O Collecting prometheus-client==0.21.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.055694Z 01O   Downloading prometheus_client-0.21.1-py3-none-any.whl.metadata (1.8 kB)
+2026-04-05T05:00:36.070705Z 01O Collecting pydantic-settings==2.8.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.091237Z 01O   Downloading pydantic_settings-2.8.1-py3-none-any.whl.metadata (3.5 kB)
+2026-04-05T05:00:36.237723Z 01O Collecting pydantic==2.11.1,>=2.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.257286Z 01O   Downloading pydantic-2.11.1-py3-none-any.whl.metadata (63 kB)
+2026-04-05T05:00:36.285341Z 01O Collecting pyjwt==2.12.0 (from pyjwt[crypto]==2.12.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:36.306998Z 01O   Downloading pyjwt-2.12.0-py3-none-any.whl.metadata (4.0 kB)
+2026-04-05T05:00:36.320677Z 01O Collecting python-ulid==3.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.339398Z 01O   Downloading python_ulid-3.0.0-py3-none-any.whl.metadata (5.8 kB)
+2026-04-05T05:00:36.350323Z 01O Collecting pytimeparse>=1.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.371001Z 01O   Downloading pytimeparse-1.1.8-py2.py3-none-any.whl.metadata (3.4 kB)
+2026-04-05T05:00:36.422916Z 01O Collecting pyyaml==6.0.2 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:36.445254Z 01O   Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+2026-04-05T05:00:36.492770Z 01O Collecting redis==5.2.1 (from redis[hiredis]==5.2.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:36.516466Z 01O   Downloading redis-5.2.1-py3-none-any.whl.metadata (9.1 kB)
+2026-04-05T05:00:37.118173Z 01O Collecting sqlalchemy==2.0.40,>=2.0 (from sqlalchemy[asyncio]==2.0.40,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:37.140501Z 01O   Downloading sqlalchemy-2.0.40-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.6 kB)
+2026-04-05T05:00:37.180117Z 01O Collecting starlette>=0.49.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.208435Z 01O   Downloading starlette-1.0.0-py3-none-any.whl.metadata (6.3 kB)
+2026-04-05T05:00:37.227129Z 01O Collecting structlog==25.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.251567Z 01O   Downloading structlog-25.1.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T05:00:37.284166Z 01O Collecting tenacity==9.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.306089Z 01O   Downloading tenacity-9.0.0-py3-none-any.whl.metadata (1.2 kB)
+2026-04-05T05:00:37.339031Z 01O Collecting uvicorn==0.34.0 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:37.364312Z 01O   Downloading uvicorn-0.34.0-py3-none-any.whl.metadata (6.5 kB)
+2026-04-05T05:00:37.390562Z 01O Collecting asgi-lifespan==2.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.411621Z 01O   Downloading asgi_lifespan-2.1.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T05:00:37.432404Z 01O Collecting factory-boy==3.3.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.474179Z 01O   Downloading factory_boy-3.3.1-py2.py3-none-any.whl.metadata (15 kB)
+2026-04-05T05:00:37.698875Z 01O Collecting locust>=2.20.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.720749Z 01O   Downloading locust-2.43.4-py3-none-any.whl.metadata (10 kB)
+2026-04-05T05:00:37.742852Z 01O Collecting mutmut>=3.2.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:37.768951Z 01O   Downloading mutmut-3.5.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T05:00:37.990983Z 01O Collecting mypy==1.15.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.013071Z 01O   Downloading mypy-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl.metadata (2.1 kB)
+2026-04-05T05:00:38.062161Z 01O Collecting pytest-asyncio==0.25.3 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.079365Z 01O   Downloading pytest_asyncio-0.25.3-py3-none-any.whl.metadata (3.9 kB)
+2026-04-05T05:00:38.100569Z 01O Collecting pytest-benchmark>=4.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.122044Z 01O   Downloading pytest_benchmark-5.2.3-py3-none-any.whl.metadata (29 kB)
+2026-04-05T05:00:38.141070Z 01O Collecting pytest-cov==6.1.1 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.161015Z 01O   Downloading pytest_cov-6.1.1-py3-none-any.whl.metadata (28 kB)
+2026-04-05T05:00:38.188570Z 01O Collecting pytest-xdist>=3.5.0 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.222544Z 01O   Downloading pytest_xdist-3.8.0-py3-none-any.whl.metadata (3.0 kB)
+2026-04-05T05:00:38.262267Z 01O Collecting pytest==8.3.5 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:38.296075Z 01O   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+2026-04-05T05:00:39.017648Z 01O Collecting ruff==0.11.2 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:39.035978Z 01O   Downloading ruff-0.11.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)
+2026-04-05T05:00:39.062490Z 01O Collecting types-jsonschema==4.23.0.20240813 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:39.086173Z 01O   Downloading types_jsonschema-4.23.0.20240813-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T05:00:39.117228Z 01O Collecting types-pyyaml==6.0.12.20241230 (from syndicateclaw==2.0.0)
+2026-04-05T05:00:39.139848Z 01O   Downloading types_PyYAML-6.0.12.20241230-py3-none-any.whl.metadata (1.8 kB)
+2026-04-05T05:00:39.160644Z 01O Collecting Mako (from alembic==1.15.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.190383Z 01O   Downloading mako-1.3.10-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T05:00:39.283788Z 01O Collecting typing-extensions>=4.12 (from alembic==1.15.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.307607Z 01O   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+2026-04-05T05:00:39.319729Z 01O Collecting sniffio (from asgi-lifespan==2.1.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.338388Z 01O   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+2026-04-05T05:00:39.544241Z 01O Collecting cffi>=2.0.0 (from cryptography==46.0.6->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.565930Z 01O   Downloading cffi-2.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.6 kB)
+2026-04-05T05:00:39.723197Z 01O Collecting Faker>=0.7.0 (from factory-boy==3.3.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.770754Z 01O   Downloading faker-40.12.0-py3-none-any.whl.metadata (16 kB)
+2026-04-05T05:00:39.824461Z 01O Collecting anyio (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.843110Z 01O   Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+2026-04-05T05:00:39.872897Z 01O Collecting certifi (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.888978Z 01O   Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T05:00:39.920445Z 01O Collecting httpcore==1.* (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.946664Z 01O   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-04-05T05:00:39.973801Z 01O Collecting idna (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:39.995367Z 01O   Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+2026-04-05T05:00:40.111369Z 01O Collecting MarkupSafe>=2.0 (from jinja2==3.1.6->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.129011Z 01O   Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-04-05T05:00:40.150226Z 01O Collecting attrs>=22.2.0 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.168130Z 01O   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-04-05T05:00:40.186513Z 01O Collecting jsonschema-specifications>=2023.03.6 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.210257Z 01O   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T05:00:40.247154Z 01O Collecting referencing>=0.28.4 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.264421Z 01O   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-04-05T05:00:40.831860Z 01O Collecting rpds-py>=0.7.1 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.848847Z 01O   Downloading rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-04-05T05:00:40.870737Z 01O Collecting mypy_extensions>=1.0.0 (from mypy==1.15.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.888816Z 01O   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+2026-04-05T05:00:40.906572Z 01O Collecting deprecated>=1.2.6 (from opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.924187Z 01O   Downloading deprecated-1.3.1-py2.py3-none-any.whl.metadata (5.9 kB)
+2026-04-05T05:00:40.956300Z 01O Collecting importlib-metadata<=8.5.0,>=6.0 (from opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:40.973398Z 01O   Downloading importlib_metadata-8.5.0-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T05:00:40.991746Z 01O Collecting opentelemetry-exporter-otlp-proto-grpc==1.30.0 (from opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:41.012173Z 01O   Downloading opentelemetry_exporter_otlp_proto_grpc-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T05:00:41.032279Z 01O Collecting opentelemetry-exporter-otlp-proto-http==1.30.0 (from opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:41.057777Z 01O   Downloading opentelemetry_exporter_otlp_proto_http-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T05:00:41.079339Z 01O Collecting googleapis-common-protos~=1.52 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:41.107491Z 01O   Downloading googleapis_common_protos-1.74.0-py3-none-any.whl.metadata (9.2 kB)
+2026-04-05T05:00:42.098608Z 01O Collecting grpcio<2.0.0,>=1.63.2 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.125122Z 01O   Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.8 kB)
+2026-04-05T05:00:42.147178Z 01O Collecting opentelemetry-exporter-otlp-proto-common==1.30.0 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.165948Z 01O   Downloading opentelemetry_exporter_otlp_proto_common-1.30.0-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T05:00:42.214495Z 01O Collecting opentelemetry-proto==1.30.0 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.229248Z 01O   Downloading opentelemetry_proto-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T05:00:42.266016Z 01O Collecting opentelemetry-semantic-conventions==0.51b0 (from opentelemetry-sdk==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.308950Z 01O   Downloading opentelemetry_semantic_conventions-0.51b0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T05:00:42.345255Z 01O Collecting requests~=2.7 (from opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.366891Z 01O   Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T05:00:42.392206Z 01O Collecting opentelemetry-instrumentation-asgi==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.408961Z 01O   Downloading opentelemetry_instrumentation_asgi-0.51b0-py3-none-any.whl.metadata (2.1 kB)
+2026-04-05T05:00:42.426327Z 01O Collecting opentelemetry-instrumentation==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.443901Z 01O   Downloading opentelemetry_instrumentation-0.51b0-py3-none-any.whl.metadata (6.3 kB)
+2026-04-05T05:00:42.466180Z 01O Collecting opentelemetry-util-http==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.483447Z 01O   Downloading opentelemetry_util_http-0.51b0-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T05:00:42.756694Z 01O Collecting wrapt<2.0.0,>=1.0.0 (from opentelemetry-instrumentation==0.51b0->opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.774773Z 01O   Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.4 kB)
+2026-04-05T05:00:42.803085Z 01O Collecting asgiref~=3.0 (from opentelemetry-instrumentation-asgi==0.51b0->opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T05:00:42.824982Z 01O   Downloading asgiref-3.11.1-py3-none-any.whl.metadata (9.3 kB)
+2026-04-05T05:00:43.050033Z 01O Collecting protobuf<6.0,>=5.0 (from opentelemetry-proto==1.30.0->opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:43.075777Z 01O   Downloading protobuf-5.29.6-cp38-abi3-manylinux2014_x86_64.whl.metadata (592 bytes)
+2026-04-05T05:00:43.149260Z 01O Collecting bcrypt>=3.1.0 (from passlib[bcrypt]==1.7.4->syndicateclaw==2.0.0)
+2026-04-05T05:00:43.169058Z 01O   Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+2026-04-05T05:00:43.182522Z 01O Collecting annotated-types>=0.6.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:43.201806Z 01O   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+2026-04-05T05:00:44.431399Z 01O Collecting pydantic-core==2.33.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:44.451055Z 01O   Downloading pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+2026-04-05T05:00:44.466338Z 01O Collecting typing-inspection>=0.4.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:44.483694Z 01O   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T05:00:44.508198Z 01O Collecting python-dotenv>=0.21.0 (from pydantic-settings==2.8.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:44.531374Z 01O   Downloading python_dotenv-1.2.2-py3-none-any.whl.metadata (27 kB)
+2026-04-05T05:00:44.550753Z 01O Collecting iniconfig (from pytest==8.3.5->syndicateclaw==2.0.0)
+2026-04-05T05:00:44.569321Z 01O   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T05:00:44.582760Z 01O Collecting pluggy<2,>=1.5 (from pytest==8.3.5->syndicateclaw==2.0.0)
+2026-04-05T05:00:44.600378Z 01O   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T05:00:45.255574Z 01O Collecting coverage>=7.5 (from coverage[toml]>=7.5->pytest-cov==6.1.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.274875Z 01O   Downloading coverage-7.13.5-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.5 kB)
+2026-04-05T05:00:45.443221Z 01O Collecting hiredis>=3.0.0 (from redis[hiredis]==5.2.1->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.466233Z 01O   Downloading hiredis-3.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (7.5 kB)
+2026-04-05T05:00:45.632442Z 01O Collecting greenlet>=1 (from sqlalchemy==2.0.40,>=2.0->sqlalchemy[asyncio]==2.0.40,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.650185Z 01O   Downloading greenlet-3.3.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.7 kB)
+2026-04-05T05:00:45.674741Z 01O Collecting click>=7.0 (from uvicorn==0.34.0->uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.691324Z 01O   Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T05:00:45.702010Z 01O Collecting h11>=0.8 (from uvicorn==0.34.0->uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.719017Z 01O   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-04-05T05:00:45.756663Z 01O Collecting httptools>=0.6.3 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.774590Z 01O   Downloading httptools-0.7.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+2026-04-05T05:00:45.839941Z 01O Collecting uvloop!=0.15.0,!=0.15.1,>=0.14.0 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.860117Z 01O   Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (4.9 kB)
+2026-04-05T05:00:45.962843Z 01O Collecting watchfiles>=0.13 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:45.990460Z 01O   Downloading watchfiles-1.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+2026-04-05T05:00:46.100044Z 01O Collecting websockets>=10.4 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.116816Z 01O   Downloading websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.8 kB)
+2026-04-05T05:00:46.157120Z 01O Collecting zipp>=3.20 (from importlib-metadata<=8.5.0,>=6.0->opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.182357Z 01O   Downloading zipp-3.23.0-py3-none-any.whl.metadata (3.6 kB)
+2026-04-05T05:00:46.309693Z 01O Collecting charset_normalizer<4,>=2 (from requests~=2.7->opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.326050Z 01O   Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+2026-04-05T05:00:46.356492Z 01O Collecting urllib3<3,>=1.26 (from requests~=2.7->opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.373739Z 01O   Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+2026-04-05T05:00:46.400047Z 01O Collecting pycparser (from cffi>=2.0.0->cryptography==46.0.6->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.416350Z 01O   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+2026-04-05T05:00:46.445659Z 01O Collecting python-dateutil (from croniter>=2.0.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.462284Z 01O   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+2026-04-05T05:00:46.491050Z 01O Collecting annotated-doc>=0.0.2 (from fastapi>=0.115.14->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.507677Z 01O   Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+2026-04-05T05:00:46.531465Z 01O Collecting configargparse>=1.7.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.549596Z 01O   Downloading configargparse-1.7.5-py3-none-any.whl.metadata (23 kB)
+2026-04-05T05:00:46.576769Z 01O Collecting flask-cors>=3.0.10 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.605896Z 01O   Downloading flask_cors-6.0.2-py3-none-any.whl.metadata (5.3 kB)
+2026-04-05T05:00:46.623451Z 01O Collecting flask-login>=0.6.3 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.641766Z 01O   Downloading Flask_Login-0.6.3-py3-none-any.whl.metadata (5.8 kB)
+2026-04-05T05:00:46.661158Z 01O Collecting flask>=2.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.681342Z 01O   Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+2026-04-05T05:00:46.930544Z 01O Collecting gevent!=25.8.1,<26.0.0,>=24.10.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:46.958929Z 01O   Downloading gevent-25.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (14 kB)
+2026-04-05T05:00:47.163606Z 01O Collecting geventhttpclient>=2.3.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:47.180362Z 01O   Downloading geventhttpclient-2.3.9-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.5 kB)
+2026-04-05T05:00:47.261047Z 01O Collecting msgpack>=1.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:47.276462Z 01O   Downloading msgpack-1.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.1 kB)
+2026-04-05T05:00:47.363806Z 01O Collecting psutil>=5.9.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:47.382556Z 01O   Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+2026-04-05T05:00:47.412664Z 01O Collecting python-engineio>=4.12.2 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:47.431082Z 01O   Downloading python_engineio-4.13.1-py3-none-any.whl.metadata (2.3 kB)
+2026-04-05T05:00:47.678272Z 01O Collecting python-socketio>=5.13.0 (from python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:47.697452Z 01O   Downloading python_socketio-5.16.1-py3-none-any.whl.metadata (3.3 kB)
+2026-04-05T05:00:48.026745Z 01O Collecting pyzmq>=25.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.045058Z 01O   Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (6.0 kB)
+2026-04-05T05:00:48.073309Z 01O Collecting werkzeug>=2.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.090927Z 01O   Downloading werkzeug-3.1.8-py3-none-any.whl.metadata (4.0 kB)
+2026-04-05T05:00:48.109165Z 01O Collecting zope.event (from gevent!=25.8.1,<26.0.0,>=24.10.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.125496Z 01O   Downloading zope_event-6.1-py3-none-any.whl.metadata (5.1 kB)
+2026-04-05T05:00:48.250810Z 01O Collecting zope.interface (from gevent!=25.8.1,<26.0.0,>=24.10.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.268984Z 01O   Downloading zope_interface-8.2-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (45 kB)
+2026-04-05T05:00:48.292088Z 01O Collecting blinker>=1.9.0 (from flask>=2.0.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.308769Z 01O   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T05:00:48.322066Z 01O Collecting itsdangerous>=2.2.0 (from flask>=2.0.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.342227Z 01O   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T05:00:48.396775Z 01O Collecting brotli (from geventhttpclient>=2.3.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.413653Z 01O   Downloading brotli-1.2.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.1 kB)
+2026-04-05T05:00:48.508630Z 01O Collecting libcst>=1.8.5 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.526722Z 01O   Downloading libcst-1.8.6-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (15 kB)
+2026-04-05T05:00:48.590750Z 01O Collecting setproctitle>=1.1.0 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.609591Z 01O   Downloading setproctitle-1.3.7-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (10 kB)
+2026-04-05T05:00:48.663249Z 01O Collecting textual>=1.0.0 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.686183Z 01O   Downloading textual-8.2.2-py3-none-any.whl.metadata (9.1 kB)
+2026-04-05T05:00:48.720775Z 01O Collecting py-cpuinfo (from pytest-benchmark>=4.0.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.748533Z 01O   Downloading py_cpuinfo-9.0.0-py3-none-any.whl.metadata (794 bytes)
+2026-04-05T05:00:48.765397Z 01O Collecting execnet>=2.1 (from pytest-xdist>=3.5.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.783923Z 01O   Downloading execnet-2.1.2-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T05:00:48.803228Z 01O Collecting simple-websocket>=0.10.0 (from python-engineio>=4.12.2->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.831526Z 01O   Downloading simple_websocket-1.1.0-py3-none-any.whl.metadata (1.5 kB)
+2026-04-05T05:00:48.851836Z 01O Collecting bidict>=0.21.0 (from python-socketio>=5.13.0->python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.871429Z 01O   Downloading bidict-0.23.1-py3-none-any.whl.metadata (8.7 kB)
+2026-04-05T05:00:48.907541Z 01O Collecting websocket-client>=0.54.0 (from python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.926059Z 01O   Downloading websocket_client-1.9.0-py3-none-any.whl.metadata (8.3 kB)
+2026-04-05T05:00:48.958258Z 01O Collecting wsproto (from simple-websocket>=0.10.0->python-engineio>=4.12.2->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:48.979681Z 01O   Downloading wsproto-1.3.2-py3-none-any.whl.metadata (5.2 kB)
+2026-04-05T05:00:49.012734Z 01O Collecting markdown-it-py>=2.1.0 (from markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.029527Z 01O   Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+2026-04-05T05:00:49.047631Z 01O Collecting mdit-py-plugins (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.065600Z 01O   Downloading mdit_py_plugins-0.5.0-py3-none-any.whl.metadata (2.8 kB)
+2026-04-05T05:00:49.094384Z 01O Collecting platformdirs<5,>=3.6.0 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.111430Z 01O   Downloading platformdirs-4.9.4-py3-none-any.whl.metadata (4.7 kB)
+2026-04-05T05:00:49.132117Z 01O Collecting pygments<3.0.0,>=2.19.2 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.148788Z 01O   Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T05:00:49.199467Z 01O Collecting rich>=14.2.0 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.216823Z 01O   Downloading rich-14.3.3-py3-none-any.whl.metadata (18 kB)
+2026-04-05T05:00:49.234946Z 01O Collecting mdurl~=0.1 (from markdown-it-py>=2.1.0->markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.250860Z 01O   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T05:00:49.266542Z 01O Collecting linkify-it-py<3,>=1 (from markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.284807Z 01O   Downloading linkify_it_py-2.1.0-py3-none-any.whl.metadata (8.5 kB)
+2026-04-05T05:00:49.298500Z 01O Collecting uc-micro-py (from linkify-it-py<3,>=1->markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.318015Z 01O   Downloading uc_micro_py-2.0.0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T05:00:49.355994Z 01O Collecting six>=1.5 (from python-dateutil->croniter>=2.0.0->syndicateclaw==2.0.0)
+2026-04-05T05:00:49.372414Z 01O   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-04-05T05:00:49.404972Z 01O Downloading alembic-1.15.1-py3-none-any.whl (231 kB)
+2026-04-05T05:00:49.459006Z 01O Downloading asgi_lifespan-2.1.0-py3-none-any.whl (10 kB)
+2026-04-05T05:00:49.492563Z 01O Downloading asyncpg-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.6 MB)
+2026-04-05T05:00:49.713995Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 16.3 MB/s  0:00:00
+2026-04-05T05:00:49.733750Z 01O Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
+2026-04-05T05:00:50.072543Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 13.2 MB/s  0:00:00
+2026-04-05T05:00:50.093689Z 01O Downloading factory_boy-3.3.1-py2.py3-none-any.whl (36 kB)
+2026-04-05T05:00:50.116608Z 01O Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-04-05T05:00:50.143461Z 01O Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-04-05T05:00:50.172906Z 01O Downloading jsonschema-4.23.0-py3-none-any.whl (88 kB)
+2026-04-05T05:00:50.206516Z 01O Downloading mypy-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+2026-04-05T05:00:51.260910Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 11.7 MB/s  0:00:01
+2026-04-05T05:00:51.280039Z 01O Downloading opentelemetry_api-1.30.0-py3-none-any.whl (64 kB)
+2026-04-05T05:00:51.299121Z 01O Downloading opentelemetry_exporter_otlp-1.30.0-py3-none-any.whl (7.0 kB)
+2026-04-05T05:00:51.317348Z 01O Downloading opentelemetry_exporter_otlp_proto_grpc-1.30.0-py3-none-any.whl (18 kB)
+2026-04-05T05:00:51.336053Z 01O Downloading opentelemetry_sdk-1.30.0-py3-none-any.whl (118 kB)
+2026-04-05T05:00:51.365923Z 01O Downloading opentelemetry_exporter_otlp_proto_common-1.30.0-py3-none-any.whl (18 kB)
+2026-04-05T05:00:51.386164Z 01O Downloading opentelemetry_exporter_otlp_proto_http-1.30.0-py3-none-any.whl (17 kB)
+2026-04-05T05:00:51.408908Z 01O Downloading opentelemetry_instrumentation_fastapi-0.51b0-py3-none-any.whl (12 kB)
+2026-04-05T05:00:51.428241Z 01O Downloading opentelemetry_instrumentation-0.51b0-py3-none-any.whl (30 kB)
+2026-04-05T05:00:51.461215Z 01O Downloading opentelemetry_instrumentation_asgi-0.51b0-py3-none-any.whl (16 kB)
+2026-04-05T05:00:51.486893Z 01O Downloading opentelemetry_instrumentation_httpx-0.51b0-py3-none-any.whl (14 kB)
+2026-04-05T05:00:51.506630Z 01O Downloading opentelemetry_instrumentation_sqlalchemy-0.51b0-py3-none-any.whl (14 kB)
+2026-04-05T05:00:51.528598Z 01O Downloading opentelemetry_proto-1.30.0-py3-none-any.whl (55 kB)
+2026-04-05T05:00:51.557252Z 01O Downloading opentelemetry_semantic_conventions-0.51b0-py3-none-any.whl (177 kB)
+2026-04-05T05:00:51.584825Z 01O Downloading opentelemetry_util_http-0.51b0-py3-none-any.whl (7.3 kB)
+2026-04-05T05:00:51.601263Z 01O Downloading packaging-24.2-py3-none-any.whl (65 kB)
+2026-04-05T05:00:51.623663Z 01O Downloading passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+2026-04-05T05:00:51.667215Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 525.6/525.6 kB 15.8 MB/s  0:00:00
+2026-04-05T05:00:51.687057Z 01O Downloading prometheus_client-0.21.1-py3-none-any.whl (54 kB)
+2026-04-05T05:00:51.711123Z 01O Downloading pydantic-2.11.1-py3-none-any.whl (442 kB)
+2026-04-05T05:00:51.771477Z 01O Downloading pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.0 MB)
+2026-04-05T05:00:51.935257Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 13.8 MB/s  0:00:00
+2026-04-05T05:00:51.953314Z 01O Downloading pydantic_settings-2.8.1-py3-none-any.whl (30 kB)
+2026-04-05T05:00:51.973693Z 01O Downloading pyjwt-2.12.0-py3-none-any.whl (29 kB)
+2026-04-05T05:00:51.995292Z 01O Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+2026-04-05T05:00:52.033411Z 01O Downloading pytest_asyncio-0.25.3-py3-none-any.whl (19 kB)
+2026-04-05T05:00:52.063255Z 01O Downloading pytest_cov-6.1.1-py3-none-any.whl (23 kB)
+2026-04-05T05:00:52.082751Z 01O Downloading python_ulid-3.0.0-py3-none-any.whl (11 kB)
+2026-04-05T05:00:52.114432Z 01O Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (767 kB)
+2026-04-05T05:00:52.225785Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 767.5/767.5 kB 7.8 MB/s  0:00:00
+2026-04-05T05:00:52.246925Z 01O Downloading redis-5.2.1-py3-none-any.whl (261 kB)
+2026-04-05T05:00:52.288962Z 01O Downloading ruff-0.11.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (11.3 MB)
+2026-04-05T05:00:53.322722Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 11.1 MB/s  0:00:01
+2026-04-05T05:00:53.347616Z 01O Downloading sqlalchemy-2.0.40-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+2026-04-05T05:00:53.622084Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 11.9 MB/s  0:00:00
+2026-04-05T05:00:53.639856Z 01O Downloading structlog-25.1.0-py3-none-any.whl (68 kB)
+2026-04-05T05:00:53.667411Z 01O Downloading tenacity-9.0.0-py3-none-any.whl (28 kB)
+2026-04-05T05:00:53.685373Z 01O Downloading types_jsonschema-4.23.0.20240813-py3-none-any.whl (10 kB)
+2026-04-05T05:00:53.707896Z 01O Downloading types_PyYAML-6.0.12.20241230-py3-none-any.whl (20 kB)
+2026-04-05T05:00:53.741469Z 01O Downloading uvicorn-0.34.0-py3-none-any.whl (62 kB)
+2026-04-05T05:00:53.765968Z 01O Downloading asgiref-3.11.1-py3-none-any.whl (24 kB)
+2026-04-05T05:00:53.784906Z 01O Downloading googleapis_common_protos-1.74.0-py3-none-any.whl (300 kB)
+2026-04-05T05:00:53.833388Z 01O Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.8 MB)
+2026-04-05T05:00:54.364080Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.8/6.8 MB 12.8 MB/s  0:00:00
+2026-04-05T05:00:54.382676Z 01O Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-04-05T05:00:54.415660Z 01O Downloading importlib_metadata-8.5.0-py3-none-any.whl (26 kB)
+2026-04-05T05:00:54.434567Z 01O Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+2026-04-05T05:00:54.453067Z 01O Downloading protobuf-5.29.6-cp38-abi3-manylinux2014_x86_64.whl (320 kB)
+2026-04-05T05:00:54.486597Z 01O Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+2026-04-05T05:00:54.510308Z 01O Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (216 kB)
+2026-04-05T05:00:54.579298Z 01O Downloading idna-3.11-py3-none-any.whl (71 kB)
+2026-04-05T05:00:54.607841Z 01O Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+2026-04-05T05:00:54.631777Z 01O Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+2026-04-05T05:00:54.674453Z 01O Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (88 kB)
+2026-04-05T05:00:54.699772Z 01O Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+2026-04-05T05:00:54.718195Z 01O Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-04-05T05:00:54.770791Z 01O Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+2026-04-05T05:00:54.814437Z 01O Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+2026-04-05T05:00:54.863049Z 01O Downloading cffi-2.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (219 kB)
+2026-04-05T05:00:54.893991Z 01O Downloading click-8.3.2-py3-none-any.whl (108 kB)
+2026-04-05T05:00:54.940945Z 01O Downloading coverage-7.13.5-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (254 kB)
+2026-04-05T05:00:54.976025Z 01O Downloading croniter-6.2.2-py3-none-any.whl (45 kB)
+2026-04-05T05:00:54.995066Z 01O Downloading deprecated-1.3.1-py2.py3-none-any.whl (11 kB)
+2026-04-05T05:00:55.014790Z 01O Downloading faker-40.12.0-py3-none-any.whl (2.0 MB)
+2026-04-05T05:00:55.154265Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 15.0 MB/s  0:00:00
+2026-04-05T05:00:55.182825Z 01O Downloading fastapi-0.135.3-py3-none-any.whl (117 kB)
+2026-04-05T05:00:55.204108Z 01O Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+2026-04-05T05:00:55.221010Z 01O Downloading greenlet-3.3.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (613 kB)
+2026-04-05T05:00:55.268383Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 613.9/613.9 kB 13.0 MB/s  0:00:00
+2026-04-05T05:00:55.283830Z 01O Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-04-05T05:00:55.310595Z 01O Downloading hiredis-3.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (172 kB)
+2026-04-05T05:00:55.370497Z 01O Downloading httptools-0.7.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (517 kB)
+2026-04-05T05:00:55.430034Z 01O Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-04-05T05:00:55.454937Z 01O Downloading locust-2.43.4-py3-none-any.whl (1.5 MB)
+2026-04-05T05:00:55.559148Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 14.5 MB/s  0:00:00
+2026-04-05T05:00:55.582475Z 01O Downloading gevent-25.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.1 MB)
+2026-04-05T05:00:55.773131Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 11.1 MB/s  0:00:00
+2026-04-05T05:00:55.798261Z 01O Downloading configargparse-1.7.5-py3-none-any.whl (27 kB)
+2026-04-05T05:00:55.818548Z 01O Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+2026-04-05T05:00:55.856132Z 01O Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-04-05T05:00:55.877154Z 01O Downloading flask_cors-6.0.2-py3-none-any.whl (13 kB)
+2026-04-05T05:00:55.904550Z 01O Downloading Flask_Login-0.6.3-py3-none-any.whl (17 kB)
+2026-04-05T05:00:55.924815Z 01O Downloading geventhttpclient-2.3.9-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (115 kB)
+2026-04-05T05:00:55.953477Z 01O Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-04-05T05:00:55.970397Z 01O Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-04-05T05:00:55.987057Z 01O Downloading msgpack-1.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (427 kB)
+2026-04-05T05:00:56.052275Z 01O Downloading mutmut-3.5.0-py3-none-any.whl (34 kB)
+2026-04-05T05:00:56.082283Z 01O Downloading libcst-1.8.6-cp312-cp312-manylinux_2_28_x86_64.whl (2.3 MB)
+2026-04-05T05:00:56.259516Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 13.2 MB/s  0:00:00
+2026-04-05T05:00:56.279903Z 01O Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+2026-04-05T05:00:56.299131Z 01O Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+2026-04-05T05:00:56.350557Z 01O Downloading pytest_benchmark-5.2.3-py3-none-any.whl (45 kB)
+2026-04-05T05:00:56.385320Z 01O Downloading pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+2026-04-05T05:00:56.415760Z 01O Downloading execnet-2.1.2-py3-none-any.whl (40 kB)
+2026-04-05T05:00:56.453149Z 01O Downloading python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+2026-04-05T05:00:56.474418Z 01O Downloading python_engineio-4.13.1-py3-none-any.whl (59 kB)
+2026-04-05T05:00:56.510082Z 01O Downloading python_socketio-5.16.1-py3-none-any.whl (82 kB)
+2026-04-05T05:00:56.543370Z 01O Downloading bidict-0.23.1-py3-none-any.whl (32 kB)
+2026-04-05T05:00:56.567965Z 01O Downloading pytimeparse-1.1.8-py2.py3-none-any.whl (10.0 kB)
+2026-04-05T05:00:56.602626Z 01O Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (840 kB)
+2026-04-05T05:00:56.678768Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 841.0/841.0 kB 12.0 MB/s  0:00:00
+2026-04-05T05:00:56.708054Z 01O Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-04-05T05:00:56.724010Z 01O Downloading rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (394 kB)
+2026-04-05T05:00:56.775067Z 01O Downloading setproctitle-1.3.7-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (32 kB)
+2026-04-05T05:00:56.799040Z 01O Downloading simple_websocket-1.1.0-py3-none-any.whl (13 kB)
+2026-04-05T05:00:56.817540Z 01O Downloading starlette-1.0.0-py3-none-any.whl (72 kB)
+2026-04-05T05:00:56.840552Z 01O Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+2026-04-05T05:00:56.867947Z 01O Downloading textual-8.2.2-py3-none-any.whl (724 kB)
+2026-04-05T05:00:56.925521Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 724.1/724.1 kB 14.4 MB/s  0:00:00
+2026-04-05T05:00:56.943532Z 01O Downloading platformdirs-4.9.4-py3-none-any.whl (21 kB)
+2026-04-05T05:00:56.971035Z 01O Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+2026-04-05T05:00:57.111163Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 8.7 MB/s  0:00:00
+2026-04-05T05:00:57.128709Z 01O Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+2026-04-05T05:00:57.168685Z 01O Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+2026-04-05T05:00:57.187532Z 01O Downloading linkify_it_py-2.1.0-py3-none-any.whl (19 kB)
+2026-04-05T05:00:57.206218Z 01O Downloading rich-14.3.3-py3-none-any.whl (310 kB)
+2026-04-05T05:00:57.250429Z 01O Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+2026-04-05T05:00:57.269416Z 01O Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.4 MB)
+2026-04-05T05:00:57.597398Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 14.1 MB/s  0:00:00
+2026-04-05T05:00:57.620369Z 01O Downloading watchfiles-1.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (456 kB)
+2026-04-05T05:00:57.666873Z 01O Downloading websocket_client-1.9.0-py3-none-any.whl (82 kB)
+2026-04-05T05:00:57.693919Z 01O Downloading websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (184 kB)
+2026-04-05T05:00:57.717412Z 01O Downloading werkzeug-3.1.8-py3-none-any.whl (226 kB)
+2026-04-05T05:00:57.745659Z 01O Downloading zipp-3.23.0-py3-none-any.whl (10 kB)
+2026-04-05T05:00:57.767446Z 01O Downloading brotli-1.2.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+2026-04-05T05:00:57.852069Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 15.5 MB/s  0:00:00
+2026-04-05T05:00:57.868752Z 01O Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+2026-04-05T05:00:57.885820Z 01O Downloading mako-1.3.10-py3-none-any.whl (78 kB)
+2026-04-05T05:00:57.906295Z 01O Downloading mdit_py_plugins-0.5.0-py3-none-any.whl (57 kB)
+2026-04-05T05:00:57.926023Z 01O Downloading py_cpuinfo-9.0.0-py3-none-any.whl (22 kB)
+2026-04-05T05:00:57.960426Z 01O Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+2026-04-05T05:00:58.012678Z 01O Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+2026-04-05T05:00:58.075220Z 01O Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+2026-04-05T05:00:58.109006Z 01O Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+2026-04-05T05:00:58.127430Z 01O Downloading uc_micro_py-2.0.0-py3-none-any.whl (6.4 kB)
+2026-04-05T05:00:58.144944Z 01O Downloading wsproto-1.3.2-py3-none-any.whl (24 kB)
+2026-04-05T05:00:58.172811Z 01O Downloading zope_event-6.1-py3-none-any.whl (6.4 kB)
+2026-04-05T05:00:58.209143Z 01O Downloading zope_interface-8.2-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (264 kB)
+2026-04-05T05:00:58.589920Z 01O Building wheels for collected packages: syndicateclaw
+2026-04-05T05:00:58.592885Z 01O   Building editable for syndicateclaw (pyproject.toml): started
+2026-04-05T05:00:58.660160Z 01O   Building editable for syndicateclaw (pyproject.toml): finished with status 'done'
+2026-04-05T05:00:58.660794Z 01O   Created wheel for syndicateclaw: filename=syndicateclaw-2.0.0-py3-none-any.whl size=1593 sha256=288be8db01aa29ee62909dbb6ac6058f422cc1b7fc047b3009cbbc81fb8c3bbb
+2026-04-05T05:00:58.660944Z 01O   Stored in directory: /tmp/pip-ephem-wheel-cache-kwfof5cp/wheels/8a/db/fb/90eead4ada297daef4cf78ded35b0dbec656cf0161011c0412
+2026-04-05T05:00:58.663119Z 01O Successfully built syndicateclaw
+2026-04-05T05:00:58.914049Z 01O Installing collected packages: pytimeparse, py-cpuinfo, passlib, brotli, zope.interface, zope.event, zipp, wrapt, websockets, websocket-client, uvloop, urllib3, uc-micro-py, typing-extensions, types-pyyaml, tenacity, structlog, sniffio, six, setproctitle, ruff, rpds-py, redis, pyzmq, pyyaml, python-ulid, python-dotenv, pyjwt, pygments, pycparser, psutil, protobuf, prometheus-client, pluggy, platformdirs, packaging, opentelemetry-util-http, mypy_extensions, msgpack, mdurl, MarkupSafe, itsdangerous, iniconfig, idna, httptools, hiredis, h11, greenlet, Faker, execnet, coverage, configargparse, click, charset_normalizer, certifi, blinker, bidict, bcrypt, attrs, asyncpg, asgiref, annotated-types, annotated-doc, wsproto, werkzeug, uvicorn, typing-inspection, sqlalchemy, requests, referencing, python-dateutil, pytest, pydantic-core, opentelemetry-proto, mypy, markdown-it-py, Mako, linkify-it-py, libcst, jinja2, importlib-metadata, httpcore, grpcio, googleapis-common-protos, gevent, factory-boy, deprecated, cffi, asgi-lifespan, anyio, watchfiles, types-jsonschema, starlette, simple-websocket, rich, pytest-xdist, pytest-cov, pytest-benchmark, pytest-asyncio, pydantic, opentelemetry-exporter-otlp-proto-common, opentelemetry-api, mdit-py-plugins, jsonschema-specifications, httpx, geventhttpclient, flask, cryptography, croniter, alembic, textual, python-engineio, pydantic-settings, opentelemetry-semantic-conventions, jsonschema, flask-login, flask-cors, fastapi, python-socketio, opentelemetry-sdk, opentelemetry-instrumentation, mutmut, opentelemetry-instrumentation-sqlalchemy, opentelemetry-instrumentation-httpx, opentelemetry-instrumentation-asgi, opentelemetry-exporter-otlp-proto-http, opentelemetry-exporter-otlp-proto-grpc, opentelemetry-instrumentation-fastapi, opentelemetry-exporter-otlp, locust, syndicateclaw
+2026-04-05T05:01:23.079868Z 01O 
+2026-04-05T05:01:23.090462Z 01O Successfully installed Faker-40.12.0 Mako-1.3.10 MarkupSafe-3.0.3 alembic-1.15.1 annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.13.0 asgi-lifespan-2.1.0 asgiref-3.11.1 asyncpg-0.30.0 attrs-26.1.0 bcrypt-5.0.0 bidict-0.23.1 blinker-1.9.0 brotli-1.2.0 certifi-2026.2.25 cffi-2.0.0 charset_normalizer-3.4.7 click-8.3.2 configargparse-1.7.5 coverage-7.13.5 croniter-6.2.2 cryptography-46.0.6 deprecated-1.3.1 execnet-2.1.2 factory-boy-3.3.1 fastapi-0.135.3 flask-3.1.3 flask-cors-6.0.2 flask-login-0.6.3 gevent-25.9.1 geventhttpclient-2.3.9 googleapis-common-protos-1.74.0 greenlet-3.3.2 grpcio-1.80.0 h11-0.16.0 hiredis-3.3.1 httpcore-1.0.9 httptools-0.7.1 httpx-0.28.1 idna-3.11 importlib-metadata-8.5.0 iniconfig-2.3.0 itsdangerous-2.2.0 jinja2-3.1.6 jsonschema-4.23.0 jsonschema-specifications-2025.9.1 libcst-1.8.6 linkify-it-py-2.1.0 locust-2.43.4 markdown-it-py-4.0.0 mdit-py-plugins-0.5.0 mdurl-0.1.2 msgpack-1.1.2 mutmut-3.5.0 mypy-1.15.0 mypy_extensions-1.1.0 opentelemetry-api-1.30.0 opentelemetry-exporter-otlp-1.30.0 opentelemetry-exporter-otlp-proto-common-1.30.0 opentelemetry-exporter-otlp-proto-grpc-1.30.0 opentelemetry-exporter-otlp-proto-http-1.30.0 opentelemetry-instrumentation-0.51b0 opentelemetry-instrumentation-asgi-0.51b0 opentelemetry-instrumentation-fastapi-0.51b0 opentelemetry-instrumentation-httpx-0.51b0 opentelemetry-instrumentation-sqlalchemy-0.51b0 opentelemetry-proto-1.30.0 opentelemetry-sdk-1.30.0 opentelemetry-semantic-conventions-0.51b0 opentelemetry-util-http-0.51b0 packaging-24.2 passlib-1.7.4 platformdirs-4.9.4 pluggy-1.6.0 prometheus-client-0.21.1 protobuf-5.29.6 psutil-7.2.2 py-cpuinfo-9.0.0 pycparser-3.0 pydantic-2.11.1 pydantic-core-2.33.0 pydantic-settings-2.8.1 pygments-2.20.0 pyjwt-2.12.0 pytest-8.3.5 pytest-asyncio-0.25.3 pytest-benchmark-5.2.3 pytest-cov-6.1.1 pytest-xdist-3.8.0 python-dateutil-2.9.0.post0 python-dotenv-1.2.2 python-engineio-4.13.1 python-socketio-5.16.1 python-ulid-3.0.0 pytimeparse-1.1.8 pyyaml-6.0.2 pyzmq-27.1.0 redis-5.2.1 referencing-0.37.0 requests-2.33.1 rich-14.3.3 rpds-py-0.30.0 ruff-0.11.2 setproctitle-1.3.7 simple-websocket-1.1.0 six-1.17.0 sniffio-1.3.1 sqlalchemy-2.0.40 starlette-1.0.0 structlog-25.1.0 syndicateclaw-2.0.0 tenacity-9.0.0 textual-8.2.2 types-jsonschema-4.23.0.20240813 types-pyyaml-6.0.12.20241230 typing-extensions-4.15.0 typing-inspection-0.4.2 uc-micro-py-2.0.0 urllib3-2.6.3 uvicorn-0.34.0 uvloop-0.22.1 watchfiles-1.1.1 websocket-client-1.9.0 websockets-16.0 werkzeug-3.1.8 wrapt-1.17.3 wsproto-1.3.2 zipp-3.23.0 zope.event-6.1 zope.interface-8.2
+2026-04-05T05:01:23.090636Z 01E WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-04-05T05:01:24.604093Z 01O [32;1m$ ruff check src[0;m
+2026-04-05T05:01:24.653426Z 01O All checks passed!
+2026-04-05T05:01:24.656145Z 01O [32;1m$ mypy src[0;m
+2026-04-05T05:01:58.725355Z 01O Success: no issues found in 175 source files
+2026-04-05T05:01:58.747910Z 01O [32;1m$ pytest tests/ -rs -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing[0;m
+2026-04-05T05:02:03.816732Z 01E /usr/local/lib/python3.12/site-packages/pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+2026-04-05T05:02:03.816742Z 01E The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+2026-04-05T05:02:03.816744Z 01E 
+2026-04-05T05:02:03.816744Z 01E   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))

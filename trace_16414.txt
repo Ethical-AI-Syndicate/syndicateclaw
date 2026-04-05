@@ -1,0 +1,1368 @@
+2026-04-05T04:40:00.095585Z 00O [0KRunning with gitlab-runner 18.10.0 (ac71f4d8)[0;m
+2026-04-05T04:40:00.095622Z 00O [0K  on Mike-Desktop DvbXICxfh, system ID: s_42036bb067b8[0;m
+2026-04-05T04:40:00.095628Z 00O [0K  feature flags: FF_USE_FASTZIP:true[0;m
+2026-04-05T04:40:00.095653Z 00O section_start:1775364000:prepare_executor
+2026-04-05T04:40:00.095654Z 00O+[0K[0K[36;1mPreparing the "docker" executor[0;m[0;m
+2026-04-05T04:40:00.192464Z 00O [0KUsing Docker executor with image python:3.12-slim ...[0;m
+2026-04-05T04:40:02.836655Z 00O [0KStarting service postgres:16-alpine...[0;m
+2026-04-05T04:40:02.836670Z 00O [0KUsing effective pull policy of [if-not-present always] for container postgres:16-alpine[0;m
+2026-04-05T04:40:02.849284Z 00O [0KPulling docker image postgres:16-alpine ...[0;m
+2026-04-05T04:40:14.737971Z 00O [0KUsing docker image sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416 for postgres:16-alpine with digest postgres@sha256:20edbde7749f822887a1a022ad526fde0a47d6b2be9a8364433605cf65099416 ...[0;m
+2026-04-05T04:40:15.964509Z 00O [0;33mWARNING: Service postgres:16-alpine is already created. Ignoring.[0;m
+2026-04-05T04:40:15.964568Z 00O [0KStarting service redis:7-alpine...[0;m
+2026-04-05T04:40:15.964579Z 00O [0KUsing effective pull policy of [if-not-present always] for container redis:7-alpine[0;m
+2026-04-05T04:40:16.037428Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
+2026-04-05T04:40:16.037442Z 00O [0KUsing docker image sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08 for redis:7-alpine with digest redis@sha256:bb186d083732f669da90be8b0f975a37812b15e913465bb14d845db72a4e3e08 ...[0;m
+2026-04-05T04:40:16.451162Z 00O [0;33mWARNING: Service redis:7-alpine is already created. Ignoring.[0;m
+2026-04-05T04:40:16.451240Z 00O [0KWaiting for services to be up and running (timeout 30 seconds)...[0;m
+2026-04-05T04:40:49.245269Z 00E 
+2026-04-05T04:40:49.245305Z 00E [0;33m*** WARNING:[0;m Service runner-dvbxicxfh-project-18-concurrent-2-322fd3c4cca27ca5-redis-1 probably didn't start properly.
+2026-04-05T04:40:49.245307Z 00E 
+2026-04-05T04:40:49.245307Z 00E Health check error:
+2026-04-05T04:40:49.245308Z 00E service "runner-dvbxicxfh-project-18-concurrent-2-322fd3c4cca27ca5-redis-1-wait-for-service" timeout
+2026-04-05T04:40:49.245309Z 00E 
+2026-04-05T04:40:49.245309Z 00E Health check container logs:
+2026-04-05T04:40:49.245309Z 00E 2026-04-05T04:40:17.005836376Z waiting for TCP connection to f93bc9913568 on [6379]...
+2026-04-05T04:40:49.245310Z 00E 2026-04-05T04:40:17.005871380Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245311Z 00E 2026-04-05T04:40:22.001244208Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245311Z 00E 2026-04-05T04:40:26.844079298Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245312Z 00E 2026-04-05T04:40:31.702985934Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245312Z 00E 2026-04-05T04:40:36.661822715Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245313Z 00E 2026-04-05T04:40:41.521312375Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245313Z 00E 2026-04-05T04:40:46.490948540Z dialing f93bc9913568:6379...
+2026-04-05T04:40:49.245314Z 00E 
+2026-04-05T04:40:49.245314Z 00E Service container logs:
+2026-04-05T04:40:49.245315Z 00E 2026-04-05T04:40:16.540562797Z 1:C 05 Apr 2026 04:40:16.539 * oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+2026-04-05T04:40:49.245315Z 00E 2026-04-05T04:40:16.540590200Z 1:C 05 Apr 2026 04:40:16.540 * Redis version=7.4.5, bits=64, commit=00000000, modified=0, pid=1, just started
+2026-04-05T04:40:49.245316Z 00E 2026-04-05T04:40:16.540592800Z 1:C 05 Apr 2026 04:40:16.540 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
+2026-04-05T04:40:49.245317Z 00E 2026-04-05T04:40:16.540853627Z 1:M 05 Apr 2026 04:40:16.540 * monotonic clock: POSIX clock_gettime
+2026-04-05T04:40:49.245317Z 00E 2026-04-05T04:40:16.542578603Z 1:M 05 Apr 2026 04:40:16.542 * Running mode=standalone, port=6379.
+2026-04-05T04:40:49.245318Z 00E 2026-04-05T04:40:16.543045751Z 1:M 05 Apr 2026 04:40:16.542 * Server initialized
+2026-04-05T04:40:49.245319Z 00E 2026-04-05T04:40:16.545831736Z 1:M 05 Apr 2026 04:40:16.545 * Ready to accept connections tcp
+2026-04-05T04:40:49.245319Z 00E 
+2026-04-05T04:40:49.245320Z 00E [0;33m*********[0;m
+2026-04-05T04:40:49.245320Z 00E 
+2026-04-05T04:40:49.289694Z 00E 
+2026-04-05T04:40:49.289701Z 00E [0;33m*** WARNING:[0;m Service runner-dvbxicxfh-project-18-concurrent-2-322fd3c4cca27ca5-postgres-0 probably didn't start properly.
+2026-04-05T04:40:49.289702Z 00E 
+2026-04-05T04:40:49.289703Z 00E Health check error:
+2026-04-05T04:40:49.289703Z 00E service "runner-dvbxicxfh-project-18-concurrent-2-322fd3c4cca27ca5-postgres-0-wait-for-service" timeout
+2026-04-05T04:40:49.289704Z 00E 
+2026-04-05T04:40:49.289722Z 00E Health check container logs:
+2026-04-05T04:40:49.289722Z 00E 2026-04-05T04:40:17.055503906Z waiting for TCP connection to 7243eba37b81 on [5432]...
+2026-04-05T04:40:49.289723Z 00E 2026-04-05T04:40:17.055542410Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289723Z 00E 2026-04-05T04:40:22.045728846Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289724Z 00E 2026-04-05T04:40:26.889884029Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289724Z 00E 2026-04-05T04:40:31.749492923Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289725Z 00E 2026-04-05T04:40:36.707002380Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289725Z 00E 2026-04-05T04:40:41.551729634Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289726Z 00E 2026-04-05T04:40:46.520752068Z dialing 7243eba37b81:5432...
+2026-04-05T04:40:49.289726Z 00E 
+2026-04-05T04:40:49.289727Z 00E Service container logs:
+2026-04-05T04:40:49.289727Z 00E 2026-04-05T04:40:16.014491676Z The files belonging to this database system will be owned by user "postgres".
+2026-04-05T04:40:49.289728Z 00E 2026-04-05T04:40:16.014528679Z This user must also own the server process.
+2026-04-05T04:40:49.289728Z 00E 2026-04-05T04:40:16.014531680Z 
+2026-04-05T04:40:49.289729Z 00E 2026-04-05T04:40:16.015119136Z The database cluster will be initialized with locale "en_US.utf8".
+2026-04-05T04:40:49.289730Z 00E 2026-04-05T04:40:16.015131037Z The default database encoding has accordingly been set to "UTF8".
+2026-04-05T04:40:49.289730Z 00E 2026-04-05T04:40:16.015132937Z The default text search configuration will be set to "english".
+2026-04-05T04:40:49.289731Z 00E 2026-04-05T04:40:16.015134337Z 
+2026-04-05T04:40:49.289731Z 00E 2026-04-05T04:40:16.015135637Z Data page checksums are disabled.
+2026-04-05T04:40:49.289732Z 00E 2026-04-05T04:40:16.015136937Z 
+2026-04-05T04:40:49.289732Z 00E 2026-04-05T04:40:16.015194643Z fixing permissions on existing directory /var/lib/postgresql/data ... ok
+2026-04-05T04:40:49.289733Z 00E 2026-04-05T04:40:16.024464824Z creating subdirectories ... ok
+2026-04-05T04:40:49.289733Z 00E 2026-04-05T04:40:16.024488927Z selecting dynamic shared memory implementation ... posix
+2026-04-05T04:40:49.289734Z 00E 2026-04-05T04:40:16.086879759Z selecting default max_connections ... 100
+2026-04-05T04:40:49.289735Z 00E 2026-04-05T04:40:16.109532845Z selecting default shared_buffers ... 128MB
+2026-04-05T04:40:49.289735Z 00E 2026-04-05T04:40:16.207742983Z selecting default time zone ... UTC
+2026-04-05T04:40:49.289736Z 00E 2026-04-05T04:40:16.208094718Z creating configuration files ... ok
+2026-04-05T04:40:49.289736Z 00E 2026-04-05T04:40:16.387679172Z running bootstrap script ... ok
+2026-04-05T04:40:49.289737Z 00E 2026-04-05T04:40:16.703316431Z sh: locale: not found
+2026-04-05T04:40:49.289737Z 00E 2026-04-05T04:40:16.703494649Z 2026-04-05 04:40:16.703 UTC [35] WARNING:  no usable system locales were found
+2026-04-05T04:40:49.289738Z 00E 2026-04-05T04:40:17.298461275Z performing post-bootstrap initialization ... ok
+2026-04-05T04:40:49.289738Z 00E 2026-04-05T04:40:17.540700767Z initdb: warning: enabling "trust" authentication for local connections
+2026-04-05T04:40:49.289739Z 00E 2026-04-05T04:40:17.540727470Z initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+2026-04-05T04:40:49.289740Z 00E 2026-04-05T04:40:17.540735771Z syncing data to disk ... ok
+2026-04-05T04:40:49.289740Z 00E 2026-04-05T04:40:17.540750573Z 
+2026-04-05T04:40:49.289741Z 00E 2026-04-05T04:40:17.540753573Z 
+2026-04-05T04:40:49.289741Z 00E 2026-04-05T04:40:17.540755573Z Success. You can now start the database server using:
+2026-04-05T04:40:49.289742Z 00E 2026-04-05T04:40:17.540757574Z 
+2026-04-05T04:40:49.289742Z 00E 2026-04-05T04:40:17.540759574Z     pg_ctl -D /var/lib/postgresql/data -l logfile start
+2026-04-05T04:40:49.289743Z 00E 2026-04-05T04:40:17.540761374Z 
+2026-04-05T04:40:49.289743Z 00E 2026-04-05T04:40:17.586022831Z waiting for server to start....2026-04-05 04:40:17.585 UTC [41] LOG:  starting PostgreSQL 16.13 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-04-05T04:40:49.289748Z 00E 2026-04-05T04:40:17.588959946Z 2026-04-05 04:40:17.588 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-05T04:40:49.289748Z 00E 2026-04-05T04:40:17.597192329Z 2026-04-05 04:40:17.596 UTC [44] LOG:  database system was shut down at 2026-04-05 04:40:17 UTC
+2026-04-05T04:40:49.289749Z 00E 2026-04-05T04:40:17.603732831Z 2026-04-05 04:40:17.603 UTC [41] LOG:  database system is ready to accept connections
+2026-04-05T04:40:49.289750Z 00E 2026-04-05T04:40:17.663482242Z  done
+2026-04-05T04:40:49.289750Z 00E 2026-04-05T04:40:17.663510545Z server started
+2026-04-05T04:40:49.289751Z 00E 2026-04-05T04:40:17.760474849Z CREATE DATABASE
+2026-04-05T04:40:49.289751Z 00E 2026-04-05T04:40:17.761206728Z 
+2026-04-05T04:40:49.289752Z 00E 2026-04-05T04:40:17.761214329Z 
+2026-04-05T04:40:49.289752Z 00E 2026-04-05T04:40:17.761216029Z /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+2026-04-05T04:40:49.289753Z 00E 2026-04-05T04:40:17.761217429Z 
+2026-04-05T04:40:49.289753Z 00E 2026-04-05T04:40:17.762334049Z waiting for server to shut down....2026-04-05 04:40:17.762 UTC [41] LOG:  received fast shutdown request
+2026-04-05T04:40:49.289754Z 00E 2026-04-05T04:40:17.767117762Z 2026-04-05 04:40:17.766 UTC [41] LOG:  aborting any active transactions
+2026-04-05T04:40:49.289755Z 00E 2026-04-05T04:40:17.769337400Z 2026-04-05 04:40:17.769 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+2026-04-05T04:40:49.289755Z 00E 2026-04-05T04:40:17.769351002Z 2026-04-05 04:40:17.769 UTC [42] LOG:  shutting down
+2026-04-05T04:40:49.289756Z 00E 2026-04-05T04:40:17.773279023Z 2026-04-05 04:40:17.773 UTC [42] LOG:  checkpoint starting: shutdown immediate
+2026-04-05T04:40:49.289757Z 00E 2026-04-05T04:40:17.859066528Z 2026-04-05 04:40:17.858 UTC [42] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.024 s, sync=0.053 s, total=0.090 s; sync files=301, longest=0.017 s, average=0.001 s; distance=4272 kB, estimate=4272 kB; lsn=0/191E940, redo lsn=0/191E940
+2026-04-05T04:40:49.289758Z 00E 2026-04-05T04:40:17.865101176Z 2026-04-05 04:40:17.864 UTC [41] LOG:  database system is shut down
+2026-04-05T04:40:49.289758Z 00E 2026-04-05T04:40:17.962784657Z  done
+2026-04-05T04:40:49.289759Z 00E 2026-04-05T04:40:17.962848464Z server stopped
+2026-04-05T04:40:49.289759Z 00E 2026-04-05T04:40:17.964104099Z 
+2026-04-05T04:40:49.289760Z 00E 2026-04-05T04:40:17.964115100Z PostgreSQL init process complete; ready for start up.
+2026-04-05T04:40:49.289760Z 00E 2026-04-05T04:40:17.964117200Z 
+2026-04-05T04:40:49.289761Z 00E 2026-04-05T04:40:18.009825247Z 2026-04-05 04:40:18.009 UTC [1] LOG:  starting PostgreSQL 16.13 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+2026-04-05T04:40:49.289762Z 00E 2026-04-05T04:40:18.009863852Z 2026-04-05 04:40:18.009 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-04-05T04:40:49.289762Z 00E 2026-04-05T04:40:18.009867152Z 2026-04-05 04:40:18.009 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-04-05T04:40:49.289763Z 00E 2026-04-05T04:40:18.018473114Z 2026-04-05 04:40:18.018 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-04-05T04:40:49.289764Z 00E 2026-04-05T04:40:18.027203790Z 2026-04-05 04:40:18.026 UTC [57] LOG:  database system was shut down at 2026-04-05 04:40:17 UTC
+2026-04-05T04:40:49.289764Z 00E 2026-04-05T04:40:18.034432197Z 2026-04-05 04:40:18.034 UTC [1] LOG:  database system is ready to accept connections
+2026-04-05T04:40:49.289765Z 00E 
+2026-04-05T04:40:49.289765Z 00E [0;33m*********[0;m
+2026-04-05T04:40:49.289766Z 00E 
+2026-04-05T04:40:49.322158Z 00O [0KUsing effective pull policy of [if-not-present always] for container python:3.12-slim[0;m
+2026-04-05T04:40:49.384475Z 00O [0KUsing locally found image version due to "if-not-present" pull policy[0;m
+2026-04-05T04:40:49.384486Z 00O [0KUsing docker image sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 for python:3.12-slim with digest python@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 ...[0;m
+2026-04-05T04:40:49.384508Z 00O section_end:1775364049:prepare_executor
+2026-04-05T04:40:49.384509Z 00O+[0Ksection_start:1775364049:prepare_script
+2026-04-05T04:40:49.384748Z 00O+[0K[0K[36;1mPreparing environment[0;m[0;m
+2026-04-05T04:40:49.411908Z 00O [0KUsing effective pull policy of [if-not-present always] for container sha256:daca1eb7b060f7d22c498b14aaa5b2470360f437cd1fd46e2091b8e8100f2f3f[0;m
+2026-04-05T04:40:49.825378Z 01O Running on runner-dvbxicxfh-project-18-concurrent-2 via Mike-Desktop...
+2026-04-05T04:40:49.996855Z 00O section_end:1775364049:prepare_script
+2026-04-05T04:40:49.996863Z 00O+[0Ksection_start:1775364049:get_sources
+2026-04-05T04:40:49.997590Z 00O+[0K[0K[36;1mGetting source from Git repository[0;m[0;m
+2026-04-05T04:40:50.264004Z 01O [32;1mGitaly correlation ID: 01KNDZ1HFVS6WNPS54TC4N1XAF[0;m
+2026-04-05T04:40:50.270703Z 01O [32;1mFetching changes with git depth set to 20...[0;m
+2026-04-05T04:40:50.273687Z 01O Reinitialized existing Git repository in /builds/ai-syndicate/syndicateclaw/.git/
+2026-04-05T04:40:50.276591Z 01O [32;1mCreated fresh repository.[0;m
+2026-04-05T04:40:50.784395Z 01O [32;1mChecking out 4f847a3c as detached HEAD (ref is release/v2.0.0)...[0;m
+2026-04-05T04:40:50.795158Z 01O Removing .benchmarks/
+2026-04-05T04:40:50.798969Z 01O Removing .pytest_cache/
+2026-04-05T04:40:50.798989Z 01O Removing src/syndicateclaw/__pycache__/
+2026-04-05T04:40:50.798989Z 01O Removing src/syndicateclaw/api/__pycache__/
+2026-04-05T04:40:50.798990Z 01O Removing src/syndicateclaw/api/decorators/__pycache__/
+2026-04-05T04:40:50.798990Z 01O Removing src/syndicateclaw/api/routers/__pycache__/
+2026-04-05T04:40:50.798991Z 01O Removing src/syndicateclaw/api/routes/__pycache__/
+2026-04-05T04:40:50.798991Z 01O Removing src/syndicateclaw/approval/__pycache__/
+2026-04-05T04:40:50.798992Z 01O Removing src/syndicateclaw/audit/__pycache__/
+2026-04-05T04:40:50.798992Z 01O Removing src/syndicateclaw/authz/__pycache__/
+2026-04-05T04:40:50.798993Z 01O Removing src/syndicateclaw/cache/__pycache__/
+2026-04-05T04:40:50.798993Z 01O Removing src/syndicateclaw/channels/__pycache__/
+2026-04-05T04:40:50.798994Z 01O Removing src/syndicateclaw/connectors/__pycache__/
+2026-04-05T04:40:50.798994Z 01O Removing src/syndicateclaw/connectors/discord/__pycache__/
+2026-04-05T04:40:50.798995Z 01O Removing src/syndicateclaw/connectors/slack/__pycache__/
+2026-04-05T04:40:50.798995Z 01O Removing src/syndicateclaw/connectors/telegram/__pycache__/
+2026-04-05T04:40:50.798996Z 01O Removing src/syndicateclaw/db/__pycache__/
+2026-04-05T04:40:50.798996Z 01O Removing src/syndicateclaw/inference/__pycache__/
+2026-04-05T04:40:50.798996Z 01O Removing src/syndicateclaw/inference/adapters/__pycache__/
+2026-04-05T04:40:50.798997Z 01O Removing src/syndicateclaw/inference/catalog_sync/__pycache__/
+2026-04-05T04:40:50.798997Z 01O Removing src/syndicateclaw/llm/__pycache__/
+2026-04-05T04:40:50.798998Z 01O Removing src/syndicateclaw/memory/__pycache__/
+2026-04-05T04:40:50.802320Z 01O Removing src/syndicateclaw/messaging/__pycache__/
+2026-04-05T04:40:50.802321Z 01O Removing src/syndicateclaw/middleware/__pycache__/
+2026-04-05T04:40:50.802322Z 01O Removing src/syndicateclaw/observability/__pycache__/
+2026-04-05T04:40:50.802323Z 01O Removing src/syndicateclaw/orchestrator/__pycache__/
+2026-04-05T04:40:50.802323Z 01O Removing src/syndicateclaw/plugins/__pycache__/
+2026-04-05T04:40:50.802324Z 01O Removing src/syndicateclaw/plugins/builtin/__pycache__/
+2026-04-05T04:40:50.802324Z 01O Removing src/syndicateclaw/policy/__pycache__/
+2026-04-05T04:40:50.802325Z 01O Removing src/syndicateclaw/runtime/__pycache__/
+2026-04-05T04:40:50.802325Z 01O Removing src/syndicateclaw/runtime/audit/__pycache__/
+2026-04-05T04:40:50.802326Z 01O Removing src/syndicateclaw/runtime/contracts/__pycache__/
+2026-04-05T04:40:50.802326Z 01O Removing src/syndicateclaw/runtime/execution/__pycache__/
+2026-04-05T04:40:50.802340Z 01O Removing src/syndicateclaw/runtime/registry/__pycache__/
+2026-04-05T04:40:50.802340Z 01O Removing src/syndicateclaw/runtime/router/__pycache__/
+2026-04-05T04:40:50.802341Z 01O Removing src/syndicateclaw/security/__pycache__/
+2026-04-05T04:40:50.802341Z 01O Removing src/syndicateclaw/services/__pycache__/
+2026-04-05T04:40:50.802342Z 01O Removing src/syndicateclaw/streaming/__pycache__/
+2026-04-05T04:40:50.802342Z 01O Removing src/syndicateclaw/tasks/__pycache__/
+2026-04-05T04:40:50.802343Z 01O Removing src/syndicateclaw/tools/__pycache__/
+2026-04-05T04:40:50.802343Z 01O Removing tests/__pycache__/
+2026-04-05T04:40:50.802344Z 01O Removing tests/chaos/__pycache__/
+2026-04-05T04:40:50.802345Z 01O Removing tests/integration/__pycache__/
+2026-04-05T04:40:50.808750Z 01O Removing tests/integration/scenarios/__pycache__/
+2026-04-05T04:40:50.808753Z 01O Removing tests/perf/__pycache__/
+2026-04-05T04:40:50.808754Z 01O Removing tests/runtime/__pycache__/
+2026-04-05T04:40:50.808754Z 01O Removing tests/scenarios/__pycache__/
+2026-04-05T04:40:50.808755Z 01O Removing tests/security/__pycache__/
+2026-04-05T04:40:50.808755Z 01O Removing tests/unit/__pycache__/
+2026-04-05T04:40:50.808756Z 01O Removing tests/unit/connectors/__pycache__/
+2026-04-05T04:40:50.808756Z 01O Removing tests/unit/inference/__pycache__/
+2026-04-05T04:40:50.808757Z 01O Removing tests/unit/llm/__pycache__/
+2026-04-05T04:40:50.861189Z 01O 
+2026-04-05T04:40:50.861196Z 01O [32;1mSkipping Git submodules setup[0;m
+2026-04-05T04:40:51.050111Z 00O section_end:1775364051:get_sources
+2026-04-05T04:40:51.050118Z 00O+[0Ksection_start:1775364051:step_script
+2026-04-05T04:40:51.051717Z 00O+[0K[0K[36;1mExecuting "step_script" stage of the job script[0;m[0;m
+2026-04-05T04:40:51.051737Z 00O [0KUsing effective pull policy of [if-not-present always] for container python:3.12-slim[0;m
+2026-04-05T04:40:51.109107Z 00O [0KUsing docker image sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 for python:3.12-slim with digest python@sha256:3d5ed973e45820f5ba5e46bd065bd88b3a504ff0724d85980dcd05eab361fcf4 ...[0;m
+2026-04-05T04:40:51.579889Z 01O [32;1m$ apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*[0;m
+2026-04-05T04:40:51.664150Z 01O Hit:1 http://deb.debian.org/debian trixie InRelease
+2026-04-05T04:40:51.664158Z 01O Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+2026-04-05T04:40:51.665822Z 01O Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+2026-04-05T04:40:51.684065Z 01O Get:4 http://deb.debian.org/debian trixie/main amd64 Packages [9671 kB]
+2026-04-05T04:40:52.418198Z 01O Get:5 http://deb.debian.org/debian trixie-updates/main amd64 Packages [5412 B]
+2026-04-05T04:40:52.418581Z 01O Get:6 http://deb.debian.org/debian-security trixie-security/main amd64 Packages [119 kB]
+2026-04-05T04:40:53.222699Z 01O Fetched 9886 kB in 2s (6120 kB/s)
+2026-04-05T04:40:53.222709Z 01O Reading package lists...
+2026-04-05T04:40:53.877451Z 01O Reading package lists...
+2026-04-05T04:40:54.505334Z 01O Building dependency tree...
+2026-04-05T04:40:54.657630Z 01O Reading state information...
+2026-04-05T04:40:54.884378Z 01O The following additional packages will be installed:
+2026-04-05T04:40:54.884389Z 01O   git-man libbrotli1 libcom-err2 libcurl3t64-gnutls liberror-perl libexpat1
+2026-04-05T04:40:54.884617Z 01O   libgdbm-compat4t64 libgnutls30t64 libgssapi-krb5-2 libidn2-0 libk5crypto3
+2026-04-05T04:40:54.884643Z 01O   libkeyutils1 libkrb5-3 libkrb5support0 libldap2 libnghttp2-14 libnghttp3-9
+2026-04-05T04:40:54.884648Z 01O   libngtcp2-16 libngtcp2-crypto-gnutls8 libp11-kit0 libperl5.40 libpsl5t64
+2026-04-05T04:40:54.885690Z 01O   librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1t64 libtasn1-6
+2026-04-05T04:40:54.886529Z 01O   libunistring5 perl perl-modules-5.40
+2026-04-05T04:40:54.888090Z 01O Suggested packages:
+2026-04-05T04:40:54.888095Z 01O   gettext-base git-doc git-email git-gui gitk gitweb git-cvs git-mediawiki
+2026-04-05T04:40:54.888110Z 01O   git-svn gnutls-bin krb5-doc krb5-user sensible-utils perl-doc
+2026-04-05T04:40:54.888111Z 01O   libterm-readline-gnu-perl | libterm-readline-perl-perl make
+2026-04-05T04:40:54.888112Z 01O   libtap-harness-archive-perl
+2026-04-05T04:40:54.888112Z 01O Recommended packages:
+2026-04-05T04:40:54.888113Z 01O   patch less ssh-client krb5-locales libldap-common publicsuffix
+2026-04-05T04:40:54.888113Z 01O   libsasl2-modules
+2026-04-05T04:40:55.086350Z 01O The following NEW packages will be installed:
+2026-04-05T04:40:55.086358Z 01O   git git-man libbrotli1 libcom-err2 libcurl3t64-gnutls liberror-perl
+2026-04-05T04:40:55.086385Z 01O   libexpat1 libgdbm-compat4t64 libgnutls30t64 libgssapi-krb5-2 libidn2-0
+2026-04-05T04:40:55.086386Z 01O   libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2 libnghttp2-14
+2026-04-05T04:40:55.086386Z 01O   libnghttp3-9 libngtcp2-16 libngtcp2-crypto-gnutls8 libp11-kit0 libperl5.40
+2026-04-05T04:40:55.087210Z 01O   libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db libssh2-1t64 libtasn1-6
+2026-04-05T04:40:55.087907Z 01O   libunistring5 perl perl-modules-5.40
+2026-04-05T04:40:55.128682Z 01O 0 upgraded, 31 newly installed, 0 to remove and 0 not upgraded.
+2026-04-05T04:40:55.128690Z 01O Need to get 23.6 MB of archives.
+2026-04-05T04:40:55.128690Z 01O After this operation, 119 MB of additional disk space will be used.
+2026-04-05T04:40:55.128691Z 01O Get:1 http://deb.debian.org/debian trixie/main amd64 libexpat1 amd64 2.7.1-2 [108 kB]
+2026-04-05T04:40:55.151291Z 01O Get:2 http://deb.debian.org/debian trixie/main amd64 perl-modules-5.40 all 5.40.1-6 [3019 kB]
+2026-04-05T04:40:55.314471Z 01O Get:3 http://deb.debian.org/debian trixie/main amd64 libgdbm-compat4t64 amd64 1.24-2 [50.3 kB]
+2026-04-05T04:40:55.315551Z 01O Get:4 http://deb.debian.org/debian trixie/main amd64 libperl5.40 amd64 5.40.1-6 [4341 kB]
+2026-04-05T04:40:55.515535Z 01O Get:5 http://deb.debian.org/debian trixie/main amd64 perl amd64 5.40.1-6 [267 kB]
+2026-04-05T04:40:55.526195Z 01O Get:6 http://deb.debian.org/debian trixie/main amd64 libbrotli1 amd64 1.1.0-2+b7 [307 kB]
+2026-04-05T04:40:55.538655Z 01O Get:7 http://deb.debian.org/debian trixie/main amd64 libunistring5 amd64 1.3-2 [477 kB]
+2026-04-05T04:40:55.580555Z 01O Get:8 http://deb.debian.org/debian trixie/main amd64 libidn2-0 amd64 2.3.8-2 [109 kB]
+2026-04-05T04:40:55.584134Z 01O Get:9 http://deb.debian.org/debian trixie/main amd64 libp11-kit0 amd64 0.25.5-3 [425 kB]
+2026-04-05T04:40:55.604907Z 01O Get:10 http://deb.debian.org/debian trixie/main amd64 libtasn1-6 amd64 4.20.0-2 [49.9 kB]
+2026-04-05T04:40:55.609368Z 01O Get:11 http://deb.debian.org/debian trixie/main amd64 libgnutls30t64 amd64 3.8.9-3+deb13u2 [1468 kB]
+2026-04-05T04:40:55.699392Z 01O Get:12 http://deb.debian.org/debian trixie/main amd64 libkrb5support0 amd64 1.21.3-5 [33.0 kB]
+2026-04-05T04:40:55.700462Z 01O Get:13 http://deb.debian.org/debian trixie/main amd64 libcom-err2 amd64 1.47.2-3+b10 [25.0 kB]
+2026-04-05T04:40:55.701447Z 01O Get:14 http://deb.debian.org/debian trixie/main amd64 libk5crypto3 amd64 1.21.3-5 [81.5 kB]
+2026-04-05T04:40:55.704598Z 01O Get:15 http://deb.debian.org/debian trixie/main amd64 libkeyutils1 amd64 1.6.3-6 [9456 B]
+2026-04-05T04:40:55.704856Z 01O Get:16 http://deb.debian.org/debian trixie/main amd64 libkrb5-3 amd64 1.21.3-5 [326 kB]
+2026-04-05T04:40:55.719790Z 01O Get:17 http://deb.debian.org/debian trixie/main amd64 libgssapi-krb5-2 amd64 1.21.3-5 [138 kB]
+2026-04-05T04:40:55.729849Z 01O Get:18 http://deb.debian.org/debian trixie/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg1-9 [19.8 kB]
+2026-04-05T04:40:55.730519Z 01O Get:19 http://deb.debian.org/debian trixie/main amd64 libsasl2-2 amd64 2.1.28+dfsg1-9 [57.5 kB]
+2026-04-05T04:40:55.736696Z 01O Get:20 http://deb.debian.org/debian trixie/main amd64 libldap2 amd64 2.6.10+dfsg-1 [194 kB]
+2026-04-05T04:40:55.764017Z 01O Get:21 http://deb.debian.org/debian trixie/main amd64 libnghttp2-14 amd64 1.64.0-1.1 [76.0 kB]
+2026-04-05T04:40:55.768398Z 01O Get:22 http://deb.debian.org/debian trixie/main amd64 libnghttp3-9 amd64 1.8.0-1 [67.7 kB]
+2026-04-05T04:40:55.770509Z 01O Get:23 http://deb.debian.org/debian trixie/main amd64 libngtcp2-16 amd64 1.11.0-1 [131 kB]
+2026-04-05T04:40:55.776330Z 01O Get:24 http://deb.debian.org/debian trixie/main amd64 libngtcp2-crypto-gnutls8 amd64 1.11.0-1 [29.3 kB]
+2026-04-05T04:40:55.779293Z 01O Get:25 http://deb.debian.org/debian trixie/main amd64 libpsl5t64 amd64 0.21.2-1.1+b1 [57.2 kB]
+2026-04-05T04:40:55.782632Z 01O Get:26 http://deb.debian.org/debian trixie/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2+b5 [58.8 kB]
+2026-04-05T04:40:55.784161Z 01O Get:27 http://deb.debian.org/debian trixie/main amd64 libssh2-1t64 amd64 1.11.1-1 [245 kB]
+2026-04-05T04:40:55.794869Z 01O Get:28 http://deb.debian.org/debian trixie/main amd64 libcurl3t64-gnutls amd64 8.14.1-2+deb13u2 [383 kB]
+2026-04-05T04:40:55.821650Z 01O Get:29 http://deb.debian.org/debian trixie/main amd64 liberror-perl all 0.17030-1 [26.9 kB]
+2026-04-05T04:40:55.822391Z 01O Get:30 http://deb.debian.org/debian trixie/main amd64 git-man all 1:2.47.3-0+deb13u1 [2205 kB]
+2026-04-05T04:40:55.935741Z 01O Get:31 http://deb.debian.org/debian trixie/main amd64 git amd64 1:2.47.3-0+deb13u1 [8862 kB]
+2026-04-05T04:40:56.640228Z 01E debconf: unable to initialize frontend: Dialog
+2026-04-05T04:40:56.640257Z 01E debconf: (TERM is not set, so the dialog frontend is not usable.)
+2026-04-05T04:40:56.640258Z 01E debconf: falling back to frontend: Readline
+2026-04-05T04:40:56.640259Z 01E debconf: unable to initialize frontend: Readline
+2026-04-05T04:40:56.640259Z 01E debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/x86_64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 31.)
+2026-04-05T04:40:56.640261Z 01E debconf: falling back to frontend: Teletype
+2026-04-05T04:40:56.643186Z 01E debconf: unable to initialize frontend: Teletype
+2026-04-05T04:40:56.643194Z 01E debconf: (This frontend requires a controlling tty.)
+2026-04-05T04:40:56.643195Z 01E debconf: falling back to frontend: Noninteractive
+2026-04-05T04:40:57.950228Z 01O Fetched 23.6 MB in 1s (17.2 MB/s)
+2026-04-05T04:40:57.988223Z 01O Selecting previously unselected package libexpat1:amd64.
+2026-04-05T04:40:57.988231Z 01O (Reading database ... 
+2026-04-05T04:40:57.989361Z 01O+(Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%
+2026-04-05T04:40:57.991132Z 01O+(Reading database ... 75%
+2026-04-05T04:40:57.992028Z 01O+(Reading database ... 80%
+2026-04-05T04:40:57.992766Z 01O+(Reading database ... 85%
+2026-04-05T04:40:57.994102Z 01O+(Reading database ... 90%
+2026-04-05T04:40:57.994328Z 01O+(Reading database ... 95%
+2026-04-05T04:40:57.995167Z 01O+(Reading database ... 100%
+2026-04-05T04:40:57.995171Z 01O+(Reading database ... 5645 files and directories currently installed.)
+2026-04-05T04:40:57.997165Z 01O Preparing to unpack .../00-libexpat1_2.7.1-2_amd64.deb ...
+2026-04-05T04:40:58.011037Z 01O Unpacking libexpat1:amd64 (2.7.1-2) ...
+2026-04-05T04:40:58.058695Z 01O Selecting previously unselected package perl-modules-5.40.
+2026-04-05T04:40:58.059717Z 01O Preparing to unpack .../01-perl-modules-5.40_5.40.1-6_all.deb ...
+2026-04-05T04:40:58.066159Z 01O Unpacking perl-modules-5.40 (5.40.1-6) ...
+2026-04-05T04:40:58.449253Z 01O Selecting previously unselected package libgdbm-compat4t64:amd64.
+2026-04-05T04:40:58.450403Z 01O Preparing to unpack .../02-libgdbm-compat4t64_1.24-2_amd64.deb ...
+2026-04-05T04:40:58.456350Z 01O Unpacking libgdbm-compat4t64:amd64 (1.24-2) ...
+2026-04-05T04:40:58.506070Z 01O Selecting previously unselected package libperl5.40:amd64.
+2026-04-05T04:40:58.507039Z 01O Preparing to unpack .../03-libperl5.40_5.40.1-6_amd64.deb ...
+2026-04-05T04:40:58.512294Z 01O Unpacking libperl5.40:amd64 (5.40.1-6) ...
+2026-04-05T04:40:58.825783Z 01O Selecting previously unselected package perl.
+2026-04-05T04:40:58.826808Z 01O Preparing to unpack .../04-perl_5.40.1-6_amd64.deb ...
+2026-04-05T04:40:58.832496Z 01O Unpacking perl (5.40.1-6) ...
+2026-04-05T04:40:58.890326Z 01O Selecting previously unselected package libbrotli1:amd64.
+2026-04-05T04:40:58.891417Z 01O Preparing to unpack .../05-libbrotli1_1.1.0-2+b7_amd64.deb ...
+2026-04-05T04:40:58.899274Z 01O Unpacking libbrotli1:amd64 (1.1.0-2+b7) ...
+2026-04-05T04:40:58.970286Z 01O Selecting previously unselected package libunistring5:amd64.
+2026-04-05T04:40:58.971325Z 01O Preparing to unpack .../06-libunistring5_1.3-2_amd64.deb ...
+2026-04-05T04:40:58.976440Z 01O Unpacking libunistring5:amd64 (1.3-2) ...
+2026-04-05T04:40:59.075682Z 01O Selecting previously unselected package libidn2-0:amd64.
+2026-04-05T04:40:59.076862Z 01O Preparing to unpack .../07-libidn2-0_2.3.8-2_amd64.deb ...
+2026-04-05T04:40:59.082478Z 01O Unpacking libidn2-0:amd64 (2.3.8-2) ...
+2026-04-05T04:40:59.141343Z 01O Selecting previously unselected package libp11-kit0:amd64.
+2026-04-05T04:40:59.142447Z 01O Preparing to unpack .../08-libp11-kit0_0.25.5-3_amd64.deb ...
+2026-04-05T04:40:59.158306Z 01O Unpacking libp11-kit0:amd64 (0.25.5-3) ...
+2026-04-05T04:40:59.217629Z 01O Selecting previously unselected package libtasn1-6:amd64.
+2026-04-05T04:40:59.218499Z 01O Preparing to unpack .../09-libtasn1-6_4.20.0-2_amd64.deb ...
+2026-04-05T04:40:59.223360Z 01O Unpacking libtasn1-6:amd64 (4.20.0-2) ...
+2026-04-05T04:40:59.497176Z 01O Selecting previously unselected package libgnutls30t64:amd64.
+2026-04-05T04:40:59.498284Z 01O Preparing to unpack .../10-libgnutls30t64_3.8.9-3+deb13u2_amd64.deb ...
+2026-04-05T04:40:59.539007Z 01O Unpacking libgnutls30t64:amd64 (3.8.9-3+deb13u2) ...
+2026-04-05T04:40:59.687828Z 01O Selecting previously unselected package libkrb5support0:amd64.
+2026-04-05T04:40:59.688792Z 01O Preparing to unpack .../11-libkrb5support0_1.21.3-5_amd64.deb ...
+2026-04-05T04:40:59.694437Z 01O Unpacking libkrb5support0:amd64 (1.21.3-5) ...
+2026-04-05T04:40:59.745266Z 01O Selecting previously unselected package libcom-err2:amd64.
+2026-04-05T04:40:59.746337Z 01O Preparing to unpack .../12-libcom-err2_1.47.2-3+b10_amd64.deb ...
+2026-04-05T04:40:59.751690Z 01O Unpacking libcom-err2:amd64 (1.47.2-3+b10) ...
+2026-04-05T04:40:59.808254Z 01O Selecting previously unselected package libk5crypto3:amd64.
+2026-04-05T04:40:59.809148Z 01O Preparing to unpack .../13-libk5crypto3_1.21.3-5_amd64.deb ...
+2026-04-05T04:40:59.814601Z 01O Unpacking libk5crypto3:amd64 (1.21.3-5) ...
+2026-04-05T04:40:59.873387Z 01O Selecting previously unselected package libkeyutils1:amd64.
+2026-04-05T04:40:59.874611Z 01O Preparing to unpack .../14-libkeyutils1_1.6.3-6_amd64.deb ...
+2026-04-05T04:40:59.879926Z 01O Unpacking libkeyutils1:amd64 (1.6.3-6) ...
+2026-04-05T04:40:59.925436Z 01O Selecting previously unselected package libkrb5-3:amd64.
+2026-04-05T04:40:59.926509Z 01O Preparing to unpack .../15-libkrb5-3_1.21.3-5_amd64.deb ...
+2026-04-05T04:40:59.932718Z 01O Unpacking libkrb5-3:amd64 (1.21.3-5) ...
+2026-04-05T04:41:00.003462Z 01O Selecting previously unselected package libgssapi-krb5-2:amd64.
+2026-04-05T04:41:00.004571Z 01O Preparing to unpack .../16-libgssapi-krb5-2_1.21.3-5_amd64.deb ...
+2026-04-05T04:41:00.011033Z 01O Unpacking libgssapi-krb5-2:amd64 (1.21.3-5) ...
+2026-04-05T04:41:00.061496Z 01O Selecting previously unselected package libsasl2-modules-db:amd64.
+2026-04-05T04:41:00.062535Z 01O Preparing to unpack .../17-libsasl2-modules-db_2.1.28+dfsg1-9_amd64.deb ...
+2026-04-05T04:41:00.068303Z 01O Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T04:41:00.133073Z 01O Selecting previously unselected package libsasl2-2:amd64.
+2026-04-05T04:41:00.133986Z 01O Preparing to unpack .../18-libsasl2-2_2.1.28+dfsg1-9_amd64.deb ...
+2026-04-05T04:41:00.139504Z 01O Unpacking libsasl2-2:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T04:41:00.189065Z 01O Selecting previously unselected package libldap2:amd64.
+2026-04-05T04:41:00.190054Z 01O Preparing to unpack .../19-libldap2_2.6.10+dfsg-1_amd64.deb ...
+2026-04-05T04:41:00.202408Z 01O Unpacking libldap2:amd64 (2.6.10+dfsg-1) ...
+2026-04-05T04:41:00.264796Z 01O Selecting previously unselected package libnghttp2-14:amd64.
+2026-04-05T04:41:00.266232Z 01O Preparing to unpack .../20-libnghttp2-14_1.64.0-1.1_amd64.deb ...
+2026-04-05T04:41:00.273400Z 01O Unpacking libnghttp2-14:amd64 (1.64.0-1.1) ...
+2026-04-05T04:41:00.333822Z 01O Selecting previously unselected package libnghttp3-9:amd64.
+2026-04-05T04:41:00.334904Z 01O Preparing to unpack .../21-libnghttp3-9_1.8.0-1_amd64.deb ...
+2026-04-05T04:41:00.340869Z 01O Unpacking libnghttp3-9:amd64 (1.8.0-1) ...
+2026-04-05T04:41:00.389394Z 01O Selecting previously unselected package libngtcp2-16:amd64.
+2026-04-05T04:41:00.390405Z 01O Preparing to unpack .../22-libngtcp2-16_1.11.0-1_amd64.deb ...
+2026-04-05T04:41:00.400710Z 01O Unpacking libngtcp2-16:amd64 (1.11.0-1) ...
+2026-04-05T04:41:00.464775Z 01O Selecting previously unselected package libngtcp2-crypto-gnutls8:amd64.
+2026-04-05T04:41:00.465739Z 01O Preparing to unpack .../23-libngtcp2-crypto-gnutls8_1.11.0-1_amd64.deb ...
+2026-04-05T04:41:00.471101Z 01O Unpacking libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+2026-04-05T04:41:00.534147Z 01O Selecting previously unselected package libpsl5t64:amd64.
+2026-04-05T04:41:00.535672Z 01O Preparing to unpack .../24-libpsl5t64_0.21.2-1.1+b1_amd64.deb ...
+2026-04-05T04:41:00.542118Z 01O Unpacking libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+2026-04-05T04:41:00.591102Z 01O Selecting previously unselected package librtmp1:amd64.
+2026-04-05T04:41:00.592057Z 01O Preparing to unpack .../25-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_amd64.deb ...
+2026-04-05T04:41:00.598853Z 01O Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+2026-04-05T04:41:00.644602Z 01O Selecting previously unselected package libssh2-1t64:amd64.
+2026-04-05T04:41:00.645878Z 01O Preparing to unpack .../26-libssh2-1t64_1.11.1-1_amd64.deb ...
+2026-04-05T04:41:00.652378Z 01O Unpacking libssh2-1t64:amd64 (1.11.1-1) ...
+2026-04-05T04:41:00.699209Z 01O Selecting previously unselected package libcurl3t64-gnutls:amd64.
+2026-04-05T04:41:00.700182Z 01O Preparing to unpack .../27-libcurl3t64-gnutls_8.14.1-2+deb13u2_amd64.deb ...
+2026-04-05T04:41:00.705496Z 01O Unpacking libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+2026-04-05T04:41:00.756765Z 01O Selecting previously unselected package liberror-perl.
+2026-04-05T04:41:00.757669Z 01O Preparing to unpack .../28-liberror-perl_0.17030-1_all.deb ...
+2026-04-05T04:41:00.762214Z 01O Unpacking liberror-perl (0.17030-1) ...
+2026-04-05T04:41:00.801969Z 01O Selecting previously unselected package git-man.
+2026-04-05T04:41:00.803231Z 01O Preparing to unpack .../29-git-man_1%3a2.47.3-0+deb13u1_all.deb ...
+2026-04-05T04:41:00.807851Z 01O Unpacking git-man (1:2.47.3-0+deb13u1) ...
+2026-04-05T04:41:00.895530Z 01O Selecting previously unselected package git.
+2026-04-05T04:41:00.896686Z 01O Preparing to unpack .../30-git_1%3a2.47.3-0+deb13u1_amd64.deb ...
+2026-04-05T04:41:00.907363Z 01O Unpacking git (1:2.47.3-0+deb13u1) ...
+2026-04-05T04:41:01.320084Z 01O Setting up libexpat1:amd64 (2.7.1-2) ...
+2026-04-05T04:41:01.334105Z 01O Setting up libkeyutils1:amd64 (1.6.3-6) ...
+2026-04-05T04:41:01.348902Z 01O Setting up libgdbm-compat4t64:amd64 (1.24-2) ...
+2026-04-05T04:41:01.362374Z 01O Setting up libbrotli1:amd64 (1.1.0-2+b7) ...
+2026-04-05T04:41:01.376313Z 01O Setting up libnghttp2-14:amd64 (1.64.0-1.1) ...
+2026-04-05T04:41:01.392386Z 01O Setting up libcom-err2:amd64 (1.47.2-3+b10) ...
+2026-04-05T04:41:01.407997Z 01O Setting up libkrb5support0:amd64 (1.21.3-5) ...
+2026-04-05T04:41:01.423090Z 01O Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T04:41:01.455990Z 01O Setting up libp11-kit0:amd64 (0.25.5-3) ...
+2026-04-05T04:41:01.472062Z 01O Setting up libunistring5:amd64 (1.3-2) ...
+2026-04-05T04:41:01.489214Z 01O Setting up libk5crypto3:amd64 (1.21.3-5) ...
+2026-04-05T04:41:01.511834Z 01O Setting up libsasl2-2:amd64 (2.1.28+dfsg1-9) ...
+2026-04-05T04:41:01.529567Z 01O Setting up libnghttp3-9:amd64 (1.8.0-1) ...
+2026-04-05T04:41:01.545481Z 01O Setting up perl-modules-5.40 (5.40.1-6) ...
+2026-04-05T04:41:01.562641Z 01O Setting up libtasn1-6:amd64 (4.20.0-2) ...
+2026-04-05T04:41:01.582812Z 01O Setting up git-man (1:2.47.3-0+deb13u1) ...
+2026-04-05T04:41:01.603382Z 01O Setting up libngtcp2-16:amd64 (1.11.0-1) ...
+2026-04-05T04:41:01.620467Z 01O Setting up libkrb5-3:amd64 (1.21.3-5) ...
+2026-04-05T04:41:01.639778Z 01O Setting up libssh2-1t64:amd64 (1.11.1-1) ...
+2026-04-05T04:41:01.657165Z 01O Setting up libldap2:amd64 (2.6.10+dfsg-1) ...
+2026-04-05T04:41:01.677046Z 01O Setting up libidn2-0:amd64 (2.3.8-2) ...
+2026-04-05T04:41:01.703564Z 01O Setting up libperl5.40:amd64 (5.40.1-6) ...
+2026-04-05T04:41:01.722765Z 01O Setting up perl (5.40.1-6) ...
+2026-04-05T04:41:01.753216Z 01O Setting up libgssapi-krb5-2:amd64 (1.21.3-5) ...
+2026-04-05T04:41:01.772308Z 01O Setting up libgnutls30t64:amd64 (3.8.9-3+deb13u2) ...
+2026-04-05T04:41:01.789320Z 01O Setting up libpsl5t64:amd64 (0.21.2-1.1+b1) ...
+2026-04-05T04:41:01.806897Z 01O Setting up liberror-perl (0.17030-1) ...
+2026-04-05T04:41:01.822010Z 01O Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+2026-04-05T04:41:01.840400Z 01O Setting up libngtcp2-crypto-gnutls8:amd64 (1.11.0-1) ...
+2026-04-05T04:41:01.857598Z 01O Setting up libcurl3t64-gnutls:amd64 (8.14.1-2+deb13u2) ...
+2026-04-05T04:41:01.876764Z 01O Setting up git (1:2.47.3-0+deb13u1) ...
+2026-04-05T04:41:01.905935Z 01O Processing triggers for libc-bin (2.41-12+deb13u2) ...
+2026-04-05T04:41:01.959673Z 01O [32;1m$ pip install -U pip[0;m
+2026-04-05T04:41:03.453349Z 01O Requirement already satisfied: pip in /usr/local/lib/python3.12/site-packages (25.0.1)
+2026-04-05T04:41:03.521975Z 01O Collecting pip
+2026-04-05T04:41:03.595070Z 01O   Downloading pip-26.0.1-py3-none-any.whl.metadata (4.7 kB)
+2026-04-05T04:41:03.614762Z 01O Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+2026-04-05T04:41:03.760952Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 18.9 MB/s eta 0:00:00
+2026-04-05T04:41:03.779936Z 01O Installing collected packages: pip
+2026-04-05T04:41:03.780188Z 01O   Attempting uninstall: pip
+2026-04-05T04:41:03.783128Z 01O     Found existing installation: pip 25.0.1
+2026-04-05T04:41:03.822229Z 01O     Uninstalling pip-25.0.1:
+2026-04-05T04:41:04.017580Z 01O       Successfully uninstalled pip-25.0.1
+2026-04-05T04:41:04.979255Z 01O Successfully installed pip-26.0.1
+2026-04-05T04:41:04.979270Z 01E WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-04-05T04:41:05.060769Z 01O [32;1m$ pip install -e ".[dev]"[0;m
+2026-04-05T04:41:05.355306Z 01O Obtaining file:///builds/ai-syndicate/syndicateclaw
+2026-04-05T04:41:05.357637Z 01O   Installing build dependencies: started
+2026-04-05T04:41:06.223377Z 01O   Installing build dependencies: finished with status 'done'
+2026-04-05T04:41:06.224534Z 01O   Checking if build backend supports build_editable: started
+2026-04-05T04:41:06.267560Z 01O   Checking if build backend supports build_editable: finished with status 'done'
+2026-04-05T04:41:06.270687Z 01O   Getting requirements to build editable: started
+2026-04-05T04:41:06.436984Z 01O   Getting requirements to build editable: finished with status 'done'
+2026-04-05T04:41:06.438343Z 01O   Installing backend dependencies: started
+2026-04-05T04:41:07.101697Z 01O   Installing backend dependencies: finished with status 'done'
+2026-04-05T04:41:07.103001Z 01O   Preparing editable metadata (pyproject.toml): started
+2026-04-05T04:41:07.332687Z 01O   Preparing editable metadata (pyproject.toml): finished with status 'done'
+2026-04-05T04:41:07.412627Z 01O Collecting alembic==1.15.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:07.502705Z 01O   Downloading alembic-1.15.1-py3-none-any.whl.metadata (7.2 kB)
+2026-04-05T04:41:07.606911Z 01O Collecting asyncpg==0.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:07.626861Z 01O   Downloading asyncpg-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.0 kB)
+2026-04-05T04:41:07.668095Z 01O Collecting croniter>=2.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:07.708776Z 01O   Downloading croniter-6.2.2-py3-none-any.whl.metadata (22 kB)
+2026-04-05T04:41:07.970310Z 01O Collecting cryptography==46.0.6 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:07.986354Z 01O   Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (5.7 kB)
+2026-04-05T04:41:08.046117Z 01O Collecting fastapi>=0.115.14 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.064672Z 01O   Downloading fastapi-0.135.3-py3-none-any.whl.metadata (28 kB)
+2026-04-05T04:41:08.092342Z 01O Collecting httpx==0.28.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.116923Z 01O   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+2026-04-05T04:41:08.139679Z 01O Collecting jinja2==3.1.6 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.157586Z 01O   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T04:41:08.177949Z 01O Collecting jsonschema==4.23.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.197749Z 01O   Downloading jsonschema-4.23.0-py3-none-any.whl.metadata (7.9 kB)
+2026-04-05T04:41:08.220536Z 01O Collecting opentelemetry-api==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.242737Z 01O   Downloading opentelemetry_api-1.30.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T04:41:08.259380Z 01O Collecting opentelemetry-exporter-otlp==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.289902Z 01O   Downloading opentelemetry_exporter_otlp-1.30.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T04:41:08.309818Z 01O Collecting opentelemetry-instrumentation-fastapi==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.330332Z 01O   Downloading opentelemetry_instrumentation_fastapi-0.51b0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T04:41:08.348478Z 01O Collecting opentelemetry-instrumentation-httpx==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.366445Z 01O   Downloading opentelemetry_instrumentation_httpx-0.51b0-py3-none-any.whl.metadata (7.1 kB)
+2026-04-05T04:41:08.402694Z 01O Collecting opentelemetry-instrumentation-sqlalchemy==0.51b0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.422153Z 01O   Downloading opentelemetry_instrumentation_sqlalchemy-0.51b0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T04:41:08.442562Z 01O Collecting opentelemetry-sdk==1.30.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.471417Z 01O   Downloading opentelemetry_sdk-1.30.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T04:41:08.485633Z 01O Collecting packaging==24.2 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.503542Z 01O   Downloading packaging-24.2-py3-none-any.whl.metadata (3.2 kB)
+2026-04-05T04:41:08.515906Z 01O Collecting passlib==1.7.4 (from passlib[bcrypt]==1.7.4->syndicateclaw==2.0.0)
+2026-04-05T04:41:08.540637Z 01O   Downloading passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-04-05T04:41:08.553887Z 01O Collecting prometheus-client==0.21.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.575984Z 01O   Downloading prometheus_client-0.21.1-py3-none-any.whl.metadata (1.8 kB)
+2026-04-05T04:41:08.591062Z 01O Collecting pydantic-settings==2.8.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.610788Z 01O   Downloading pydantic_settings-2.8.1-py3-none-any.whl.metadata (3.5 kB)
+2026-04-05T04:41:08.754303Z 01O Collecting pydantic==2.11.1,>=2.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.776576Z 01O   Downloading pydantic-2.11.1-py3-none-any.whl.metadata (63 kB)
+2026-04-05T04:41:08.811132Z 01O Collecting pyjwt==2.12.0 (from pyjwt[crypto]==2.12.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:08.831426Z 01O   Downloading pyjwt-2.12.0-py3-none-any.whl.metadata (4.0 kB)
+2026-04-05T04:41:08.844549Z 01O Collecting python-ulid==3.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.865013Z 01O   Downloading python_ulid-3.0.0-py3-none-any.whl.metadata (5.8 kB)
+2026-04-05T04:41:08.879281Z 01O Collecting pytimeparse>=1.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.907370Z 01O   Downloading pytimeparse-1.1.8-py2.py3-none-any.whl.metadata (3.4 kB)
+2026-04-05T04:41:08.954341Z 01O Collecting pyyaml==6.0.2 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:08.976191Z 01O   Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)
+2026-04-05T04:41:09.000309Z 01O Collecting redis==5.2.1 (from redis[hiredis]==5.2.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:09.021105Z 01O   Downloading redis-5.2.1-py3-none-any.whl.metadata (9.1 kB)
+2026-04-05T04:41:09.362975Z 01O Collecting sqlalchemy==2.0.40,>=2.0 (from sqlalchemy[asyncio]==2.0.40,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:09.392149Z 01O   Downloading sqlalchemy-2.0.40-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.6 kB)
+2026-04-05T04:41:09.424011Z 01O Collecting starlette>=0.49.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.442565Z 01O   Downloading starlette-1.0.0-py3-none-any.whl.metadata (6.3 kB)
+2026-04-05T04:41:09.463290Z 01O Collecting structlog==25.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.482479Z 01O   Downloading structlog-25.1.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T04:41:09.500281Z 01O Collecting tenacity==9.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.518702Z 01O   Downloading tenacity-9.0.0-py3-none-any.whl.metadata (1.2 kB)
+2026-04-05T04:41:09.544514Z 01O Collecting uvicorn==0.34.0 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:09.562267Z 01O   Downloading uvicorn-0.34.0-py3-none-any.whl.metadata (6.5 kB)
+2026-04-05T04:41:09.579154Z 01O Collecting asgi-lifespan==2.1.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.600248Z 01O   Downloading asgi_lifespan-2.1.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T04:41:09.615466Z 01O Collecting factory-boy==3.3.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.634721Z 01O   Downloading factory_boy-3.3.1-py2.py3-none-any.whl.metadata (15 kB)
+2026-04-05T04:41:09.761768Z 01O Collecting locust>=2.20.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.788672Z 01O   Downloading locust-2.43.4-py3-none-any.whl.metadata (10 kB)
+2026-04-05T04:41:09.807763Z 01O Collecting mutmut>=3.2.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.826485Z 01O   Downloading mutmut-3.5.0-py3-none-any.whl.metadata (10 kB)
+2026-04-05T04:41:09.936120Z 01O Collecting mypy==1.15.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:09.953821Z 01O   Downloading mypy-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl.metadata (2.1 kB)
+2026-04-05T04:41:09.983279Z 01O Collecting pytest-asyncio==0.25.3 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.002742Z 01O   Downloading pytest_asyncio-0.25.3-py3-none-any.whl.metadata (3.9 kB)
+2026-04-05T04:41:10.020463Z 01O Collecting pytest-benchmark>=4.0.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.040295Z 01O   Downloading pytest_benchmark-5.2.3-py3-none-any.whl.metadata (29 kB)
+2026-04-05T04:41:10.064680Z 01O Collecting pytest-cov==6.1.1 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.093573Z 01O   Downloading pytest_cov-6.1.1-py3-none-any.whl.metadata (28 kB)
+2026-04-05T04:41:10.116973Z 01O Collecting pytest-xdist>=3.5.0 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.135175Z 01O   Downloading pytest_xdist-3.8.0-py3-none-any.whl.metadata (3.0 kB)
+2026-04-05T04:41:10.178429Z 01O Collecting pytest==8.3.5 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.198577Z 01O   Downloading pytest-8.3.5-py3-none-any.whl.metadata (7.6 kB)
+2026-04-05T04:41:10.698695Z 01O Collecting ruff==0.11.2 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.716170Z 01O   Downloading ruff-0.11.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)
+2026-04-05T04:41:10.738284Z 01O Collecting types-jsonschema==4.23.0.20240813 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.758923Z 01O   Downloading types_jsonschema-4.23.0.20240813-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T04:41:10.776765Z 01O Collecting types-pyyaml==6.0.12.20241230 (from syndicateclaw==2.0.0)
+2026-04-05T04:41:10.803739Z 01O   Downloading types_PyYAML-6.0.12.20241230-py3-none-any.whl.metadata (1.8 kB)
+2026-04-05T04:41:10.829183Z 01O Collecting Mako (from alembic==1.15.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:10.846921Z 01O   Downloading mako-1.3.10-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T04:41:10.862709Z 01O Collecting typing-extensions>=4.12 (from alembic==1.15.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:10.879801Z 01O   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+2026-04-05T04:41:10.889810Z 01O Collecting sniffio (from asgi-lifespan==2.1.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:10.912412Z 01O   Downloading sniffio-1.3.1-py3-none-any.whl.metadata (3.9 kB)
+2026-04-05T04:41:11.040809Z 01O Collecting cffi>=2.0.0 (from cryptography==46.0.6->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.058957Z 01O   Downloading cffi-2.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.6 kB)
+2026-04-05T04:41:11.153708Z 01O Collecting Faker>=0.7.0 (from factory-boy==3.3.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.175757Z 01O   Downloading faker-40.12.0-py3-none-any.whl.metadata (16 kB)
+2026-04-05T04:41:11.203497Z 01O Collecting anyio (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.226274Z 01O   Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+2026-04-05T04:41:11.248042Z 01O Collecting certifi (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.264819Z 01O   Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T04:41:11.282574Z 01O Collecting httpcore==1.* (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.299712Z 01O   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+2026-04-05T04:41:11.314218Z 01O Collecting idna (from httpx==0.28.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.335527Z 01O   Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+2026-04-05T04:41:11.412000Z 01O Collecting MarkupSafe>=2.0 (from jinja2==3.1.6->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.432576Z 01O   Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+2026-04-05T04:41:11.449007Z 01O Collecting attrs>=22.2.0 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.468168Z 01O   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+2026-04-05T04:41:11.482072Z 01O Collecting jsonschema-specifications>=2023.03.6 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.509893Z 01O   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T04:41:11.533328Z 01O Collecting referencing>=0.28.4 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.550442Z 01O   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+2026-04-05T04:41:11.962888Z 01O Collecting rpds-py>=0.7.1 (from jsonschema==4.23.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:11.984180Z 01O   Downloading rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+2026-04-05T04:41:12.000302Z 01O Collecting mypy_extensions>=1.0.0 (from mypy==1.15.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.016554Z 01O   Downloading mypy_extensions-1.1.0-py3-none-any.whl.metadata (1.1 kB)
+2026-04-05T04:41:12.031612Z 01O Collecting deprecated>=1.2.6 (from opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.059219Z 01O   Downloading deprecated-1.3.1-py2.py3-none-any.whl.metadata (5.9 kB)
+2026-04-05T04:41:12.100329Z 01O Collecting importlib-metadata<=8.5.0,>=6.0 (from opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.117374Z 01O   Downloading importlib_metadata-8.5.0-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T04:41:12.136846Z 01O Collecting opentelemetry-exporter-otlp-proto-grpc==1.30.0 (from opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.156892Z 01O   Downloading opentelemetry_exporter_otlp_proto_grpc-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T04:41:12.179874Z 01O Collecting opentelemetry-exporter-otlp-proto-http==1.30.0 (from opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.197579Z 01O   Downloading opentelemetry_exporter_otlp_proto_http-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T04:41:12.223120Z 01O Collecting googleapis-common-protos~=1.52 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.243717Z 01O   Downloading googleapis_common_protos-1.74.0-py3-none-any.whl.metadata (9.2 kB)
+2026-04-05T04:41:12.920757Z 01O Collecting grpcio<2.0.0,>=1.63.2 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.937307Z 01O   Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.8 kB)
+2026-04-05T04:41:12.954834Z 01O Collecting opentelemetry-exporter-otlp-proto-common==1.30.0 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:12.974289Z 01O   Downloading opentelemetry_exporter_otlp_proto_common-1.30.0-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T04:41:12.991784Z 01O Collecting opentelemetry-proto==1.30.0 (from opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.012599Z 01O   Downloading opentelemetry_proto-1.30.0-py3-none-any.whl.metadata (2.4 kB)
+2026-04-05T04:41:13.036574Z 01O Collecting opentelemetry-semantic-conventions==0.51b0 (from opentelemetry-sdk==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.058398Z 01O   Downloading opentelemetry_semantic_conventions-0.51b0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T04:41:13.091688Z 01O Collecting requests~=2.7 (from opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.110958Z 01O   Downloading requests-2.33.1-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T04:41:13.130003Z 01O Collecting opentelemetry-instrumentation-asgi==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.148277Z 01O   Downloading opentelemetry_instrumentation_asgi-0.51b0-py3-none-any.whl.metadata (2.1 kB)
+2026-04-05T04:41:13.168034Z 01O Collecting opentelemetry-instrumentation==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.187269Z 01O   Downloading opentelemetry_instrumentation-0.51b0-py3-none-any.whl.metadata (6.3 kB)
+2026-04-05T04:41:13.205461Z 01O Collecting opentelemetry-util-http==0.51b0 (from opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.222319Z 01O   Downloading opentelemetry_util_http-0.51b0-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T04:41:13.414333Z 01O Collecting wrapt<2.0.0,>=1.0.0 (from opentelemetry-instrumentation==0.51b0->opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.432799Z 01O   Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.4 kB)
+2026-04-05T04:41:13.456741Z 01O Collecting asgiref~=3.0 (from opentelemetry-instrumentation-asgi==0.51b0->opentelemetry-instrumentation-fastapi==0.51b0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.475051Z 01O   Downloading asgiref-3.11.1-py3-none-any.whl.metadata (9.3 kB)
+2026-04-05T04:41:13.684406Z 01O Collecting protobuf<6.0,>=5.0 (from opentelemetry-proto==1.30.0->opentelemetry-exporter-otlp-proto-grpc==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.706871Z 01O   Downloading protobuf-5.29.6-cp38-abi3-manylinux2014_x86_64.whl.metadata (592 bytes)
+2026-04-05T04:41:13.763504Z 01O Collecting bcrypt>=3.1.0 (from passlib[bcrypt]==1.7.4->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.780855Z 01O   Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+2026-04-05T04:41:13.792705Z 01O Collecting annotated-types>=0.6.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:13.812439Z 01O   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+2026-04-05T04:41:14.765527Z 01O Collecting pydantic-core==2.33.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:14.790614Z 01O   Downloading pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
+2026-04-05T04:41:14.799820Z 01O Collecting typing-inspection>=0.4.0 (from pydantic==2.11.1,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:14.818768Z 01O   Downloading typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T04:41:14.845989Z 01O Collecting python-dotenv>=0.21.0 (from pydantic-settings==2.8.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:14.867896Z 01O   Downloading python_dotenv-1.2.2-py3-none-any.whl.metadata (27 kB)
+2026-04-05T04:41:14.903013Z 01O Collecting iniconfig (from pytest==8.3.5->syndicateclaw==2.0.0)
+2026-04-05T04:41:14.923174Z 01O   Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T04:41:14.935156Z 01O Collecting pluggy<2,>=1.5 (from pytest==8.3.5->syndicateclaw==2.0.0)
+2026-04-05T04:41:14.958726Z 01O   Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+2026-04-05T04:41:15.594368Z 01O Collecting coverage>=7.5 (from coverage[toml]>=7.5->pytest-cov==6.1.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:15.615183Z 01O   Downloading coverage-7.13.5-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.5 kB)
+2026-04-05T04:41:15.720373Z 01O Collecting hiredis>=3.0.0 (from redis[hiredis]==5.2.1->syndicateclaw==2.0.0)
+2026-04-05T04:41:15.740215Z 01O   Downloading hiredis-3.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (7.5 kB)
+2026-04-05T04:41:15.899779Z 01O Collecting greenlet>=1 (from sqlalchemy==2.0.40,>=2.0->sqlalchemy[asyncio]==2.0.40,>=2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:15.924551Z 01O   Downloading greenlet-3.3.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.7 kB)
+2026-04-05T04:41:15.950870Z 01O Collecting click>=7.0 (from uvicorn==0.34.0->uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:15.967830Z 01O   Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+2026-04-05T04:41:15.978178Z 01O Collecting h11>=0.8 (from uvicorn==0.34.0->uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:15.995478Z 01O   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+2026-04-05T04:41:16.034368Z 01O Collecting httptools>=0.6.3 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.051974Z 01O   Downloading httptools-0.7.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+2026-04-05T04:41:16.096535Z 01O Collecting uvloop!=0.15.0,!=0.15.1,>=0.14.0 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.114872Z 01O   Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (4.9 kB)
+2026-04-05T04:41:16.198511Z 01O Collecting watchfiles>=0.13 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.217984Z 01O   Downloading watchfiles-1.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.9 kB)
+2026-04-05T04:41:16.340715Z 01O Collecting websockets>=10.4 (from uvicorn[standard]==0.34.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.364713Z 01O   Downloading websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.8 kB)
+2026-04-05T04:41:16.407500Z 01O Collecting zipp>=3.20 (from importlib-metadata<=8.5.0,>=6.0->opentelemetry-api==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.424626Z 01O   Downloading zipp-3.23.0-py3-none-any.whl.metadata (3.6 kB)
+2026-04-05T04:41:16.552502Z 01O Collecting charset_normalizer<4,>=2 (from requests~=2.7->opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.569338Z 01O   Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+2026-04-05T04:41:16.598156Z 01O Collecting urllib3<3,>=1.26 (from requests~=2.7->opentelemetry-exporter-otlp-proto-http==1.30.0->opentelemetry-exporter-otlp==1.30.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.616480Z 01O   Downloading urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+2026-04-05T04:41:16.642696Z 01O Collecting pycparser (from cffi>=2.0.0->cryptography==46.0.6->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.660207Z 01O   Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+2026-04-05T04:41:16.679772Z 01O Collecting python-dateutil (from croniter>=2.0.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.700591Z 01O   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+2026-04-05T04:41:16.723372Z 01O Collecting annotated-doc>=0.0.2 (from fastapi>=0.115.14->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.742703Z 01O   Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+2026-04-05T04:41:16.765154Z 01O Collecting configargparse>=1.7.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.788994Z 01O   Downloading configargparse-1.7.5-py3-none-any.whl.metadata (23 kB)
+2026-04-05T04:41:16.808023Z 01O Collecting flask-cors>=3.0.10 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.826877Z 01O   Downloading flask_cors-6.0.2-py3-none-any.whl.metadata (5.3 kB)
+2026-04-05T04:41:16.839263Z 01O Collecting flask-login>=0.6.3 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.856225Z 01O   Downloading Flask_Login-0.6.3-py3-none-any.whl.metadata (5.8 kB)
+2026-04-05T04:41:16.873399Z 01O Collecting flask>=2.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:16.899467Z 01O   Downloading flask-3.1.3-py3-none-any.whl.metadata (3.2 kB)
+2026-04-05T04:41:17.039068Z 01O Collecting gevent!=25.8.1,<26.0.0,>=24.10.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.059868Z 01O   Downloading gevent-25.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (14 kB)
+2026-04-05T04:41:17.237982Z 01O Collecting geventhttpclient>=2.3.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.256608Z 01O   Downloading geventhttpclient-2.3.9-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (8.5 kB)
+2026-04-05T04:41:17.327239Z 01O Collecting msgpack>=1.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.346187Z 01O   Downloading msgpack-1.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.1 kB)
+2026-04-05T04:41:17.438082Z 01O Collecting psutil>=5.9.1 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.454654Z 01O   Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (22 kB)
+2026-04-05T04:41:17.483912Z 01O Collecting python-engineio>=4.12.2 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.502870Z 01O   Downloading python_engineio-4.13.1-py3-none-any.whl.metadata (2.3 kB)
+2026-04-05T04:41:17.664451Z 01O Collecting python-socketio>=5.13.0 (from python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.684612Z 01O   Downloading python_socketio-5.16.1-py3-none-any.whl.metadata (3.3 kB)
+2026-04-05T04:41:17.940979Z 01O Collecting pyzmq>=25.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:17.959767Z 01O   Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl.metadata (6.0 kB)
+2026-04-05T04:41:17.988080Z 01O Collecting werkzeug>=2.0.0 (from locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.006864Z 01O   Downloading werkzeug-3.1.8-py3-none-any.whl.metadata (4.0 kB)
+2026-04-05T04:41:18.037969Z 01O Collecting zope.event (from gevent!=25.8.1,<26.0.0,>=24.10.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.056631Z 01O   Downloading zope_event-6.1-py3-none-any.whl.metadata (5.1 kB)
+2026-04-05T04:41:18.183150Z 01O Collecting zope.interface (from gevent!=25.8.1,<26.0.0,>=24.10.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.201876Z 01O   Downloading zope_interface-8.2-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl.metadata (45 kB)
+2026-04-05T04:41:18.225815Z 01O Collecting blinker>=1.9.0 (from flask>=2.0.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.243207Z 01O   Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T04:41:18.256787Z 01O Collecting itsdangerous>=2.2.0 (from flask>=2.0.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.275433Z 01O   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+2026-04-05T04:41:18.329195Z 01O Collecting brotli (from geventhttpclient>=2.3.1->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.352558Z 01O   Downloading brotli-1.2.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.1 kB)
+2026-04-05T04:41:18.439456Z 01O Collecting libcst>=1.8.5 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.463551Z 01O   Downloading libcst-1.8.6-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (15 kB)
+2026-04-05T04:41:18.524054Z 01O Collecting setproctitle>=1.1.0 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.542845Z 01O   Downloading setproctitle-1.3.7-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (10 kB)
+2026-04-05T04:41:18.586050Z 01O Collecting textual>=1.0.0 (from mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.605986Z 01O   Downloading textual-8.2.2-py3-none-any.whl.metadata (9.1 kB)
+2026-04-05T04:41:18.629829Z 01O Collecting py-cpuinfo (from pytest-benchmark>=4.0.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.651480Z 01O   Downloading py_cpuinfo-9.0.0-py3-none-any.whl.metadata (794 bytes)
+2026-04-05T04:41:18.671065Z 01O Collecting execnet>=2.1 (from pytest-xdist>=3.5.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.693262Z 01O   Downloading execnet-2.1.2-py3-none-any.whl.metadata (2.9 kB)
+2026-04-05T04:41:18.713943Z 01O Collecting simple-websocket>=0.10.0 (from python-engineio>=4.12.2->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.732460Z 01O   Downloading simple_websocket-1.1.0-py3-none-any.whl.metadata (1.5 kB)
+2026-04-05T04:41:18.747181Z 01O Collecting bidict>=0.21.0 (from python-socketio>=5.13.0->python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.765538Z 01O   Downloading bidict-0.23.1-py3-none-any.whl.metadata (8.7 kB)
+2026-04-05T04:41:18.796860Z 01O Collecting websocket-client>=0.54.0 (from python-socketio[client]>=5.13.0->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.817805Z 01O   Downloading websocket_client-1.9.0-py3-none-any.whl.metadata (8.3 kB)
+2026-04-05T04:41:18.846128Z 01O Collecting wsproto (from simple-websocket>=0.10.0->python-engineio>=4.12.2->locust>=2.20.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.863118Z 01O   Downloading wsproto-1.3.2-py3-none-any.whl.metadata (5.2 kB)
+2026-04-05T04:41:18.891734Z 01O Collecting markdown-it-py>=2.1.0 (from markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.908430Z 01O   Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+2026-04-05T04:41:18.924262Z 01O Collecting mdit-py-plugins (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.942599Z 01O   Downloading mdit_py_plugins-0.5.0-py3-none-any.whl.metadata (2.8 kB)
+2026-04-05T04:41:18.961271Z 01O Collecting platformdirs<5,>=3.6.0 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:18.978092Z 01O   Downloading platformdirs-4.9.4-py3-none-any.whl.metadata (4.7 kB)
+2026-04-05T04:41:18.999414Z 01O Collecting pygments<3.0.0,>=2.19.2 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.017149Z 01O   Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+2026-04-05T04:41:19.056012Z 01O Collecting rich>=14.2.0 (from textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.073119Z 01O   Downloading rich-14.3.3-py3-none-any.whl.metadata (18 kB)
+2026-04-05T04:41:19.094436Z 01O Collecting mdurl~=0.1 (from markdown-it-py>=2.1.0->markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.111015Z 01O   Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+2026-04-05T04:41:19.126072Z 01O Collecting linkify-it-py<3,>=1 (from markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.143754Z 01O   Downloading linkify_it_py-2.1.0-py3-none-any.whl.metadata (8.5 kB)
+2026-04-05T04:41:19.157987Z 01O Collecting uc-micro-py (from linkify-it-py<3,>=1->markdown-it-py[linkify]>=2.1.0->textual>=1.0.0->mutmut>=3.2.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.176238Z 01O   Downloading uc_micro_py-2.0.0-py3-none-any.whl.metadata (2.2 kB)
+2026-04-05T04:41:19.214110Z 01O Collecting six>=1.5 (from python-dateutil->croniter>=2.0.0->syndicateclaw==2.0.0)
+2026-04-05T04:41:19.231775Z 01O   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+2026-04-05T04:41:19.268959Z 01O Downloading alembic-1.15.1-py3-none-any.whl (231 kB)
+2026-04-05T04:41:19.306297Z 01O Downloading asgi_lifespan-2.1.0-py3-none-any.whl (10 kB)
+2026-04-05T04:41:19.327595Z 01O Downloading asyncpg-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.6 MB)
+2026-04-05T04:41:19.520430Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.6/3.6 MB 19.2 MB/s  0:00:00
+2026-04-05T04:41:19.536351Z 01O Downloading cryptography-46.0.6-cp311-abi3-manylinux_2_34_x86_64.whl (4.5 MB)
+2026-04-05T04:41:19.750665Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 21.7 MB/s  0:00:00
+2026-04-05T04:41:19.796740Z 01O Downloading factory_boy-3.3.1-py2.py3-none-any.whl (36 kB)
+2026-04-05T04:41:19.828311Z 01O Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+2026-04-05T04:41:19.848661Z 01O Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+2026-04-05T04:41:19.874891Z 01O Downloading jsonschema-4.23.0-py3-none-any.whl (88 kB)
+2026-04-05T04:41:19.900371Z 01O Downloading mypy-1.15.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.manylinux_2_28_x86_64.whl (12.4 MB)
+2026-04-05T04:41:20.546973Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 19.2 MB/s  0:00:00
+2026-04-05T04:41:20.564760Z 01O Downloading opentelemetry_api-1.30.0-py3-none-any.whl (64 kB)
+2026-04-05T04:41:20.586911Z 01O Downloading opentelemetry_exporter_otlp-1.30.0-py3-none-any.whl (7.0 kB)
+2026-04-05T04:41:20.604093Z 01O Downloading opentelemetry_exporter_otlp_proto_grpc-1.30.0-py3-none-any.whl (18 kB)
+2026-04-05T04:41:20.621781Z 01O Downloading opentelemetry_sdk-1.30.0-py3-none-any.whl (118 kB)
+2026-04-05T04:41:20.664891Z 01O Downloading opentelemetry_exporter_otlp_proto_common-1.30.0-py3-none-any.whl (18 kB)
+2026-04-05T04:41:20.685427Z 01O Downloading opentelemetry_exporter_otlp_proto_http-1.30.0-py3-none-any.whl (17 kB)
+2026-04-05T04:41:20.709059Z 01O Downloading opentelemetry_instrumentation_fastapi-0.51b0-py3-none-any.whl (12 kB)
+2026-04-05T04:41:20.730538Z 01O Downloading opentelemetry_instrumentation-0.51b0-py3-none-any.whl (30 kB)
+2026-04-05T04:41:20.751010Z 01O Downloading opentelemetry_instrumentation_asgi-0.51b0-py3-none-any.whl (16 kB)
+2026-04-05T04:41:20.773043Z 01O Downloading opentelemetry_instrumentation_httpx-0.51b0-py3-none-any.whl (14 kB)
+2026-04-05T04:41:20.791224Z 01O Downloading opentelemetry_instrumentation_sqlalchemy-0.51b0-py3-none-any.whl (14 kB)
+2026-04-05T04:41:20.818459Z 01O Downloading opentelemetry_proto-1.30.0-py3-none-any.whl (55 kB)
+2026-04-05T04:41:20.847891Z 01O Downloading opentelemetry_semantic_conventions-0.51b0-py3-none-any.whl (177 kB)
+2026-04-05T04:41:20.882662Z 01O Downloading opentelemetry_util_http-0.51b0-py3-none-any.whl (7.3 kB)
+2026-04-05T04:41:20.898617Z 01O Downloading packaging-24.2-py3-none-any.whl (65 kB)
+2026-04-05T04:41:20.932504Z 01O Downloading passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+2026-04-05T04:41:20.962162Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 525.6/525.6 kB 24.3 MB/s  0:00:00
+2026-04-05T04:41:20.982866Z 01O Downloading prometheus_client-0.21.1-py3-none-any.whl (54 kB)
+2026-04-05T04:41:21.003635Z 01O Downloading pydantic-2.11.1-py3-none-any.whl (442 kB)
+2026-04-05T04:41:21.046492Z 01O Downloading pydantic_core-2.33.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.0 MB)
+2026-04-05T04:41:21.155669Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 19.0 MB/s  0:00:00
+2026-04-05T04:41:21.187652Z 01O Downloading pydantic_settings-2.8.1-py3-none-any.whl (30 kB)
+2026-04-05T04:41:21.212647Z 01O Downloading pyjwt-2.12.0-py3-none-any.whl (29 kB)
+2026-04-05T04:41:21.230574Z 01O Downloading pytest-8.3.5-py3-none-any.whl (343 kB)
+2026-04-05T04:41:21.275915Z 01O Downloading pytest_asyncio-0.25.3-py3-none-any.whl (19 kB)
+2026-04-05T04:41:21.294705Z 01O Downloading pytest_cov-6.1.1-py3-none-any.whl (23 kB)
+2026-04-05T04:41:21.320516Z 01O Downloading python_ulid-3.0.0-py3-none-any.whl (11 kB)
+2026-04-05T04:41:21.339182Z 01O Downloading PyYAML-6.0.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (767 kB)
+2026-04-05T04:41:21.389240Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 767.5/767.5 kB 18.6 MB/s  0:00:00
+2026-04-05T04:41:21.409293Z 01O Downloading redis-5.2.1-py3-none-any.whl (261 kB)
+2026-04-05T04:41:21.441479Z 01O Downloading ruff-0.11.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (11.3 MB)
+2026-04-05T04:41:22.207173Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 14.8 MB/s  0:00:00
+2026-04-05T04:41:22.225802Z 01O Downloading sqlalchemy-2.0.40-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+2026-04-05T04:41:22.416132Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 19.3 MB/s  0:00:00
+2026-04-05T04:41:22.438698Z 01O Downloading structlog-25.1.0-py3-none-any.whl (68 kB)
+2026-04-05T04:41:22.469549Z 01O Downloading tenacity-9.0.0-py3-none-any.whl (28 kB)
+2026-04-05T04:41:22.487527Z 01O Downloading types_jsonschema-4.23.0.20240813-py3-none-any.whl (10 kB)
+2026-04-05T04:41:22.507098Z 01O Downloading types_PyYAML-6.0.12.20241230-py3-none-any.whl (20 kB)
+2026-04-05T04:41:22.525918Z 01O Downloading uvicorn-0.34.0-py3-none-any.whl (62 kB)
+2026-04-05T04:41:22.544867Z 01O Downloading asgiref-3.11.1-py3-none-any.whl (24 kB)
+2026-04-05T04:41:22.565707Z 01O Downloading googleapis_common_protos-1.74.0-py3-none-any.whl (300 kB)
+2026-04-05T04:41:22.601499Z 01O Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.8 MB)
+2026-04-05T04:41:22.936590Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.8/6.8 MB 20.4 MB/s  0:00:00
+2026-04-05T04:41:22.956207Z 01O Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+2026-04-05T04:41:22.975104Z 01O Downloading importlib_metadata-8.5.0-py3-none-any.whl (26 kB)
+2026-04-05T04:41:22.991452Z 01O Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+2026-04-05T04:41:23.008433Z 01O Downloading protobuf-5.29.6-cp38-abi3-manylinux2014_x86_64.whl (320 kB)
+2026-04-05T04:41:23.043898Z 01O Downloading requests-2.33.1-py3-none-any.whl (64 kB)
+2026-04-05T04:41:23.063631Z 01O Downloading charset_normalizer-3.4.7-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (216 kB)
+2026-04-05T04:41:23.098567Z 01O Downloading idna-3.11-py3-none-any.whl (71 kB)
+2026-04-05T04:41:23.119075Z 01O Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+2026-04-05T04:41:23.141121Z 01O Downloading urllib3-2.6.3-py3-none-any.whl (131 kB)
+2026-04-05T04:41:23.164189Z 01O Downloading wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (88 kB)
+2026-04-05T04:41:23.184088Z 01O Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)
+2026-04-05T04:41:23.200278Z 01O Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+2026-04-05T04:41:23.220822Z 01O Downloading bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+2026-04-05T04:41:23.249849Z 01O Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+2026-04-05T04:41:23.274060Z 01O Downloading cffi-2.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (219 kB)
+2026-04-05T04:41:23.306906Z 01O Downloading click-8.3.2-py3-none-any.whl (108 kB)
+2026-04-05T04:41:23.327609Z 01O Downloading coverage-7.13.5-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (254 kB)
+2026-04-05T04:41:23.358332Z 01O Downloading croniter-6.2.2-py3-none-any.whl (45 kB)
+2026-04-05T04:41:23.378277Z 01O Downloading deprecated-1.3.1-py2.py3-none-any.whl (11 kB)
+2026-04-05T04:41:23.398179Z 01O Downloading faker-40.12.0-py3-none-any.whl (2.0 MB)
+2026-04-05T04:41:23.502981Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 19.2 MB/s  0:00:00
+2026-04-05T04:41:23.519317Z 01O Downloading fastapi-0.135.3-py3-none-any.whl (117 kB)
+2026-04-05T04:41:23.553437Z 01O Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+2026-04-05T04:41:23.573015Z 01O Downloading greenlet-3.3.2-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (613 kB)
+2026-04-05T04:41:23.601271Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 613.9/613.9 kB 30.5 MB/s  0:00:00
+2026-04-05T04:41:23.619032Z 01O Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+2026-04-05T04:41:23.637495Z 01O Downloading hiredis-3.3.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (172 kB)
+2026-04-05T04:41:23.663251Z 01O Downloading httptools-0.7.1-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (517 kB)
+2026-04-05T04:41:23.707066Z 01O Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+2026-04-05T04:41:23.728208Z 01O Downloading locust-2.43.4-py3-none-any.whl (1.5 MB)
+2026-04-05T04:41:23.804240Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 20.1 MB/s  0:00:00
+2026-04-05T04:41:23.826362Z 01O Downloading gevent-25.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.1 MB)
+2026-04-05T04:41:23.952026Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 18.0 MB/s  0:00:00
+2026-04-05T04:41:23.968105Z 01O Downloading configargparse-1.7.5-py3-none-any.whl (27 kB)
+2026-04-05T04:41:23.988493Z 01O Downloading flask-3.1.3-py3-none-any.whl (103 kB)
+2026-04-05T04:41:24.011585Z 01O Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+2026-04-05T04:41:24.029621Z 01O Downloading flask_cors-6.0.2-py3-none-any.whl (13 kB)
+2026-04-05T04:41:24.056162Z 01O Downloading Flask_Login-0.6.3-py3-none-any.whl (17 kB)
+2026-04-05T04:41:24.074768Z 01O Downloading geventhttpclient-2.3.9-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (115 kB)
+2026-04-05T04:41:24.098324Z 01O Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+2026-04-05T04:41:24.114560Z 01O Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+2026-04-05T04:41:24.136214Z 01O Downloading msgpack-1.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (427 kB)
+2026-04-05T04:41:24.180141Z 01O Downloading mutmut-3.5.0-py3-none-any.whl (34 kB)
+2026-04-05T04:41:24.202895Z 01O Downloading libcst-1.8.6-cp312-cp312-manylinux_2_28_x86_64.whl (2.3 MB)
+2026-04-05T04:41:24.334615Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 17.6 MB/s  0:00:00
+2026-04-05T04:41:24.350653Z 01O Downloading mypy_extensions-1.1.0-py3-none-any.whl (5.0 kB)
+2026-04-05T04:41:24.368083Z 01O Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+2026-04-05T04:41:24.394474Z 01O Downloading pytest_benchmark-5.2.3-py3-none-any.whl (45 kB)
+2026-04-05T04:41:24.413851Z 01O Downloading pytest_xdist-3.8.0-py3-none-any.whl (46 kB)
+2026-04-05T04:41:24.435239Z 01O Downloading execnet-2.1.2-py3-none-any.whl (40 kB)
+2026-04-05T04:41:24.455558Z 01O Downloading python_dotenv-1.2.2-py3-none-any.whl (22 kB)
+2026-04-05T04:41:24.478236Z 01O Downloading python_engineio-4.13.1-py3-none-any.whl (59 kB)
+2026-04-05T04:41:24.499018Z 01O Downloading python_socketio-5.16.1-py3-none-any.whl (82 kB)
+2026-04-05T04:41:24.522162Z 01O Downloading bidict-0.23.1-py3-none-any.whl (32 kB)
+2026-04-05T04:41:24.543890Z 01O Downloading pytimeparse-1.1.8-py2.py3-none-any.whl (10.0 kB)
+2026-04-05T04:41:24.565259Z 01O Downloading pyzmq-27.1.0-cp312-abi3-manylinux_2_26_x86_64.manylinux_2_28_x86_64.whl (840 kB)
+2026-04-05T04:41:24.601801Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 841.0/841.0 kB 28.2 MB/s  0:00:00
+2026-04-05T04:41:24.619113Z 01O Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+2026-04-05T04:41:24.638652Z 01O Downloading rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (394 kB)
+2026-04-05T04:41:24.783737Z 01O Downloading setproctitle-1.3.7-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (32 kB)
+2026-04-05T04:41:24.801739Z 01O Downloading simple_websocket-1.1.0-py3-none-any.whl (13 kB)
+2026-04-05T04:41:24.820046Z 01O Downloading starlette-1.0.0-py3-none-any.whl (72 kB)
+2026-04-05T04:41:24.841877Z 01O Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+2026-04-05T04:41:24.873002Z 01O Downloading textual-8.2.2-py3-none-any.whl (724 kB)
+2026-04-05T04:41:24.916388Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 724.1/724.1 kB 15.1 MB/s  0:00:00
+2026-04-05T04:41:24.933594Z 01O Downloading platformdirs-4.9.4-py3-none-any.whl (21 kB)
+2026-04-05T04:41:24.949149Z 01O Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+2026-04-05T04:41:25.018136Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 23.8 MB/s  0:00:00
+2026-04-05T04:41:25.033985Z 01O Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+2026-04-05T04:41:25.055235Z 01O Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+2026-04-05T04:41:25.074680Z 01O Downloading linkify_it_py-2.1.0-py3-none-any.whl (19 kB)
+2026-04-05T04:41:25.092700Z 01O Downloading rich-14.3.3-py3-none-any.whl (310 kB)
+2026-04-05T04:41:25.138676Z 01O Downloading typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+2026-04-05T04:41:25.160883Z 01O Downloading uvloop-0.22.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.4 MB)
+2026-04-05T04:41:25.372189Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 20.9 MB/s  0:00:00
+2026-04-05T04:41:25.392939Z 01O Downloading watchfiles-1.1.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (456 kB)
+2026-04-05T04:41:25.436486Z 01O Downloading websocket_client-1.9.0-py3-none-any.whl (82 kB)
+2026-04-05T04:41:25.459278Z 01O Downloading websockets-16.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (184 kB)
+2026-04-05T04:41:25.481746Z 01O Downloading werkzeug-3.1.8-py3-none-any.whl (226 kB)
+2026-04-05T04:41:25.517931Z 01O Downloading zipp-3.23.0-py3-none-any.whl (10 kB)
+2026-04-05T04:41:25.540450Z 01O Downloading brotli-1.2.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.4 MB)
+2026-04-05T04:41:25.624793Z 01O    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.4/1.4 MB 16.8 MB/s  0:00:00
+2026-04-05T04:41:25.641456Z 01O Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+2026-04-05T04:41:25.659056Z 01O Downloading mako-1.3.10-py3-none-any.whl (78 kB)
+2026-04-05T04:41:25.683316Z 01O Downloading mdit_py_plugins-0.5.0-py3-none-any.whl (57 kB)
+2026-04-05T04:41:25.705073Z 01O Downloading py_cpuinfo-9.0.0-py3-none-any.whl (22 kB)
+2026-04-05T04:41:25.725767Z 01O Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+2026-04-05T04:41:25.756820Z 01O Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+2026-04-05T04:41:25.788220Z 01O Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+2026-04-05T04:41:25.807347Z 01O Downloading sniffio-1.3.1-py3-none-any.whl (10 kB)
+2026-04-05T04:41:25.830661Z 01O Downloading uc_micro_py-2.0.0-py3-none-any.whl (6.4 kB)
+2026-04-05T04:41:25.859109Z 01O Downloading wsproto-1.3.2-py3-none-any.whl (24 kB)
+2026-04-05T04:41:25.877843Z 01O Downloading zope_event-6.1-py3-none-any.whl (6.4 kB)
+2026-04-05T04:41:25.899146Z 01O Downloading zope_interface-8.2-cp312-cp312-manylinux1_x86_64.manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_5_x86_64.whl (264 kB)
+2026-04-05T04:41:26.200239Z 01O Building wheels for collected packages: syndicateclaw
+2026-04-05T04:41:26.202528Z 01O   Building editable for syndicateclaw (pyproject.toml): started
+2026-04-05T04:41:26.248669Z 01O   Building editable for syndicateclaw (pyproject.toml): finished with status 'done'
+2026-04-05T04:41:26.249309Z 01O   Created wheel for syndicateclaw: filename=syndicateclaw-2.0.0-py3-none-any.whl size=1593 sha256=288be8db01aa29ee62909dbb6ac6058f422cc1b7fc047b3009cbbc81fb8c3bbb
+2026-04-05T04:41:26.249352Z 01O   Stored in directory: /tmp/pip-ephem-wheel-cache-z7r3z5pd/wheels/8a/db/fb/90eead4ada297daef4cf78ded35b0dbec656cf0161011c0412
+2026-04-05T04:41:26.251341Z 01O Successfully built syndicateclaw
+2026-04-05T04:41:26.476101Z 01O Installing collected packages: pytimeparse, py-cpuinfo, passlib, brotli, zope.interface, zope.event, zipp, wrapt, websockets, websocket-client, uvloop, urllib3, uc-micro-py, typing-extensions, types-pyyaml, tenacity, structlog, sniffio, six, setproctitle, ruff, rpds-py, redis, pyzmq, pyyaml, python-ulid, python-dotenv, pyjwt, pygments, pycparser, psutil, protobuf, prometheus-client, pluggy, platformdirs, packaging, opentelemetry-util-http, mypy_extensions, msgpack, mdurl, MarkupSafe, itsdangerous, iniconfig, idna, httptools, hiredis, h11, greenlet, Faker, execnet, coverage, configargparse, click, charset_normalizer, certifi, blinker, bidict, bcrypt, attrs, asyncpg, asgiref, annotated-types, annotated-doc, wsproto, werkzeug, uvicorn, typing-inspection, sqlalchemy, requests, referencing, python-dateutil, pytest, pydantic-core, opentelemetry-proto, mypy, markdown-it-py, Mako, linkify-it-py, libcst, jinja2, importlib-metadata, httpcore, grpcio, googleapis-common-protos, gevent, factory-boy, deprecated, cffi, asgi-lifespan, anyio, watchfiles, types-jsonschema, starlette, simple-websocket, rich, pytest-xdist, pytest-cov, pytest-benchmark, pytest-asyncio, pydantic, opentelemetry-exporter-otlp-proto-common, opentelemetry-api, mdit-py-plugins, jsonschema-specifications, httpx, geventhttpclient, flask, cryptography, croniter, alembic, textual, python-engineio, pydantic-settings, opentelemetry-semantic-conventions, jsonschema, flask-login, flask-cors, fastapi, python-socketio, opentelemetry-sdk, opentelemetry-instrumentation, mutmut, opentelemetry-instrumentation-sqlalchemy, opentelemetry-instrumentation-httpx, opentelemetry-instrumentation-asgi, opentelemetry-exporter-otlp-proto-http, opentelemetry-exporter-otlp-proto-grpc, opentelemetry-instrumentation-fastapi, opentelemetry-exporter-otlp, locust, syndicateclaw
+2026-04-05T04:41:41.903876Z 01O 
+2026-04-05T04:41:41.915524Z 01O Successfully installed Faker-40.12.0 Mako-1.3.10 MarkupSafe-3.0.3 alembic-1.15.1 annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.13.0 asgi-lifespan-2.1.0 asgiref-3.11.1 asyncpg-0.30.0 attrs-26.1.0 bcrypt-5.0.0 bidict-0.23.1 blinker-1.9.0 brotli-1.2.0 certifi-2026.2.25 cffi-2.0.0 charset_normalizer-3.4.7 click-8.3.2 configargparse-1.7.5 coverage-7.13.5 croniter-6.2.2 cryptography-46.0.6 deprecated-1.3.1 execnet-2.1.2 factory-boy-3.3.1 fastapi-0.135.3 flask-3.1.3 flask-cors-6.0.2 flask-login-0.6.3 gevent-25.9.1 geventhttpclient-2.3.9 googleapis-common-protos-1.74.0 greenlet-3.3.2 grpcio-1.80.0 h11-0.16.0 hiredis-3.3.1 httpcore-1.0.9 httptools-0.7.1 httpx-0.28.1 idna-3.11 importlib-metadata-8.5.0 iniconfig-2.3.0 itsdangerous-2.2.0 jinja2-3.1.6 jsonschema-4.23.0 jsonschema-specifications-2025.9.1 libcst-1.8.6 linkify-it-py-2.1.0 locust-2.43.4 markdown-it-py-4.0.0 mdit-py-plugins-0.5.0 mdurl-0.1.2 msgpack-1.1.2 mutmut-3.5.0 mypy-1.15.0 mypy_extensions-1.1.0 opentelemetry-api-1.30.0 opentelemetry-exporter-otlp-1.30.0 opentelemetry-exporter-otlp-proto-common-1.30.0 opentelemetry-exporter-otlp-proto-grpc-1.30.0 opentelemetry-exporter-otlp-proto-http-1.30.0 opentelemetry-instrumentation-0.51b0 opentelemetry-instrumentation-asgi-0.51b0 opentelemetry-instrumentation-fastapi-0.51b0 opentelemetry-instrumentation-httpx-0.51b0 opentelemetry-instrumentation-sqlalchemy-0.51b0 opentelemetry-proto-1.30.0 opentelemetry-sdk-1.30.0 opentelemetry-semantic-conventions-0.51b0 opentelemetry-util-http-0.51b0 packaging-24.2 passlib-1.7.4 platformdirs-4.9.4 pluggy-1.6.0 prometheus-client-0.21.1 protobuf-5.29.6 psutil-7.2.2 py-cpuinfo-9.0.0 pycparser-3.0 pydantic-2.11.1 pydantic-core-2.33.0 pydantic-settings-2.8.1 pygments-2.20.0 pyjwt-2.12.0 pytest-8.3.5 pytest-asyncio-0.25.3 pytest-benchmark-5.2.3 pytest-cov-6.1.1 pytest-xdist-3.8.0 python-dateutil-2.9.0.post0 python-dotenv-1.2.2 python-engineio-4.13.1 python-socketio-5.16.1 python-ulid-3.0.0 pytimeparse-1.1.8 pyyaml-6.0.2 pyzmq-27.1.0 redis-5.2.1 referencing-0.37.0 requests-2.33.1 rich-14.3.3 rpds-py-0.30.0 ruff-0.11.2 setproctitle-1.3.7 simple-websocket-1.1.0 six-1.17.0 sniffio-1.3.1 sqlalchemy-2.0.40 starlette-1.0.0 structlog-25.1.0 syndicateclaw-2.0.0 tenacity-9.0.0 textual-8.2.2 types-jsonschema-4.23.0.20240813 types-pyyaml-6.0.12.20241230 typing-extensions-4.15.0 typing-inspection-0.4.2 uc-micro-py-2.0.0 urllib3-2.6.3 uvicorn-0.34.0 uvloop-0.22.1 watchfiles-1.1.1 websocket-client-1.9.0 websockets-16.0 werkzeug-3.1.8 wrapt-1.17.3 wsproto-1.3.2 zipp-3.23.0 zope.event-6.1 zope.interface-8.2
+2026-04-05T04:41:41.915617Z 01E WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+2026-04-05T04:41:43.152018Z 01O [32;1m$ ruff check src[0;m
+2026-04-05T04:41:43.191028Z 01O All checks passed!
+2026-04-05T04:41:43.193979Z 01O [32;1m$ mypy src[0;m
+2026-04-05T04:42:13.033235Z 01O Success: no issues found in 175 source files
+2026-04-05T04:42:13.050206Z 01O [32;1m$ pytest tests/ -rs -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing[0;m
+2026-04-05T04:42:16.613154Z 01E /usr/local/lib/python3.12/site-packages/pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+2026-04-05T04:42:16.613163Z 01E The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+2026-04-05T04:42:16.613164Z 01E 
+2026-04-05T04:42:16.613165Z 01E   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+2026-04-05T04:42:31.804952Z 01O ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [  4%]
+2026-04-05T04:44:08.786568Z 01O ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss [  9%]
+2026-04-05T04:44:08.922416Z 01O ssssssssssssssssssssssssssssssssssssssssssssssssssssssss................ [ 13%]
+2026-04-05T04:44:09.231736Z 01O ...........................................sssssss...s.s...ssss.ss.s.... [ 18%]
+2026-04-05T04:44:37.500750Z 01O ...........................................................sss.s........ [ 22%]
+2026-04-05T04:44:40.432651Z 01O ..............................ssss...................................... [ 27%]
+2026-04-05T04:44:41.292800Z 01O ......s..sssssss........................................................ [ 31%]
+2026-04-05T04:45:12.826120Z 01O ........................................................................ [ 36%]
+2026-04-05T04:45:13.692533Z 01O ........................................................................ [ 41%]
+2026-04-05T04:45:13.975350Z 01O ........................................................................ [ 45%]
+2026-04-05T04:45:14.954114Z 01O ........................................................................ [ 50%]
+2026-04-05T04:45:15.336376Z 01O ........................................................................ [ 54%]
+2026-04-05T04:45:16.978811Z 01O ........................................................................ [ 59%]
+2026-04-05T04:45:17.260569Z 01O ............................ssssssss.................................... [ 63%]
+2026-04-05T04:45:48.677868Z 01O ........................................................................ [ 68%]
+2026-04-05T04:45:53.201948Z 01O ........................................................................ [ 72%]
+2026-04-05T04:45:53.548426Z 01O ........................................................................ [ 77%]
+2026-04-05T04:45:54.070895Z 01O .....................................................sssssssssssssssssss [ 82%]
+2026-04-05T04:47:12.486867Z 01O ss...................................................................... [ 86%]
+2026-04-05T04:47:16.651556Z 01O ........................................................................ [ 91%]
+2026-04-05T04:47:18.374366Z 01O ........................................................................ [ 95%]
+2026-04-05T04:47:18.731897Z 01O ................................................sssssss.............
+2026-04-05T04:47:48.251856Z 01O ERROR: Coverage failure: total of 77 is less than fail-under=80
+2026-04-05T04:47:48.251859Z 01O                                                                          [100%]
+2026-04-05T04:47:48.257321Z 01O =============================== warnings summary ===============================
+2026-04-05T04:47:48.257329Z 01O tests/unit/test_agent_routes_unit.py::test_register_agent_value_error_returns_422
+2026-04-05T04:47:48.257330Z 01O tests/unit/test_agent_routes_unit.py::test_update_agent_value_error_returns_422
+2026-04-05T04:47:48.257331Z 01O   /usr/local/lib/python3.12/site-packages/fastapi/routing.py:328: DeprecationWarning: 'HTTP_422_UNPROCESSABLE_ENTITY' is deprecated. Use 'HTTP_422_UNPROCESSABLE_CONTENT' instead.
+2026-04-05T04:47:48.257333Z 01O     return await dependant.call(**values)
+2026-04-05T04:47:48.257335Z 01O 
+2026-04-05T04:47:48.257336Z 01O tests/unit/test_final_fixes.py::TestEdDSAJWT::test_hs256_still_works
+2026-04-05T04:47:48.257336Z 01O   /usr/local/lib/python3.12/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 9 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+2026-04-05T04:47:48.257338Z 01O     return self._jws.encode(
+2026-04-05T04:47:48.257338Z 01O 
+2026-04-05T04:47:48.257339Z 01O tests/unit/test_final_fixes.py::TestEdDSAJWT::test_hs256_still_works
+2026-04-05T04:47:48.257340Z 01O   /usr/local/lib/python3.12/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 9 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+2026-04-05T04:47:48.257341Z 01O     decoded = self.decode_complete(
+2026-04-05T04:47:48.257341Z 01O 
+2026-04-05T04:47:48.257342Z 01O tests/unit/test_final_fixes.py::TestEdDSAJWT::test_expired_token_raises_jwt_error
+2026-04-05T04:47:48.257342Z 01O   /usr/local/lib/python3.12/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 4 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+2026-04-05T04:47:48.257343Z 01O     return self._jws.encode(
+2026-04-05T04:47:48.257344Z 01O 
+2026-04-05T04:47:48.257344Z 01O tests/unit/test_final_fixes.py::TestEdDSAJWT::test_expired_token_raises_jwt_error
+2026-04-05T04:47:48.257345Z 01O   /usr/local/lib/python3.12/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 4 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+2026-04-05T04:47:48.257346Z 01O     decoded = self.decode_complete(
+2026-04-05T04:47:48.257346Z 01O 
+2026-04-05T04:47:48.257346Z 01O -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+2026-04-05T04:47:48.257347Z 01O ================================ tests coverage ================================
+2026-04-05T04:47:48.257347Z 01O _______________ coverage: platform linux, python 3.12.13-final-0 _______________
+2026-04-05T04:47:48.257348Z 01O 
+2026-04-05T04:47:48.257348Z 01O Name                                                        Stmts   Miss Branch BrPart  Cover   Missing
+2026-04-05T04:47:48.257349Z 01O -------------------------------------------------------------------------------------------------------
+2026-04-05T04:47:48.257350Z 01O src/syndicateclaw/__init__.py                                   2      0      0      0   100%
+2026-04-05T04:47:48.257350Z 01O src/syndicateclaw/api/__init__.py                               0      0      0      0   100%
+2026-04-05T04:47:48.257368Z 01O src/syndicateclaw/api/decorators/quota.py                      19      5      6      1    68%   26-28, 40-42
+2026-04-05T04:47:48.257369Z 01O src/syndicateclaw/api/dependencies.py                         118     17     18      2    85%   26, 34, 48, 108, 143->148, 160, 188-200, 220-223
+2026-04-05T04:47:48.257369Z 01O src/syndicateclaw/api/inference_http.py                        52      2     38      2    96%   86, 99
+2026-04-05T04:47:48.257370Z 01O src/syndicateclaw/api/main.py                                 324    230     40      2    27%   57-112, 142-163, 192-193, 199-200, 203-469, 493, 511, 518, 523-592, 596
+2026-04-05T04:47:48.257371Z 01O src/syndicateclaw/api/middleware.py                            57      0      6      0   100%
+2026-04-05T04:47:48.257372Z 01O src/syndicateclaw/api/rate_limit.py                            69      0     16      0   100%
+2026-04-05T04:47:48.257372Z 01O src/syndicateclaw/api/routers/__init__.py                       1      0      0      0   100%
+2026-04-05T04:47:48.257373Z 01O src/syndicateclaw/api/routers/admin.py                        133     33      2      0    74%   18, 112-116, 131-137, 153-155, 164-171, 180-182, 189-191, 199-201, 208-210, 222-224, 229-231, 236-238, 246-248, 253-255
+2026-04-05T04:47:48.257374Z 01O src/syndicateclaw/api/routes/__init__.py                       20      0      0      0   100%
+2026-04-05T04:47:48.257374Z 01O src/syndicateclaw/api/routes/agents.py                         98      1      2      0    99%   128
+2026-04-05T04:47:48.257375Z 01O src/syndicateclaw/api/routes/api_keys.py                       12      0      0      0   100%
+2026-04-05T04:47:48.257376Z 01O src/syndicateclaw/api/routes/approvals.py                     110     63     22      0    36%   69-83, 92-105, 115-154, 164-183, 192-203
+2026-04-05T04:47:48.257376Z 01O src/syndicateclaw/api/routes/audit.py                          67      0     12      0   100%
+2026-04-05T04:47:48.257377Z 01O src/syndicateclaw/api/routes/builder.py                        14      3      0      0    79%   18, 23-24
+2026-04-05T04:47:48.257378Z 01O src/syndicateclaw/api/routes/inference.py                      82     43      2      0    46%   52, 64-86, 95-114, 128-161
+2026-04-05T04:47:48.257378Z 01O src/syndicateclaw/api/routes/memory.py                        180    112     50      0    30%   98-146, 156-176, 188-209, 219-251, 264-281, 290-320
+2026-04-05T04:47:48.257379Z 01O src/syndicateclaw/api/routes/messages.py                      102     26      4      1    73%   95-96, 104-105, 126-129, 139-148, 160, 163-164, 175-181, 190-192
+2026-04-05T04:47:48.257380Z 01O src/syndicateclaw/api/routes/organizations.py                 100     45     14      0    48%   58-65, 72-89, 98-100, 109-113, 123-132, 141-144, 154-175, 184-195, 205-210, 221-237
+2026-04-05T04:47:48.257381Z 01O src/syndicateclaw/api/routes/policy.py                        142     66     30      0    45%   112-130, 142-153, 162-167, 177-200, 213-221, 231-262, 272
+2026-04-05T04:47:48.257382Z 01O src/syndicateclaw/api/routes/providers_ops.py                  67     33     12      1    44%   41-50, 58-63, 80-112, 129, 139-140
+2026-04-05T04:47:48.257382Z 01O src/syndicateclaw/api/routes/runs.py                           27      3      2      1    86%   31-32, 51
+2026-04-05T04:47:48.257383Z 01O src/syndicateclaw/api/routes/schedules.py                     125     50      2      0    59%   85, 116-140, 150-151, 159-163, 172-187, 199-203, 211-215, 223-229, 237-244
+2026-04-05T04:47:48.257384Z 01O src/syndicateclaw/api/routes/streaming.py                      39      3      4      0    93%   52-54
+2026-04-05T04:47:48.257384Z 01O src/syndicateclaw/api/routes/tools.py                          83     35      4      0    55%   79-88, 97-106, 116-154
+2026-04-05T04:47:48.257385Z 01O src/syndicateclaw/api/routes/workflow_versions.py              55     19      0      0    65%   52-54, 67-71, 81-90, 101-110
+2026-04-05T04:47:48.257386Z 01O src/syndicateclaw/api/routes/workflows.py                     278    146     52      0    40%   167-188, 198-204, 215-225, 236-250, 260-273, 283-300, 310-324, 334-354, 363-369, 384-390, 399-404, 415-440, 458-531, 540-546
+2026-04-05T04:47:48.257390Z 01O src/syndicateclaw/approval/__init__.py                          2      0      0      0   100%
+2026-04-05T04:47:48.257391Z 01O src/syndicateclaw/approval/authority.py                        52      3     24      4    88%   117-120, 121->109, 122->121, 124->121
+2026-04-05T04:47:48.257391Z 01O src/syndicateclaw/approval/service.py                         108      0     28      1    99%   58->65
+2026-04-05T04:47:48.257392Z 01O src/syndicateclaw/audit/__init__.py                             2      0      0      0   100%
+2026-04-05T04:47:48.257393Z 01O src/syndicateclaw/audit/dead_letter.py                         78      0     18      3    97%   100->103, 112->117, 122->127
+2026-04-05T04:47:48.257393Z 01O src/syndicateclaw/audit/events.py                              51      0     10      1    98%   29->34
+2026-04-05T04:47:48.257394Z 01O src/syndicateclaw/audit/export.py                              55      6     10      2    82%   114-119, 146->151
+2026-04-05T04:47:48.257395Z 01O src/syndicateclaw/audit/integrity.py                           80      0     20      0   100%
+2026-04-05T04:47:48.257395Z 01O src/syndicateclaw/audit/ledger.py                              54      0      4      0   100%
+2026-04-05T04:47:48.257396Z 01O src/syndicateclaw/audit/service.py                             80     14     12      2    83%   33-34, 106->109, 111->118, 164-167, 171-174, 178-181
+2026-04-05T04:47:48.257396Z 01O src/syndicateclaw/audit/tracing.py                             32      0      6      0   100%
+2026-04-05T04:47:48.257397Z 01O src/syndicateclaw/authz/__init__.py                             0      0      0      0   100%
+2026-04-05T04:47:48.257398Z 01O src/syndicateclaw/authz/evaluator.py                          189      1     60      4    98%   260->240, 304, 306->299, 368->373
+2026-04-05T04:47:48.257398Z 01O src/syndicateclaw/authz/permissions.py                          2      0      0      0   100%
+2026-04-05T04:47:48.257399Z 01O src/syndicateclaw/authz/route_registry.py                     162      3     64      2    98%   208, 1016, 1024
+2026-04-05T04:47:48.257400Z 01O src/syndicateclaw/authz/shadow_middleware.py                  242     19    100      8    91%   61-75, 264, 273-274, 283-284, 361->357, 411, 481, 507->513, 511->513, 517
+2026-04-05T04:47:48.257401Z 01O src/syndicateclaw/cache/__init__.py                             2      0      0      0   100%
+2026-04-05T04:47:48.257401Z 01O src/syndicateclaw/cache/state_cache.py                         26      0      8      0   100%
+2026-04-05T04:47:48.257402Z 01O src/syndicateclaw/channels/__init__.py                         17      0      4      2    90%   15->exit, 17->exit
+2026-04-05T04:47:48.257402Z 01O src/syndicateclaw/channels/console.py                          15      0      0      0   100%
+2026-04-05T04:47:48.257403Z 01O src/syndicateclaw/channels/webhook.py                          45      3      2      0    94%   74-76
+2026-04-05T04:47:48.257404Z 01O src/syndicateclaw/config.py                                    75      3      4      1    92%   23-25
+2026-04-05T04:47:48.257404Z 01O src/syndicateclaw/connectors/__init__.py                        6      0      0      0   100%
+2026-04-05T04:47:48.257405Z 01O src/syndicateclaw/connectors/base.py                          100     40     16      0    52%   71, 92-134, 145-177
+2026-04-05T04:47:48.257406Z 01O src/syndicateclaw/connectors/discord/__init__.py                0      0      0      0   100%
+2026-04-05T04:47:48.257406Z 01O src/syndicateclaw/connectors/discord/bot.py                   131     68     40      7    44%   68-73, 89-130, 133, 142-162, 170, 174, 180, 185, 189, 204, 221, 238-262
+2026-04-05T04:47:48.257407Z 01O src/syndicateclaw/connectors/registry.py                       42      3     10      3    88%   52, 55, 60
+2026-04-05T04:47:48.257408Z 01O src/syndicateclaw/connectors/slack/__init__.py                  0      0      0      0   100%
+2026-04-05T04:47:48.257510Z 01O src/syndicateclaw/connectors/slack/bot.py                     141     86     44      2    35%   26-46, 59-77, 80, 89-126, 131, 151, 190-211, 216-233
+2026-04-05T04:47:48.257514Z 01O src/syndicateclaw/connectors/telegram/__init__.py               0      0      0      0   100%
+2026-04-05T04:47:48.257515Z 01O src/syndicateclaw/connectors/telegram/bot.py                  127     74     42      3    38%   29, 33, 48-76, 79-85, 94-133, 151, 174-194
+2026-04-05T04:47:48.257516Z 01O src/syndicateclaw/db/__init__.py                                4      0      0      0   100%
+2026-04-05T04:47:48.257517Z 01O src/syndicateclaw/db/base.py                                   20      1      0      0    95%   26
+2026-04-05T04:47:48.257517Z 01O src/syndicateclaw/db/models.py                                520      0      0      0   100%
+2026-04-05T04:47:48.257518Z 01O src/syndicateclaw/db/repository.py                            203     13     20      4    92%   39->37, 41, 44, 47-50, 53-56, 135-137, 248->247
+2026-04-05T04:47:48.257519Z 01O src/syndicateclaw/inference/__init__.py                         9      0      0      0   100%
+2026-04-05T04:47:48.257519Z 01O src/syndicateclaw/inference/adapters/__init__.py                3      0      0      0   100%
+2026-04-05T04:47:48.257520Z 01O src/syndicateclaw/inference/adapters/base.py                   16      0     10      3    88%   21->exit, 30->exit, 39->exit
+2026-04-05T04:47:48.257521Z 01O src/syndicateclaw/inference/adapters/factory.py                11      0      4      0   100%
+2026-04-05T04:47:48.257521Z 01O src/syndicateclaw/inference/adapters/ollama.py                 79      0     16      0   100%
+2026-04-05T04:47:48.257522Z 01O src/syndicateclaw/inference/adapters/openai_compatible.py      95      8     30      7    88%   104->102, 133, 135, 155->exit, 157, 163-164, 168->165, 191-192, 198
+2026-04-05T04:47:48.257523Z 01O src/syndicateclaw/inference/catalog.py                         94      3     28      3    93%   71->70, 131, 157-158
+2026-04-05T04:47:48.257523Z 01O src/syndicateclaw/inference/catalog_sync/__init__.py            6      0      0      0   100%
+2026-04-05T04:47:48.257524Z 01O src/syndicateclaw/inference/catalog_sync/errors.py              4      0      0      0   100%
+2026-04-05T04:47:48.257525Z 01O src/syndicateclaw/inference/catalog_sync/fetch.py              72     15     22      4    73%   37, 54-99, 132, 135, 154
+2026-04-05T04:47:48.257525Z 01O src/syndicateclaw/inference/catalog_sync/modelsdev.py          66     10     18      4    79%   61, 68-70, 104->103, 110, 139-143
+2026-04-05T04:47:48.257526Z 01O src/syndicateclaw/inference/catalog_sync/runner.py             55      0      4      0   100%
+2026-04-05T04:47:48.257527Z 01O src/syndicateclaw/inference/catalog_sync/ssrf.py              101     14     44     10    81%   40, 42-44, 57->55, 96->exit, 98->96, 105, 122, 125, 135-137, 141-142, 145, 149
+2026-04-05T04:47:48.257527Z 01O src/syndicateclaw/inference/config_loader.py                   70      4     12      5    89%   72, 78, 86, 113->exit, 116, 118->113
+2026-04-05T04:47:48.257528Z 01O src/syndicateclaw/inference/config_schema.py                   55      2     10      2    94%   71, 73
+2026-04-05T04:47:48.257529Z 01O src/syndicateclaw/inference/errors.py                          32      0      0      0   100%
+2026-04-05T04:47:48.257529Z 01O src/syndicateclaw/inference/execution_binding.py               20      1      4      2    88%   33->32, 35
+2026-04-05T04:47:48.257548Z 01O src/syndicateclaw/inference/hashing.py                          8      0      0      0   100%
+2026-04-05T04:47:48.257549Z 01O src/syndicateclaw/inference/idempotency.py                     50      0      6      0   100%
+2026-04-05T04:47:48.257550Z 01O src/syndicateclaw/inference/idempotency_payload.py              7      0      0      0   100%
+2026-04-05T04:47:48.257551Z 01O src/syndicateclaw/inference/metrics.py                         17      2      4      2    81%   22-23, 28->exit, 37->exit
+2026-04-05T04:47:48.257551Z 01O src/syndicateclaw/inference/policy_gates.py                    30      0      6      0   100%
+2026-04-05T04:47:48.257561Z 01O src/syndicateclaw/inference/policy_port.py                     25      0      0      0   100%
+2026-04-05T04:47:48.257562Z 01O src/syndicateclaw/inference/registry.py                       112      9     36     15    84%   48, 55-57, 59, 81->exit, 83->exit, 85->exit, 87->exit, 89->exit, 103, 109, 116, 123, 144->exit, 150->exit, 156->exit, 163->exit, 170->exit
+2026-04-05T04:47:48.257563Z 01O src/syndicateclaw/inference/router.py                         123     22     54     19    77%   87->exit, 96->exit, 137, 152, 179, 183-184, 186-187, 189-190, 195-196, 199-200, 202-203, 243, 270, 285, 287, 307, 309, 311, 312->314
+2026-04-05T04:47:48.257564Z 01O src/syndicateclaw/inference/service.py                        244    101     70     15    57%   119->130, 139, 151-152, 160, 177->188, 184, 200, 214->224, 262-278, 289-303, 311, 315, 319->321, 331-356, 388, 393-407, 421, 428->438, 447-574, 586-666
+2026-04-05T04:47:48.257565Z 01O src/syndicateclaw/inference/types.py                          266      0      2      0   100%
+2026-04-05T04:47:48.257566Z 01O src/syndicateclaw/llm/__init__.py                               4      0      0      0   100%
+2026-04-05T04:47:48.257566Z 01O src/syndicateclaw/llm/idempotency.py                           23      0      2      0   100%
+2026-04-05T04:47:48.257567Z 01O src/syndicateclaw/llm/metrics.py                                7      0      0      0   100%
+2026-04-05T04:47:48.257567Z 01O src/syndicateclaw/llm/templates.py                             10      0      0      0   100%
+2026-04-05T04:47:48.257568Z 01O src/syndicateclaw/llm/tracing.py                               13      0      0      0   100%
+2026-04-05T04:47:48.257569Z 01O src/syndicateclaw/memory/__init__.py                            4      0      0      0   100%
+2026-04-05T04:47:48.257569Z 01O src/syndicateclaw/memory/retention.py                          26      0      0      0   100%
+2026-04-05T04:47:48.257570Z 01O src/syndicateclaw/memory/schema.py                             56      1     28      1    98%   116
+2026-04-05T04:47:48.257571Z 01O src/syndicateclaw/memory/service.py                           266     37    110     12    84%   184->190, 188, 191, 196, 237->240, 241-246, 249->251, 257, 355-362, 375-387, 438->exit, 450-452, 461-464, 479-486, 498-499, 555
+2026-04-05T04:47:48.257572Z 01O src/syndicateclaw/memory/trust.py                             100      0     28      1    99%   93->84
+2026-04-05T04:47:48.257572Z 01O src/syndicateclaw/messaging/__init__.py                         0      0      0      0   100%
+2026-04-05T04:47:48.257573Z 01O src/syndicateclaw/messaging/metrics.py                          7      0      0      0   100%
+2026-04-05T04:47:48.257573Z 01O src/syndicateclaw/messaging/router.py                          25      1      4      1    93%   31
+2026-04-05T04:47:48.257574Z 01O src/syndicateclaw/middleware/__init__.py                        2      0      0      0   100%
+2026-04-05T04:47:48.257575Z 01O src/syndicateclaw/middleware/csrf.py                           36      1     14      1    96%   39
+2026-04-05T04:47:48.257575Z 01O src/syndicateclaw/middleware/rbac.py                           52     10     16      4    79%   23, 31-33, 39, 43-44, 60-67, 76->78
+2026-04-05T04:47:48.257576Z 01O src/syndicateclaw/models.py                                   384      0      0      0   100%
+2026-04-05T04:47:48.257577Z 01O src/syndicateclaw/observability/__init__.py                     0      0      0      0   100%
+2026-04-05T04:47:48.257577Z 01O src/syndicateclaw/observability/metrics.py                     13      0      0      0   100%
+2026-04-05T04:47:48.257578Z 01O src/syndicateclaw/orchestrator/__init__.py                      3      0      0      0   100%
+2026-04-05T04:47:48.257579Z 01O src/syndicateclaw/orchestrator/engine.py                      376     81    112     30    76%   62->exit, 132, 150-152, 158, 215-216, 219-220, 228, 234->239, 281-282, 313->378, 315-317, 322-324, 332, 336-338, 355, 388, 395, 399-400, 419, 443-447, 461-466, 476-482, 524->596, 544->549, 563-594, 598, 601-602, 616->615, 618, 632-635, 639-643, 663, 685
+2026-04-05T04:47:48.257586Z 01O src/syndicateclaw/orchestrator/handlers.py                    195     37     64     20    77%   49, 69, 86-90, 95-109, 135, 155-157, 173-174, 180-185, 193, 196, 252, 257, 263, 267-272, 285->300, 301-306, 309-325, 352, 355, 362, 386, 391, 406
+2026-04-05T04:47:48.257587Z 01O src/syndicateclaw/orchestrator/snapshots.py                    54      0      8      0   100%
+2026-04-05T04:47:48.257587Z 01O src/syndicateclaw/plugins/__init__.py                           3      0      0      0   100%
+2026-04-05T04:47:48.257588Z 01O src/syndicateclaw/plugins/base.py                              37      5      0      0    86%   41, 45, 55, 61, 64
+2026-04-05T04:47:48.257589Z 01O src/syndicateclaw/plugins/builtin/__init__.py                   3      0      0      0   100%
+2026-04-05T04:47:48.257589Z 01O src/syndicateclaw/plugins/builtin/audit_trail.py                7      0      0      0   100%
+2026-04-05T04:47:48.257590Z 01O src/syndicateclaw/plugins/builtin/webhook.py                   24      0      2      0   100%
+2026-04-05T04:47:48.257591Z 01O src/syndicateclaw/plugins/executor.py                          39      0      6      0   100%
+2026-04-05T04:47:48.257591Z 01O src/syndicateclaw/plugins/registry.py                          48      4     18      1    89%   66-69
+2026-04-05T04:47:48.257592Z 01O src/syndicateclaw/plugins/security.py                          35      4     24      6    76%   52, 53->55, 55->57, 58->62, 60->58, 67-69
+2026-04-05T04:47:48.257593Z 01O src/syndicateclaw/policy/__init__.py                            2      0      0      0   100%
+2026-04-05T04:47:48.257593Z 01O src/syndicateclaw/policy/engine.py                            165     11     62      8    92%   69, 73, 83, 170-171, 250->245, 308, 314, 316, 319-320, 374
+2026-04-05T04:47:48.257594Z 01O src/syndicateclaw/runtime/__init__.py                           3      0      0      0   100%
+2026-04-05T04:47:48.257595Z 01O src/syndicateclaw/runtime/audit/__init__.py                     3      0      0      0   100%
+2026-04-05T04:47:48.257595Z 01O src/syndicateclaw/runtime/audit/sink.py                        14      0      0      0   100%
+2026-04-05T04:47:48.257596Z 01O src/syndicateclaw/runtime/contracts/__init__.py                 8      0      0      0   100%
+2026-04-05T04:47:48.257597Z 01O src/syndicateclaw/runtime/contracts/common.py                  39      0      0      0   100%
+2026-04-05T04:47:48.257597Z 01O src/syndicateclaw/runtime/contracts/execution.py               53      0      0      0   100%
+2026-04-05T04:47:48.257598Z 01O src/syndicateclaw/runtime/contracts/export_schemas.py          23      0      2      0   100%
+2026-04-05T04:47:48.257598Z 01O src/syndicateclaw/runtime/contracts/routing.py                 21      0      0      0   100%
+2026-04-05T04:47:48.257599Z 01O src/syndicateclaw/runtime/contracts/skill_manifest.py          66      3      4      0    96%   87-89
+2026-04-05T04:47:48.257600Z 01O src/syndicateclaw/runtime/contracts/task_context.py            30      0      0      0   100%
+2026-04-05T04:47:48.257600Z 01O src/syndicateclaw/runtime/contracts/tool.py                    26      0      0      0   100%
+2026-04-05T04:47:48.257601Z 01O src/syndicateclaw/runtime/errors.py                            11      0      0      0   100%
+2026-04-05T04:47:48.257601Z 01O src/syndicateclaw/runtime/execution/__init__.py                 5      0      0      0   100%
+2026-04-05T04:47:48.257602Z 01O src/syndicateclaw/runtime/execution/context.py                 33      5     12      4    80%   16->exit, 52-53, 62-63, 78
+2026-04-05T04:47:48.257603Z 01O src/syndicateclaw/runtime/execution/engine.py                  74     14     12      3    80%   22->exit, 41-42, 137-149, 157-170, 244-249
+2026-04-05T04:47:48.257604Z 01O src/syndicateclaw/runtime/execution/validation.py              11      0      0      0   100%
+2026-04-05T04:47:48.257604Z 01O src/syndicateclaw/runtime/registry/__init__.py                  4      0      0      0   100%
+2026-04-05T04:47:48.257607Z 01O src/syndicateclaw/runtime/registry/loader.py                   59     13     16      4    77%   26-27, 29-30, 42-48, 58-59, 62->61
+2026-04-05T04:47:48.257607Z 01O src/syndicateclaw/runtime/registry/registry.py                 42      2     10      1    94%   62->64, 71-72
+2026-04-05T04:47:48.257608Z 01O src/syndicateclaw/runtime/router/__init__.py                    4      0      0      0   100%
+2026-04-05T04:47:48.257609Z 01O src/syndicateclaw/runtime/router/router.py                     38      0     14      1    98%   69->72
+2026-04-05T04:47:48.257609Z 01O src/syndicateclaw/runtime/router/scoring.py                    41      5     22      5    84%   30, 43, 54, 57, 60
+2026-04-05T04:47:48.257610Z 01O src/syndicateclaw/security/__init__.py                          3      0      0      0   100%
+2026-04-05T04:47:48.257611Z 01O src/syndicateclaw/security/api_keys.py                        122     29     32      3    74%   146, 167, 170-176, 206->215, 237-252, 256-264
+2026-04-05T04:47:48.257611Z 01O src/syndicateclaw/security/auth.py                             52      6     18      3    84%   86->92, 90, 100, 118-121
+2026-04-05T04:47:48.257612Z 01O src/syndicateclaw/security/redaction.py                        30      0     14      0   100%
+2026-04-05T04:47:48.257613Z 01O src/syndicateclaw/security/revocation.py                       14      0      2      0   100%
+2026-04-05T04:47:48.257613Z 01O src/syndicateclaw/security/signing.py                          74      2      8      2    95%   76, 131
+2026-04-05T04:47:48.257614Z 01O src/syndicateclaw/security/ssrf.py                             80     23     30      4    66%   22, 62-63, 69->66, 79, 83-86, 115, 126-150
+2026-04-05T04:47:48.257615Z 01O src/syndicateclaw/services/__init__.py                          0      0      0      0   100%
+2026-04-05T04:47:48.257615Z 01O src/syndicateclaw/services/agent_service.py                   119     92     32      0    18%   35-36, 39-43, 55-72, 75-79, 82-89, 92-99, 102-103, 112-119, 122-129, 141-159, 162-168, 171-182, 192-204
+2026-04-05T04:47:48.257616Z 01O src/syndicateclaw/services/builder_token_service.py            30      0      8      0   100%
+2026-04-05T04:47:48.257617Z 01O src/syndicateclaw/services/message_service.py                 149     78     32      0    45%   50-58, 77-85, 103-177, 217-220, 232-243, 246-258, 261-265, 268-273, 276-281, 284-301
+2026-04-05T04:47:48.257618Z 01O src/syndicateclaw/services/organization_service.py             85      3      8      0    97%   167, 174-176
+2026-04-05T04:47:48.257619Z 01O src/syndicateclaw/services/schedule_service.py                137    115     52      0    12%   29-37, 45-82, 90-100, 105, 122-152, 155-163, 168-177, 191-223, 226-235, 238, 241-256
+2026-04-05T04:47:48.257619Z 01O src/syndicateclaw/services/scheduler_service.py                88     64     12      0    24%   26-29, 33, 36-42, 45-46, 49-95, 102-128, 138-159, 177-196, 206-228
+2026-04-05T04:47:48.257620Z 01O src/syndicateclaw/services/streaming_token_service.py          62      0     12      0   100%
+2026-04-05T04:47:48.257621Z 01O src/syndicateclaw/services/subscription_service.py             45      7      6      0    86%   66-78, 81-88
+2026-04-05T04:47:48.257622Z 01O src/syndicateclaw/services/versioning_service.py               67     52      8      0    20%   18, 27-50, 58-86, 95-104, 107-117, 126-128, 131-153
+2026-04-05T04:47:48.257622Z 01O src/syndicateclaw/streaming/__init__.py                         2      0      0      0   100%
+2026-04-05T04:47:48.257623Z 01O src/syndicateclaw/streaming/connection_manager.py              23      0      4      0   100%
+2026-04-05T04:47:48.257624Z 01O src/syndicateclaw/tasks/__init__.py                             0      0      0      0   100%
+2026-04-05T04:47:48.257624Z 01O src/syndicateclaw/tasks/agent_heartbeat.py                     16      0      2      1    94%   21->25
+2026-04-05T04:47:48.257625Z 01O src/syndicateclaw/tasks/agent_response_resume.py               60      6     16      5    86%   44, 48, 65, 66->41, 84-86
+2026-04-05T04:47:48.257627Z 01O src/syndicateclaw/tasks/idempotency_cleanup.py                 10      0      0      0   100%
+2026-04-05T04:47:48.257628Z 01O src/syndicateclaw/tasks/message_delivery.py                    25      0      6      0   100%
+2026-04-05T04:47:48.257629Z 01O src/syndicateclaw/tasks/org_cleanup.py                         36      7      4      0    82%   24-31
+2026-04-05T04:47:48.257629Z 01O src/syndicateclaw/tools/__init__.py                             4      0      0      0   100%
+2026-04-05T04:47:48.257630Z 01O src/syndicateclaw/tools/builtin.py                             42      0      2      0   100%
+2026-04-05T04:47:48.257630Z 01O src/syndicateclaw/tools/executor.py                           197      9     60      1    96%   242-261, 304-309
+2026-04-05T04:47:48.257631Z 01O src/syndicateclaw/tools/inference_tools.py                     17      0      0      0   100%
+2026-04-05T04:47:48.257632Z 01O src/syndicateclaw/tools/registry.py                            34      1      6      1    95%   54
+2026-04-05T04:47:48.257632Z 01O -------------------------------------------------------------------------------------------------------
+2026-04-05T04:47:48.257633Z 01O TOTAL                                                       10959   2191   2228    273    77%
+2026-04-05T04:47:48.282376Z 01O FAIL Required test coverage of 80.0% not reached. Total coverage: 77.20%
+2026-04-05T04:47:48.282388Z 01O =========================== short test summary info ============================
+2026-04-05T04:47:48.282389Z 01O SKIPPED [1] tests/chaos/test_infrastructure_chaos.py:64: Integration infrastructure unavailable
+2026-04-05T04:47:48.282389Z 01O SKIPPED [1] tests/chaos/test_infrastructure_chaos.py:96: Integration infrastructure unavailable
+2026-04-05T04:47:48.282390Z 01O SKIPPED [1] tests/chaos/test_infrastructure_chaos.py:119: Integration infrastructure unavailable
+2026-04-05T04:47:48.282391Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:22: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282392Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:55: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282392Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:81: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282393Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:118: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282394Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:137: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282394Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:254: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282395Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:269: v1.1: per-API-key OAuth-style scopes not implemented — verified keys map to an actor; authorization is RBAC on that principal, not a scope string on the key. Unskip: v2.0 if per-key scope enforcement is added.
+2026-04-05T04:47:48.282397Z 01O SKIPPED [1] tests/integration/scenarios/test_v1_release_scenarios.py:280: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282397Z 01O SKIPPED [1] tests/integration/test_api.py:12: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282398Z 01O SKIPPED [1] tests/integration/test_api.py:21: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282398Z 01O SKIPPED [1] tests/integration/test_api.py:39: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282399Z 01O SKIPPED [1] tests/integration/test_api.py:46: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282400Z 01O SKIPPED [1] tests/integration/test_api.py:76: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282400Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:91: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282401Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:103: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282417Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:119: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282418Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:135: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282418Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:154: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282419Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:176: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282420Z 01O SKIPPED [1] tests/integration/test_approval_coverage.py:193: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282420Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:25: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282421Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:43: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282421Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:69: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282422Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:74: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282423Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:127: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282423Z 01O SKIPPED [1] tests/integration/test_audit_coverage.py:153: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282424Z 01O SKIPPED [1] tests/integration/test_audit_integrity.py:11: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282425Z 01O SKIPPED [1] tests/integration/test_audit_integrity.py:22: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282425Z 01O SKIPPED [1] tests/integration/test_audit_integrity.py:32: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282426Z 01O SKIPPED [1] tests/integration/test_audit_integrity.py:42: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282426Z 01O SKIPPED [1] tests/integration/test_audit_integrity.py:52: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282427Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:70: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282428Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:82: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282428Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:94: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282429Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:119: Legacy vs RBAC mismatch on a registered route; run manually. Unskip: v1.2 after principal provisioning path is implemented end-to-end.
+2026-04-05T04:47:48.282430Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:129: Full-stack enforcement; use manual E2E with rbac_enforcement_enabled. Unskip: v1.2 when principal seeding is automated in CI.
+2026-04-05T04:47:48.282430Z 01O SKIPPED [1] tests/integration/test_authz_coverage.py:139: API key scope vs route permission needs staged principal + key mapping. Unskip: v1.2 with full principal provisioning.
+2026-04-05T04:47:48.282431Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:59: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282432Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:68: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282433Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:78: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282433Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:87: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282434Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:96: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282434Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:130: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282437Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:143: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282438Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:171: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282438Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:181: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282439Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:208: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282439Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:224: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282440Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:242: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282441Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:263: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282441Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:287: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282442Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:295: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282442Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:303: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282443Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:318: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282444Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:328: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282444Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:339: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282445Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:352: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282445Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:365: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282446Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:378: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282447Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:391: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282447Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:404: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282448Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:417: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282448Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:429: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282449Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:458: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282450Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:482: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282450Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:505: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282451Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:538: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282451Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:547: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282452Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:572: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282453Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:599: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282453Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:627: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282454Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:669: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282454Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:743: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282455Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:755: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282457Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:766: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282458Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:788: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282458Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:809: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282459Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:820: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282460Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:837: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282460Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:877: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282461Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:923: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282461Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:983: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282462Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1021: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282463Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1047: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282463Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1084: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282464Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1114: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282464Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1148: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282465Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1159: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282466Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1169: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282466Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1206: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282467Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1241: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282467Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1309: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282468Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1353: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282469Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1375: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282469Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1404: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282470Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1489: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282470Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1530: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282471Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1537: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282472Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1569: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282472Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1628: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282473Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1639: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282473Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1671: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282474Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1698: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282475Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1730: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282477Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1755: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282478Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1834: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282479Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:1907: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282479Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:2029: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282480Z 01O SKIPPED [1] tests/integration/test_coverage_gaps.py:2067: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282480Z 01O SKIPPED [1] tests/integration/test_inference_api.py:133: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282481Z 01O SKIPPED [1] tests/integration/test_inference_api.py:142: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282482Z 01O SKIPPED [1] tests/integration/test_inference_api.py:147: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282482Z 01O SKIPPED [1] tests/integration/test_inference_api.py:161: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282483Z 01O SKIPPED [1] tests/integration/test_inference_api.py:179: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282483Z 01O SKIPPED [1] tests/integration/test_inference_api.py:195: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282484Z 01O SKIPPED [1] tests/integration/test_inference_api.py:208: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282485Z 01O SKIPPED [1] tests/integration/test_inference_api.py:220: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282485Z 01O SKIPPED [1] tests/integration/test_inference_api.py:245: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282486Z 01O SKIPPED [1] tests/integration/test_inference_api.py:262: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282486Z 01O SKIPPED [1] tests/integration/test_inference_api.py:273: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282487Z 01O SKIPPED [1] tests/integration/test_inference_api.py:287: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282488Z 01O SKIPPED [1] tests/integration/test_inference_api.py:301: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282488Z 01O SKIPPED [1] tests/integration/test_inference_api.py:315: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282489Z 01O SKIPPED [1] tests/integration/test_inference_api.py:330: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282489Z 01O SKIPPED [1] tests/integration/test_inference_api.py:345: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282490Z 01O SKIPPED [1] tests/integration/test_inference_api.py:356: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282491Z 01O SKIPPED [1] tests/integration/test_inference_api.py:367: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282491Z 01O SKIPPED [1] tests/integration/test_inference_api.py:390: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282492Z 01O SKIPPED [1] tests/integration/test_inference_api.py:437: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282492Z 01O SKIPPED [1] tests/integration/test_inference_api.py:443: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282493Z 01O SKIPPED [1] tests/integration/test_inference_api.py:468: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282493Z 01O SKIPPED [1] tests/integration/test_inference_api.py:489: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282494Z 01O SKIPPED [1] tests/integration/test_inference_api.py:510: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282495Z 01O SKIPPED [1] tests/integration/test_inference_api.py:531: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282495Z 01O SKIPPED [1] tests/integration/test_inference_api.py:552: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282498Z 01O SKIPPED [1] tests/integration/test_inference_api.py:565: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282498Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:74: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282499Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:85: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282499Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:94: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282500Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:104: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282501Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:113: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282501Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:123: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282502Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:132: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282503Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:146: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282503Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:164: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282504Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:174: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282504Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:186: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282505Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:200: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282506Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:212: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282506Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:220: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.282507Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:229: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283518Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:238: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283520Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:247: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283521Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:258: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283522Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:273: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283523Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:282: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283523Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:290: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283524Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:299: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283525Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:311: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283525Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:322: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283526Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:333: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283527Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:341: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283527Z 01O SKIPPED [1] tests/integration/test_memory_coverage.py:359: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283528Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:19: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283529Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:24: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283538Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:40: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283539Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:56: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283539Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:76: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283540Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:94: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283541Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:112: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283541Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:133: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283542Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:171: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283543Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:198: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283543Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:214: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283544Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:221: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283544Z 01O SKIPPED [1] tests/integration/test_multitenancy.py:227: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283545Z 01O SKIPPED [1] tests/integration/test_orchestrator_coverage.py:46: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283546Z 01O SKIPPED [1] tests/integration/test_orchestrator_coverage.py:59: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283546Z 01O SKIPPED [1] tests/integration/test_orchestrator_coverage.py:86: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283547Z 01O SKIPPED [1] tests/integration/test_orchestrator_coverage.py:123: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283548Z 01O SKIPPED [1] tests/integration/test_orchestrator_coverage.py:156: Replay re-queues run; full re-execute requires second execute() call. Unskip: v1.2 when orchestrator replay path is validated in integration harness.
+2026-04-05T04:47:48.283549Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:15: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283549Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:41: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283550Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:67: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283550Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:98: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283551Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:114: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283552Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:150: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283552Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:179: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283553Z 01O SKIPPED [1] tests/integration/test_policy_coverage.py:189: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283554Z 01O SKIPPED [1] tests/integration/test_provider_api_keys.py:8: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283554Z 01O SKIPPED [1] tests/integration/test_security_coverage.py:16: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283555Z 01O SKIPPED [1] tests/integration/test_security_coverage.py:28: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283556Z 01O SKIPPED [1] tests/integration/test_security_coverage.py:32: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283556Z 01O SKIPPED [1] tests/integration/test_security_coverage.py:48: Requires Redis + app state for revocation list; run manually. Unskip: v1.2 when revocation list is wired into the integration test fixture.
+2026-04-05T04:47:48.283559Z 01O SKIPPED [1] tests/integration/test_tools_coverage.py:27: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283560Z 01O SKIPPED [1] tests/integration/test_tools_coverage.py:57: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283561Z 01O SKIPPED [1] tests/integration/test_tools_coverage.py:104: Postgres failed to become reachable in time.
+2026-04-05T04:47:48.283561Z 01O SKIPPED [1] tests/security/test_agent_pentest.py:10: Requires structured log capture fixture; backlog — unskip when message pentest harness lands
+2026-04-05T04:47:48.283562Z 01O SKIPPED [1] tests/security/test_agent_pentest.py:22: Requires RBAC-scoped actor with only message:send; unskip with scoped actor fixture
+2026-04-05T04:47:48.283563Z 01O SKIPPED [1] tests/security/test_agent_pentest.py:30: Requires 51 agents + subscriptions in DB; unskip in scale/staging env
+2026-04-05T04:47:48.283564Z 01O SKIPPED [1] tests/security/test_agent_pentest.py:36: Requires full message relay chain integration; unskip with relay E2E
+2026-04-05T04:47:48.283564Z 01O SKIPPED [1] tests/security/test_agent_pentest.py:42: Requires LLM node + malicious message fixture; unskip with LLM node fixture
+2026-04-05T04:47:48.283565Z 01O SKIPPED [1] tests/security/test_core_pentest.py:13: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283566Z 01O SKIPPED [1] tests/security/test_core_pentest.py:28: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283567Z 01O SKIPPED [1] tests/security/test_core_pentest.py:63: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283567Z 01O SKIPPED [1] tests/security/test_core_pentest.py:106: Requires audit read-path HMAC verification contract test harness; unskip when harness exists
+2026-04-05T04:47:48.283568Z 01O SKIPPED [1] tests/security/test_dx_pentest.py:52: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283569Z 01O SKIPPED [1] tests/security/test_dx_pentest.py:65: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283569Z 01O SKIPPED [1] tests/security/test_dx_pentest.py:85: Pentest infrastructure unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283570Z 01O SKIPPED [1] tests/security/test_dx_pentest.py:125: could not import 'syndicateclaw_sdk': No module named 'syndicateclaw_sdk'
+2026-04-05T04:47:48.283571Z 01O SKIPPED [1] tests/security/test_enterprise_pentest.py:10: Requires two SchedulerService instances + due schedule row; see schedule HA tests; unskip in HA suite
+2026-04-05T04:47:48.283571Z 01O SKIPPED [1] tests/security/test_enterprise_pentest.py:21: Async engine/session loop coupling; validate NOT NULL in migration; unskip with raw SQL fixture
+2026-04-05T04:47:48.283572Z 01O SKIPPED [1] tests/security/test_enterprise_pentest.py:43: Requires org membership + JWT org_role drift scenario; unskip with multi-org fixture
+2026-04-05T04:47:48.283573Z 01O SKIPPED [1] tests/unit/inference/test_idempotency_integration.py:17: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283574Z 01O SKIPPED [1] tests/unit/inference/test_idempotency_integration.py:40: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283574Z 01O SKIPPED [1] tests/unit/inference/test_idempotency_integration.py:66: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283575Z 01O SKIPPED [1] tests/unit/inference/test_idempotency_integration.py:115: Set SYNDICATECLAW_TEST_DATABASE_URL to run Alembic round-trip integration test
+2026-04-05T04:47:48.283576Z 01O SKIPPED [1] tests/unit/inference/test_provider_service_idempotency.py:92: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283577Z 01O SKIPPED [1] tests/unit/inference/test_provider_service_idempotency.py:127: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283579Z 01O SKIPPED [1] tests/unit/inference/test_provider_service_idempotency.py:168: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283580Z 01O SKIPPED [1] tests/unit/inference/test_provider_service_idempotency.py:218: Set SYNDICATECLAW_TEST_DATABASE_URL to run inference integration tests
+2026-04-05T04:47:48.283594Z 01O SKIPPED [1] tests/unit/test_agent_send_handler.py:99: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283595Z 01O SKIPPED [1] tests/unit/test_agent_service.py:49: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283596Z 01O SKIPPED [1] tests/unit/test_agent_service.py:62: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283597Z 01O SKIPPED [1] tests/unit/test_agent_service.py:82: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283597Z 01O SKIPPED [1] tests/unit/test_agent_service.py:96: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283598Z 01O SKIPPED [1] tests/unit/test_agent_service.py:109: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283599Z 01O SKIPPED [1] tests/unit/test_agent_service.py:134: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283599Z 01O SKIPPED [1] tests/unit/test_agent_service.py:156: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283600Z 01O SKIPPED [1] tests/unit/test_message_service.py:83: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283601Z 01O SKIPPED [1] tests/unit/test_message_service.py:100: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283601Z 01O SKIPPED [1] tests/unit/test_message_service.py:111: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283602Z 01O SKIPPED [1] tests/unit/test_message_service.py:139: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283603Z 01O SKIPPED [1] tests/unit/test_message_service.py:169: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283603Z 01O SKIPPED [1] tests/unit/test_message_service.py:191: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283604Z 01O SKIPPED [1] tests/unit/test_message_service.py:220: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283605Z 01O SKIPPED [1] tests/unit/test_message_service.py:233: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283605Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:83: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283606Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:89: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283607Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:95: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283607Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:101: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283608Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:109: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283609Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:115: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283609Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:122: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283610Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:131: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283611Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:139: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283611Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:164: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283614Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:188: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283615Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:211: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283615Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:218: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283616Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:240: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283616Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:270: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283617Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:277: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283618Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:284: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283619Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:324: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283619Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:370: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283620Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:410: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283621Z 01O SKIPPED [1] tests/unit/test_schedule_service.py:456: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283621Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:72: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283622Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:84: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283623Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:100: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283623Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:123: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283624Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:136: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283624Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:166: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283625Z 01O SKIPPED [1] tests/unit/test_versioning_service.py:189: Database unavailable: [Errno -2] Name or service not known
+2026-04-05T04:47:48.283626Z 01O 1312 passed, 268 skipped, 1 deselected, 6 warnings in 331.62s (0:05:31)
+2026-04-05T04:47:49.836804Z 00O section_end:1775364469:step_script
+2026-04-05T04:47:49.836810Z 00O+[0Ksection_start:1775364469:cleanup_file_variables
+2026-04-05T04:47:49.837650Z 00O+[0K[0K[36;1mCleaning up project directory and file based variables[0;m[0;m
+2026-04-05T04:47:50.379920Z 00O section_end:1775364470:cleanup_file_variables
+2026-04-05T04:47:50.379928Z 00O+[0K
+2026-04-05T04:47:51.304693Z 00O [31;1mERROR: Job failed: exit code 1[0;m

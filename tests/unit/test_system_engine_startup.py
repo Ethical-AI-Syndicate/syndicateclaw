@@ -7,7 +7,7 @@ import os
 def test_startup_configures_system_engine_permissions() -> None:
     os.environ.setdefault(
         "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test",
     )
     os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production")
     import syndicateclaw.api.main as main_mod
