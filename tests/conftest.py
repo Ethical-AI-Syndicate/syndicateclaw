@@ -150,7 +150,7 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
 @pytest.fixture(scope="session")
 async def db_engine() -> AsyncEngine:
     database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
     )
     engine = None
     import asyncio

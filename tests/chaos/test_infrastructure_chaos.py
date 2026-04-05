@@ -18,10 +18,10 @@ def _set_test_env() -> None:
     """Set required env vars for Settings() construction."""
     os.environ.setdefault(
         "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
     )
     os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "chaos-test-key")
-    os.environ.setdefault("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0")
+    os.environ.setdefault("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
     os.environ.setdefault("SYNDICATECLAW_ENVIRONMENT", "test")
     os.environ.setdefault("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 

@@ -11,7 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.exc import ArgumentError
 
 _DEFAULT_DB_URL = (
-    "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+    "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
 )
 
 
@@ -26,7 +26,7 @@ async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production")
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0",
     )
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 
@@ -63,7 +63,7 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production")
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0",
     )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")

@@ -48,7 +48,7 @@ async def clean_scheduler_tables(session_factory: Any) -> None:
 
 @pytest.fixture()
 def mock_settings() -> Settings:
-    return MagicMock(  
+    return MagicMock(
         scheduler_enabled=True,
         scheduler_poll_interval=10,
         scheduler_max_concurrent=50,
