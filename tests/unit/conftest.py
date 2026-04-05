@@ -8,9 +8,10 @@ def _unit_env(monkeypatch: pytest.MonkeyPatch) -> None:
     # Ensure any Settings() calls in unit tests get a valid fallback
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
-        os.environ.get("SYNDICATECLAW_DATABASE_URL") or "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
+        os.environ.get("SYNDICATECLAW_DATABASE_URL")
+        or "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0"
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0",
     )
