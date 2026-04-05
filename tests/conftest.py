@@ -180,12 +180,11 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                     # Wait for master worker to create tables. We poll for "principals" table.
                     from sqlalchemy import text
 
-                    for _ in range(30):
+                    for _ in range(60):
                         try:
-                            # We query using a transaction in async mode.
-                            # and we must check alembic_version instead of principals,
-                            # Wait for ALEMBIC STAMPING to finish
+                            # Wait until both alembic_version AND principals exist and can be queried.
                             async with engine.begin() as conn:
+                                await conn.execute(text("SELECT 1 FROM principals LIMIT 1"))
                                 await conn.execute(text("SELECT 1 FROM alembic_version LIMIT 1"))
                             break
                         except Exception:
