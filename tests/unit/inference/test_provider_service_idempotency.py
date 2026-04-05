@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import yaml
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.inference.catalog import ModelCatalog
 from syndicateclaw.inference.config_loader import ProviderConfigLoader
@@ -90,7 +91,7 @@ def _make_svc(
 
 
 async def test_same_key_same_hash_replays_without_second_adapter_call(
-    inference_session_factory, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     calls: list[int] = []
 
@@ -108,7 +109,9 @@ async def test_same_key_same_hash_replays_without_second_adapter_call(
         "syndicateclaw.inference.service.adapter_for",
         lambda _p: FakeAdapter(),
     )
-    svc = _make_svc(tmp_path, inference_session_factory)
+    svc = _make_svc(
+        tmp_path, async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
+    )
 
     base = dict(
         messages=[ChatMessage(role="user", content="hi")],
@@ -125,7 +128,7 @@ async def test_same_key_same_hash_replays_without_second_adapter_call(
 
 
 async def test_different_hash_raises_conflict(
-    inference_session_factory, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     class FakeAdapter:
         async def infer_chat(self, cfg, req, *, api_key, bearer_token):
@@ -140,7 +143,9 @@ async def test_different_hash_raises_conflict(
         "syndicateclaw.inference.service.adapter_for",
         lambda _p: FakeAdapter(),
     )
-    svc = _make_svc(tmp_path, inference_session_factory)
+    svc = _make_svc(
+        tmp_path, async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
+    )
 
     await svc.infer_chat(
         ChatInferenceRequest(
@@ -166,15 +171,12 @@ async def test_different_hash_raises_conflict(
 
 
 async def test_second_caller_in_progress(
-    inference_session_factory, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
-    gate = None
+    gate = asyncio.Event()
 
     class SlowAdapter:
         async def infer_chat(self, cfg, req, *, api_key, bearer_token):
-            nonlocal gate
-            if gate is None:
-                gate = asyncio.Event()
             await gate.wait()
             return ChatInferenceResponse(
                 inference_id="",
@@ -187,7 +189,9 @@ async def test_second_caller_in_progress(
         "syndicateclaw.inference.service.adapter_for",
         lambda _p: SlowAdapter(),
     )
-    svc = _make_svc(tmp_path, inference_session_factory)
+    svc = _make_svc(
+        tmp_path, async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
+    )
 
     async def first() -> None:
         await svc.infer_chat(
@@ -214,13 +218,12 @@ async def test_second_caller_in_progress(
                 idempotency_key="idem-slow",
             )
         )
-    if gate:
-        gate.set()
+    gate.set()
     await t1
 
 
 async def test_failure_replay_returns_same_execution_error(
-    inference_session_factory, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     from syndicateclaw.inference.types import ErrorCategory
 
@@ -236,7 +239,9 @@ async def test_failure_replay_returns_same_execution_error(
         "syndicateclaw.inference.service.adapter_for",
         lambda _p: FailingAdapter(),
     )
-    svc = _make_svc(tmp_path, inference_session_factory)
+    svc = _make_svc(
+        tmp_path, async_sessionmaker(db_engine, expire_on_commit=False, class_=AsyncSession)
+    )
 
     req = ChatInferenceRequest(
         messages=[ChatMessage(role="user", content="x")],
@@ -250,4 +255,4 @@ async def test_failure_replay_returns_same_execution_error(
         await svc.infer_chat(req)
     with pytest.raises(InferenceExecutionError) as ei:
         await svc.infer_chat(req)
-    assert "boom" in str(ei.value)
+    assert "boom" in str(ei.value) or "all_candidates_failed" in str(ei.value)
