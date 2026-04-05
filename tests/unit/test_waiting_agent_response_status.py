@@ -15,7 +15,10 @@ def test_waiting_agent_response_counted_in_max_concurrency() -> None:
 
 
 def test_readyz_reports_waiting_agent_response_count(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
+    monkeypatch.setenv(
+        "SYNDICATECLAW_DATABASE_URL",
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+    )
     monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
     import syndicateclaw.api.main as main_mod
 

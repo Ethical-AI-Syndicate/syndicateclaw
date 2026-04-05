@@ -28,7 +28,10 @@ class TestReadyzRateLimitStatus:
 
     @pytest.fixture(autouse=True)
     def _env(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
+        monkeypatch.setenv(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
 
     def test_readyz_includes_rate_limiting_check(self) -> None:
@@ -66,7 +69,10 @@ class TestAsymmetricSigningGate:
 
     @pytest.fixture(autouse=True)
     def _env(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
+        monkeypatch.setenv(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
 
     def test_config_has_require_asymmetric_signing(self) -> None:
@@ -289,7 +295,10 @@ class TestApiKeyDbModel:
         import inspect
         import os
 
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         import syndicateclaw.api.main as main_mod
 
@@ -393,7 +402,10 @@ class TestMemoryWriteGuardrails:
     def test_config_has_memory_guardrail_fields(self) -> None:
         import os
 
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test")
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         from syndicateclaw.config import Settings
 
