@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 
 from syndicateclaw.approval.service import ApprovalService
 from syndicateclaw.audit.service import AuditService
+from syndicateclaw.db import models as db_models  # noqa: F401
 from syndicateclaw.db.base import Base
 from syndicateclaw.models import (
     ApprovalRequest,

@@ -1,17 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
-import os
 from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import delete, text
-from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from syndicateclaw.config import Settings
-from syndicateclaw.db.base import Base
 from syndicateclaw.db.models import WorkflowDefinition, WorkflowSchedule
 from syndicateclaw.services.schedule_service import (
     InvalidScheduleError,
@@ -25,34 +22,6 @@ from syndicateclaw.services.scheduler_service import SchedulerService
 
 def _is_valid_ulid(value: str) -> bool:
     return len(value) == 26 and value.isalnum()
-
-
-@pytest.fixture()
-async def engine() -> AsyncEngine:
-    url = os.environ.get(
-        "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test",
-    )
-    db_engine = None
-    try:
-        db_engine = create_async_engine(url)
-        async with db_engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
-            await conn.run_sync(Base.metadata.create_all)
-    except Exception as exc:
-        if db_engine is not None:
-            with contextlib.suppress(Exception):
-                await db_engine.dispose()
-        pytest.skip(f"Database unavailable: {exc}")
-    try:
-        yield db_engine
-    finally:
-        await db_engine.dispose()
-
-
-@pytest.fixture()
-async def session_factory(engine: AsyncEngine) -> async_sessionmaker:
-    return async_sessionmaker(engine, expire_on_commit=False)
 
 
 @pytest.fixture()
