@@ -16,7 +16,7 @@ pytestmark = pytest.mark.integration
 
 
 _DEFAULT_DB_URL = (
-    "postgresql+asyncpg://syndicateclaw:syndicateclaw@127.0.0.1:5432/syndicateclaw_test"
+    "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
 )
 
 
@@ -31,7 +31,7 @@ async def _wait_for_services() -> None:
     from sqlalchemy.ext.asyncio import create_async_engine
 
     db_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL
-    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://127.0.0.1:6379/0"
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0"
 
     # Wait for Postgres
     engine = create_async_engine(db_url, future=True)
@@ -76,7 +76,7 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) ->
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://127.0.0.1:6379/0",
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://redis:6379/0",
     )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")

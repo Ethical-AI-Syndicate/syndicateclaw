@@ -28,7 +28,7 @@ async def redis_async() -> Any:
     except ImportError:
         pytest.skip("redis asyncio not installed")
 
-    url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://127.0.0.1:6379/0")
+    url = os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://redis:6379/0")
     client = redis.from_url(url, decode_responses=False)
     try:
         await client.ping()
