@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "syndicateclaw"
 version = "2.0.0"
 description = "Production-oriented agent orchestration platform with stateful graph-based workflows"
-requires-python = ">=3.12"
+requires-python = ">=3.14.3"
 license = "MIT"
 dependencies = [
     "fastapi>=0.115.14",
@@ -80,7 +80,7 @@ markers = [
 ]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.14"
 strict = true
 plugins = ["pydantic.mypy"]
 

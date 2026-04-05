@@ -6,7 +6,7 @@
 
 **Architecture:** New `syndicateclaw.inference` package holds types, config loading, registry, catalog, router, ProviderService, and adapters. Persistence for idempotency and decision records is additive SQLAlchemy models + Alembic. Policy integrates with existing `PolicyEngine` and audit with `AuditService`. **Provider topology comes from YAML only in Phase 1;** the database stores derived artifacts (decisions, envelopes, catalog materialization) and must not become an alternate source of truth for “which providers exist” or override YAML for operator convenience.
 
-**Tech Stack:** Python 3.12+, Pydantic v2, SQLAlchemy 2 async, Alembic, httpx, existing FastAPI/structlog/OTEL stack.
+**Tech Stack:** Python 3.14.3+, Pydantic v2, SQLAlchemy 2 async, Alembic, httpx, existing FastAPI/structlog/OTEL stack.
 
 **Sole design reference:** `docs/superpowers/specs/2025-03-24-provider-integration-architecture-design.md` — implement from this document, not from chat history.
 

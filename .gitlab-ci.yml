@@ -7,7 +7,7 @@ stages:
   - deploy
 lint_and_test:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -37,7 +37,7 @@ lint_and_test:
     - if: $CI_COMMIT_BRANCH
 quality_gate:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -59,7 +59,7 @@ quality_gate:
     - if: $CI_COMMIT_BRANCH
 security_scan:
   stage: security
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -127,7 +127,7 @@ semgrep_scan:
     - if: $CI_COMMIT_BRANCH == "main"
 pentest:
   stage: integration
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
@@ -154,7 +154,7 @@ pentest:
     - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
 chaos_tests:
   stage: integration
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -173,7 +173,7 @@ chaos_tests:
     - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
 benchmark:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -214,7 +214,7 @@ docker_build:
     - if: $CI_COMMIT_TAG
 migration_check:
   stage: migrate
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -235,7 +235,7 @@ migration_check:
     - if: $CI_COMMIT_BRANCH
 runtime_contract_schemas:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -256,7 +256,7 @@ runtime_contract_schemas:
     - if: $CI_COMMIT_BRANCH
 integration_tests:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
@@ -283,7 +283,7 @@ integration_tests:
     - if: $CI_COMMIT_BRANCH
 nightly_quality_debt:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   allow_failure: true
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
@@ -304,7 +304,7 @@ nightly_quality_debt:
     - when: never
 provider_integration_tests:
   stage: integration
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
     OPENAI_API_KEY: 'sk-test-dummy-key-for-ci-gate'
@@ -371,7 +371,7 @@ release:
       when: manual
 mutation_test:
   stage: test
-  image: python:3.12-slim
+  image: python:3.14.3-slim
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'

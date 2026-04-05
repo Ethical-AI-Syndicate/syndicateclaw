@@ -6,7 +6,7 @@
 
 **Architecture:** First, split app startup/lifespan concerns into bounded bootstrap modules and align route governance with RBAC registry contracts. Second, replace admin API stubs with service-backed implementations and align console contracts to real responses. Third, run a strict, evidence-based re-review matrix (lint/type/tests/build/security markers) and close remaining defects.
 
-**Tech Stack:** Python 3.12, FastAPI, Pydantic v2, SQLAlchemy async, structlog, pytest, Ruff, mypy, React 18, TypeScript, Vite, Tailwind.
+**Tech Stack:** Python 3.14.3, FastAPI, Pydantic v2, SQLAlchemy async, structlog, pytest, Ruff, mypy, React 18, TypeScript, Vite, Tailwind.
 
 ---
 

@@ -10,7 +10,7 @@
 
 Avoid config changes. Treat `ruff` and `mypy` runs as the primary "test" signals. After both lanes reach zero (Ruff + Mypy), run the full pytest suite to ensure behavior stability.
 
-**Tech Stack:** `ruff`, `mypy`, `pytest`, Python 3.12.
+**Tech Stack:** `ruff`, `mypy`, `pytest`, Python 3.14.3.
 
 ---
 
