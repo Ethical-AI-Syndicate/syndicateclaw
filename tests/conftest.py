@@ -164,6 +164,9 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                 if worker_id in ("master", "gw0"):
                     async with engine.begin() as conn:
                         await conn.run_sync(Base.metadata.drop_all)
+                        from sqlalchemy import text
+
+                        await conn.execute(text("DROP TABLE IF EXISTS _pytest_schema_ready"))
                         await conn.run_sync(Base.metadata.create_all)
 
                     from alembic import command
@@ -176,16 +179,23 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                         command.stamp(cfg, "head")
 
                     await asyncio.to_thread(stamp_head)
+
+                    # Mark initialization complete
+                    async with engine.begin() as conn:
+                        await conn.execute(
+                            text("CREATE TABLE IF NOT EXISTS _pytest_schema_ready (id int)")
+                        )
+
                 else:
-                    # Wait for master worker to create tables. We poll for "principals" table.
+                    # Other workers wait for the marker table
                     from sqlalchemy import text
 
-                    for _ in range(60):
+                    for _ in range(120):
                         try:
-                            # Wait until both alembic_version AND principals exist and are queried.
                             async with engine.begin() as conn:
-                                await conn.execute(text("SELECT 1 FROM principals LIMIT 1"))
-                                await conn.execute(text("SELECT 1 FROM alembic_version LIMIT 1"))
+                                await conn.execute(
+                                    text("SELECT 1 FROM _pytest_schema_ready LIMIT 1")
+                                )
                             break
                         except Exception:
                             await asyncio.sleep(2)
