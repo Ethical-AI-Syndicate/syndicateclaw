@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 import yaml
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from syndicateclaw.inference.catalog import ModelCatalog
 from syndicateclaw.inference.config_loader import ProviderConfigLoader
@@ -91,7 +91,7 @@ def _make_svc(
 
 
 async def test_same_key_same_hash_replays_without_second_adapter_call(
-    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     calls: list[int] = []
 
@@ -128,7 +128,7 @@ async def test_same_key_same_hash_replays_without_second_adapter_call(
 
 
 async def test_different_hash_raises_conflict(
-    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     class FakeAdapter:
         async def infer_chat(self, cfg, req, *, api_key, bearer_token):
@@ -171,7 +171,7 @@ async def test_different_hash_raises_conflict(
 
 
 async def test_second_caller_in_progress(
-    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     gate = asyncio.Event()
 
@@ -223,7 +223,7 @@ async def test_second_caller_in_progress(
 
 
 async def test_failure_replay_returns_same_execution_error(
-    db_engine, monkeypatch: pytest.MonkeyPatch, tmp_path
+    db_engine: AsyncEngine, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
     from syndicateclaw.inference.types import ErrorCategory
 
