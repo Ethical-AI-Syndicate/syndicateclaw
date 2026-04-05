@@ -168,10 +168,13 @@ async def test_different_hash_raises_conflict(
 async def test_second_caller_in_progress(
     inference_session_factory, monkeypatch: pytest.MonkeyPatch, tmp_path
 ) -> None:
-    gate = asyncio.Event()
+    gate = None
 
     class SlowAdapter:
         async def infer_chat(self, cfg, req, *, api_key, bearer_token):
+            nonlocal gate
+            if gate is None:
+                gate = asyncio.Event()
             await gate.wait()
             return ChatInferenceResponse(
                 inference_id="",
@@ -211,7 +214,8 @@ async def test_second_caller_in_progress(
                 idempotency_key="idem-slow",
             )
         )
-    gate.set()
+    if gate:
+        gate.set()
     await t1
 
 

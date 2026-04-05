@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import contextlib
 import os
 import typing
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -148,19 +148,19 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
     )
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
     database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
     )
-    engine = None
     import asyncio
 
+    # We must construct a new engine for the local pytest-asyncio event loop
+    engine = create_async_engine(database_url, future=True, poolclass=NullPool)
+
     try:
-        engine = create_async_engine(database_url, future=True)
         for attempt in range(10):
             try:
-                # ONLY the first worker drops and recreates the schema
                 if worker_id in ("master", "gw0"):
                     async with engine.begin() as conn:
                         await conn.run_sync(Base.metadata.drop_all)
@@ -177,7 +177,6 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     await asyncio.to_thread(stamp_head)
                 else:
-                    # Other workers just wait briefly to ensure tables are created
                     await asyncio.sleep(2)
                 break
             except Exception as e:
@@ -185,10 +184,9 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                     raise e
                 await asyncio.sleep(2)
     except Exception as exc:
-        if engine is not None:
-            with contextlib.suppress(Exception):
-                await engine.dispose()
+        await engine.dispose()
         pytest.skip(f"Database unavailable: {exc}")
+
     try:
         yield engine
     finally:
