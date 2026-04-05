@@ -21,7 +21,7 @@ lint_and_test:
     FF_NETWORK_PER_BUILD: "1"
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -43,7 +43,7 @@ quality_gate:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -65,7 +65,7 @@ security_scan:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -140,7 +140,7 @@ pentest:
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -160,7 +160,7 @@ chaos_tests:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -179,7 +179,7 @@ benchmark:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -220,7 +220,7 @@ migration_check:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -241,7 +241,7 @@ runtime_contract_schemas:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
   script:
     - python -V
     - pip install -U pip
@@ -269,7 +269,7 @@ integration_tests:
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -290,7 +290,7 @@ nightly_quality_debt:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
   script:
     - pip install -U pip
     - pip install -e ".[dev]"
@@ -318,7 +318,7 @@ provider_integration_tests:
     ANTHROPIC_API_KEY:
       vault: ci/syndicateclaw/anthropic_api_key@secret
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
@@ -377,7 +377,7 @@ mutation_test:
     PIP_NO_CACHE_DIR: '1'
     
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
+    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
