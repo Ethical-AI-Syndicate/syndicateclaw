@@ -75,39 +75,33 @@ def test_register_agent_success() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.register = AsyncMock(return_value=agent)
-    client = TestClient(_make_app(svc))
-    resp = client.post(
-        "/api/v1/agents",
-        json={
-            "name": "bot",
-            "namespace": "default",
-            "capabilities": ["chat"],
-            "metadata": {},
-        },
-    )
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post(
+            "/api/v1/agents",
+            json={
+                "name": "bot",
+                "namespace": "default",
+                "capabilities": ["chat"],
+                "metadata": {},
+            },
+        )
     assert resp.status_code == 201
 
 
 def test_register_agent_conflict_returns_409() -> None:
     svc = AsyncMock()
     svc.register = AsyncMock(side_effect=AgentConflictError("duplicate"))
-    client = TestClient(_make_app(svc))
-    resp = client.post(
-        "/api/v1/agents",
-        json={"name": "bot", "namespace": "default"},
-    )
-    assert resp.status_code == 409
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post("/api/v1/agents", json={"name": "bot", "namespace": "default"})
+        assert resp.status_code == 409
 
 
 def test_register_agent_value_error_returns_422() -> None:
     svc = AsyncMock()
     svc.register = AsyncMock(side_effect=ValueError("bad name"))
-    client = TestClient(_make_app(svc))
-    resp = client.post(
-        "/api/v1/agents",
-        json={"name": "bot", "namespace": "default"},
-    )
-    assert resp.status_code == 422
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post("/api/v1/agents", json={"name": "bot", "namespace": "default"})
+        assert resp.status_code == 422
 
 
 def test_register_agent_cross_namespace_forbidden() -> None:
@@ -125,11 +119,11 @@ def test_register_agent_cross_namespace_forbidden() -> None:
     app.dependency_overrides[get_db_session] = lambda: mock_db
     app.dependency_overrides[get_actor_org] = lambda: actor_org
 
-    client = TestClient(app)
-    resp = client.post(
-        "/api/v1/agents",
-        json={"name": "bot", "namespace": "different-ns"},
-    )
+    with TestClient(app) as client:
+        resp = client.post(
+            "/api/v1/agents",
+            json={"name": "bot", "namespace": "different-ns"},
+        )
     assert resp.status_code == 403
 
 
@@ -142,10 +136,10 @@ def test_list_agents_returns_rows() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.discover = AsyncMock(return_value=[agent])
-    client = TestClient(_make_app(svc))
-    resp = client.get("/api/v1/agents")
-    assert resp.status_code == 200
-    assert len(resp.json()) == 1
+    with TestClient(_make_app(svc)) as client:
+        resp = client.get("/api/v1/agents")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -157,17 +151,17 @@ def test_get_agent_found() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.get = AsyncMock(return_value=agent)
-    client = TestClient(_make_app(svc))
-    resp = client.get("/api/v1/agents/agent-1")
-    assert resp.status_code == 200
+    with TestClient(_make_app(svc)) as client:
+        resp = client.get("/api/v1/agents/agent-1")
+        assert resp.status_code == 200
 
 
 def test_get_agent_not_found_returns_404() -> None:
     svc = AsyncMock()
     svc.get = AsyncMock(side_effect=AgentNotFoundError("not found"))
-    client = TestClient(_make_app(svc))
-    resp = client.get("/api/v1/agents/missing")
-    assert resp.status_code == 404
+    with TestClient(_make_app(svc)) as client:
+        resp = client.get("/api/v1/agents/missing")
+        assert resp.status_code == 404
 
 
 # ---------------------------------------------------------------------------
@@ -179,41 +173,41 @@ def test_update_agent_success() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.update = AsyncMock(return_value=agent)
-    client = TestClient(_make_app(svc))
-    resp = client.put("/api/v1/agents/agent-1", json={"name": "new-name"})
-    assert resp.status_code == 200
+    with TestClient(_make_app(svc)) as client:
+        resp = client.put("/api/v1/agents/agent-1", json={"name": "new-name"})
+        assert resp.status_code == 200
 
 
 def test_update_agent_not_found_returns_404() -> None:
     svc = AsyncMock()
     svc.update = AsyncMock(side_effect=AgentNotFoundError("not found"))
-    client = TestClient(_make_app(svc))
-    resp = client.put("/api/v1/agents/missing", json={})
-    assert resp.status_code == 404
+    with TestClient(_make_app(svc)) as client:
+        resp = client.put("/api/v1/agents/missing", json={})
+        assert resp.status_code == 404
 
 
 def test_update_agent_ownership_error_returns_403() -> None:
     svc = AsyncMock()
     svc.update = AsyncMock(side_effect=AgentOwnershipError("not owner"))
-    client = TestClient(_make_app(svc))
-    resp = client.put("/api/v1/agents/agent-1", json={})
-    assert resp.status_code == 403
+    with TestClient(_make_app(svc)) as client:
+        resp = client.put("/api/v1/agents/agent-1", json={})
+        assert resp.status_code == 403
 
 
 def test_update_agent_conflict_returns_409() -> None:
     svc = AsyncMock()
     svc.update = AsyncMock(side_effect=AgentConflictError("dup name"))
-    client = TestClient(_make_app(svc))
-    resp = client.put("/api/v1/agents/agent-1", json={"name": "taken"})
-    assert resp.status_code == 409
+    with TestClient(_make_app(svc)) as client:
+        resp = client.put("/api/v1/agents/agent-1", json={"name": "taken"})
+        assert resp.status_code == 409
 
 
 def test_update_agent_value_error_returns_422() -> None:
     svc = AsyncMock()
     svc.update = AsyncMock(side_effect=ValueError("invalid"))
-    client = TestClient(_make_app(svc))
-    resp = client.put("/api/v1/agents/agent-1", json={"name": "x"})
-    assert resp.status_code == 422
+    with TestClient(_make_app(svc)) as client:
+        resp = client.put("/api/v1/agents/agent-1", json={"name": "x"})
+        assert resp.status_code == 422
 
 
 # ---------------------------------------------------------------------------
@@ -225,25 +219,25 @@ def test_deregister_agent_success() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.deregister = AsyncMock(return_value=agent)
-    client = TestClient(_make_app(svc))
-    resp = client.delete("/api/v1/agents/agent-1")
-    assert resp.status_code == 200
+    with TestClient(_make_app(svc)) as client:
+        resp = client.delete("/api/v1/agents/agent-1")
+        assert resp.status_code == 200
 
 
 def test_deregister_agent_not_found_returns_404() -> None:
     svc = AsyncMock()
     svc.deregister = AsyncMock(side_effect=AgentNotFoundError("not found"))
-    client = TestClient(_make_app(svc))
-    resp = client.delete("/api/v1/agents/missing")
-    assert resp.status_code == 404
+    with TestClient(_make_app(svc)) as client:
+        resp = client.delete("/api/v1/agents/missing")
+        assert resp.status_code == 404
 
 
 def test_deregister_agent_ownership_error_returns_403() -> None:
     svc = AsyncMock()
     svc.deregister = AsyncMock(side_effect=AgentOwnershipError("not owner"))
-    client = TestClient(_make_app(svc))
-    resp = client.delete("/api/v1/agents/agent-1")
-    assert resp.status_code == 403
+    with TestClient(_make_app(svc)) as client:
+        resp = client.delete("/api/v1/agents/agent-1")
+        assert resp.status_code == 403
 
 
 # ---------------------------------------------------------------------------
@@ -255,22 +249,22 @@ def test_heartbeat_agent_success() -> None:
     agent = _make_agent()
     svc = AsyncMock()
     svc.heartbeat = AsyncMock(return_value=agent)
-    client = TestClient(_make_app(svc))
-    resp = client.post("/api/v1/agents/agent-1/heartbeat")
-    assert resp.status_code == 200
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post("/api/v1/agents/agent-1/heartbeat")
+        assert resp.status_code == 200
 
 
 def test_heartbeat_agent_not_found_returns_404() -> None:
     svc = AsyncMock()
     svc.heartbeat = AsyncMock(side_effect=AgentNotFoundError("not found"))
-    client = TestClient(_make_app(svc))
-    resp = client.post("/api/v1/agents/missing/heartbeat")
-    assert resp.status_code == 404
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post("/api/v1/agents/missing/heartbeat")
+        assert resp.status_code == 404
 
 
 def test_heartbeat_agent_ownership_error_returns_403() -> None:
     svc = AsyncMock()
     svc.heartbeat = AsyncMock(side_effect=AgentOwnershipError("not owner"))
-    client = TestClient(_make_app(svc))
-    resp = client.post("/api/v1/agents/agent-1/heartbeat")
-    assert resp.status_code == 403
+    with TestClient(_make_app(svc)) as client:
+        resp = client.post("/api/v1/agents/agent-1/heartbeat")
+        assert resp.status_code == 403
