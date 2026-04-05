@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 
-from sqlalchemy import delete
+from sqlalchemy import CursorResult, delete
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import InferenceEnvelope
@@ -19,4 +20,4 @@ async def cleanup_expired_idempotency_rows(
         result = await session.execute(
             delete(InferenceEnvelope).where(InferenceEnvelope.updated_at < cutoff)
         )
-    return int(result.rowcount or 0)
+    return int(cast(CursorResult[Any], result).rowcount or 0)

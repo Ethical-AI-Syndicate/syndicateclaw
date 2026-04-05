@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
-from sqlalchemy import Select, select, update
+from sqlalchemy import CursorResult, Select, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -179,7 +179,7 @@ class AgentService:
                 )
                 .values(status="OFFLINE")
             )
-            return int(result.rowcount or 0)
+            return int(cast(CursorResult[Any], result).rowcount or 0)
 
     async def discover(
         self,

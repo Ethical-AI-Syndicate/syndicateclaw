@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from croniter import croniter  # type: ignore[import-untyped]
-from sqlalchemy import Select, select, update
+from sqlalchemy import CursorResult, Select, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import WorkflowSchedule
@@ -230,7 +230,7 @@ class ScheduleService:
                 .values(status="DELETED", updated_at=datetime.now(UTC))
             )
             result = await session.execute(stmt)
-            if result.rowcount == 0:
+            if cast(CursorResult[Any], result).rowcount == 0:
                 raise ScheduleNotFoundError(f"Schedule '{schedule_id}' not found.")
             await session.commit()
 
