@@ -36,7 +36,7 @@ from syndicateclaw.models import (
 from syndicateclaw.policy.engine import PolicyEngine
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_workflow_definition() -> WorkflowDefinition:
     return WorkflowDefinition.new(
         name="sample-workflow",
@@ -81,7 +81,7 @@ def sample_workflow_definition() -> WorkflowDefinition:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_workflow_run(sample_workflow_definition: WorkflowDefinition) -> WorkflowRun:
     return WorkflowRun.new(
         workflow_id=sample_workflow_definition.id,
@@ -90,7 +90,7 @@ def sample_workflow_run(sample_workflow_definition: WorkflowDefinition) -> Workf
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_tool() -> Tool:
     return Tool.new(
         name="test-tool",
@@ -103,7 +103,7 @@ def sample_tool() -> Tool:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_memory_record() -> MemoryRecord:
     return MemoryRecord.new(
         namespace="test-ns",
@@ -117,7 +117,7 @@ def sample_memory_record() -> MemoryRecord:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_policy_rule() -> PolicyRule:
     return PolicyRule.new(
         name="allow-low-risk-tools",
@@ -133,7 +133,7 @@ def sample_policy_rule() -> PolicyRule:
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest:
     return ApprovalRequest.new(
         run_id=sample_workflow_run.id,
@@ -148,7 +148,7 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
     database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
@@ -203,6 +203,8 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
 
                     for _ in range(120):
                         try:
+                            # Wait for worker 0 to start stamping.
+                            await asyncio.sleep(2)
                             async with engine.begin() as conn:
                                 # Query for the run_id inside the marker table!
                                 result = await conn.execute(
@@ -230,10 +232,12 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
     try:
         yield engine
     finally:
+        # DO NOT DO ANYTHING IN FINALLY EXCEPT DISPOSE ENGINE.
+        # DO NOT DROP TABLES ON TEARDOWN.
         await engine.dispose()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 async def db_session(db_engine: AsyncEngine) -> typing.AsyncGenerator[AsyncSession, None]:
     connection = await db_engine.connect()
     transaction = await connection.begin()
@@ -248,34 +252,34 @@ async def db_session(db_engine: AsyncEngine) -> typing.AsyncGenerator[AsyncSessi
         await connection.close()
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def policy_engine(db_engine: AsyncEngine) -> PolicyEngine:
     session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
     return PolicyEngine(session_factory)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def audit_service(db_engine: AsyncEngine) -> AuditService:
     session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
     return AuditService(session_factory)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def approval_service(db_engine: AsyncEngine) -> ApprovalService:
     session_factory = async_sessionmaker(db_engine, expire_on_commit=False)
     return ApprovalService(session_factory, notification_callback=None)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_actor() -> str:
     return "test-actor-operator"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def admin_actor() -> str:
     return "test-actor-admin"
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def rbac_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
