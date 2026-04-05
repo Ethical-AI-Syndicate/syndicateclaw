@@ -26,7 +26,7 @@ lint_and_test:
   script:
     - ruff check src
     - mypy src
-    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
+    - pytest tests/ -rs -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
