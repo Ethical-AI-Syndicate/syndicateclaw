@@ -23,11 +23,12 @@ _DEFAULT_DB_URL = (
 @pytest.fixture(scope="session", autouse=True)
 async def _wait_for_services() -> None:
     """Wait for database and redis to be reachable before starting tests."""
-    import os
     import asyncio
-    from sqlalchemy.ext.asyncio import create_async_engine
-    from sqlalchemy import text
+    import os
+
     import redis.asyncio as redis
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import create_async_engine
 
     db_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL
     redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0"
