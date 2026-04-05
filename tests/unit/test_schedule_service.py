@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 from datetime import UTC, datetime, timedelta
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
 from sqlalchemy import delete, text
-from sqlalchemy.ext.asyncio import async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine
 
 from syndicateclaw.config import Settings
 from syndicateclaw.db.models import WorkflowDefinition, WorkflowSchedule
@@ -25,14 +26,21 @@ def _is_valid_ulid(value: str) -> bool:
 
 
 @pytest.fixture()
-async def schedule_service(session_factory: async_sessionmaker) -> ScheduleService:
+async def session_factory(db_engine: AsyncEngine) -> Any:
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+
+    return async_sessionmaker(db_engine, expire_on_commit=False)
+
+
+@pytest.fixture()
+async def schedule_service(session_factory: Any) -> ScheduleService:
     async with session_factory() as session, session.begin():
         await session.execute(delete(WorkflowSchedule))
     return ScheduleService(session_factory)
 
 
 @pytest.fixture(autouse=True)
-async def clean_scheduler_tables(session_factory: async_sessionmaker) -> None:
+async def clean_scheduler_tables(session_factory: Any) -> None:
     async with session_factory() as session, session.begin():
         await session.execute(text("DELETE FROM workflow_runs"))
         await session.execute(delete(WorkflowSchedule))
@@ -40,7 +48,7 @@ async def clean_scheduler_tables(session_factory: async_sessionmaker) -> None:
 
 @pytest.fixture()
 def mock_settings() -> Settings:
-    return MagicMock(  # type: ignore[return-value]
+    return MagicMock(  
         scheduler_enabled=True,
         scheduler_poll_interval=10,
         scheduler_max_concurrent=50,
@@ -106,7 +114,7 @@ async def test_validate_once_invalid_format(
 
 
 @pytest.mark.asyncio
-async def test_create_schedule(session_factory: async_sessionmaker) -> None:
+async def test_create_schedule(session_factory: Any) -> None:
     from ulid import ULID
 
     svc = ScheduleService(session_factory)
@@ -132,7 +140,7 @@ async def test_create_schedule(session_factory: async_sessionmaker) -> None:
 
 @pytest.mark.asyncio
 async def test_create_schedule_interval(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
 ) -> None:
     from ulid import ULID
 
@@ -155,7 +163,7 @@ async def test_create_schedule_interval(
 
 
 @pytest.mark.asyncio
-async def test_get_schedule(session_factory: async_sessionmaker) -> None:
+async def test_get_schedule(session_factory: Any) -> None:
     from ulid import ULID
 
     svc = ScheduleService(session_factory)
@@ -178,14 +186,14 @@ async def test_get_schedule(session_factory: async_sessionmaker) -> None:
 
 
 @pytest.mark.asyncio
-async def test_get_schedule_not_found(session_factory: async_sessionmaker) -> None:
+async def test_get_schedule_not_found(session_factory: Any) -> None:
     svc = ScheduleService(session_factory)
     with pytest.raises(ScheduleNotFoundError):
         await svc.get("nonexistent")
 
 
 @pytest.mark.asyncio
-async def test_pause_schedule(session_factory: async_sessionmaker) -> None:
+async def test_pause_schedule(session_factory: Any) -> None:
     from ulid import ULID
 
     svc = ScheduleService(session_factory)
@@ -207,7 +215,7 @@ async def test_pause_schedule(session_factory: async_sessionmaker) -> None:
 
 
 @pytest.mark.asyncio
-async def test_delete_schedule(session_factory: async_sessionmaker) -> None:
+async def test_delete_schedule(session_factory: Any) -> None:
     from ulid import ULID
 
     svc = ScheduleService(session_factory)
@@ -252,7 +260,7 @@ async def test_compute_next_run_interval() -> None:
 
 @pytest.mark.asyncio
 async def test_resume_once_requires_interval_type(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
 ) -> None:
     from ulid import ULID
 
@@ -276,7 +284,7 @@ async def test_resume_once_requires_interval_type(
 
 
 @pytest.fixture()
-async def wf_definitions(session_factory: async_sessionmaker) -> None:
+async def wf_definitions(session_factory: Any) -> None:
     async with session_factory() as session, session.begin():
         wf_ids = ["wf-sched-claim", "wf-sched-max", "wf-sched-concurrent"]
         await session.execute(delete(WorkflowDefinition).where(WorkflowDefinition.id.in_(wf_ids)))
@@ -292,7 +300,7 @@ async def wf_definitions(session_factory: async_sessionmaker) -> None:
 
 @pytest.mark.asyncio
 async def test_scheduler_claims_due_schedule(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
     mock_settings: Settings,
     wf_definitions: None,
 ) -> None:
@@ -338,7 +346,7 @@ async def test_scheduler_claims_due_schedule(
 
 @pytest.mark.asyncio
 async def test_scheduler_releases_lock_on_exception(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
     mock_settings: Settings,
     wf_definitions: None,
 ) -> None:
@@ -378,7 +386,7 @@ async def test_scheduler_releases_lock_on_exception(
 
 @pytest.mark.asyncio
 async def test_scheduler_max_runs_stops(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
     mock_settings: Settings,
     wf_definitions: None,
 ) -> None:
@@ -424,7 +432,7 @@ async def test_scheduler_max_runs_stops(
 
 @pytest.mark.asyncio
 async def test_scheduler_concurrent_lock_no_duplicate(
-    session_factory: async_sessionmaker,
+    session_factory: Any,
     mock_settings: Settings,
     wf_definitions: None,
 ) -> None:
