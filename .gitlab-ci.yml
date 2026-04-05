@@ -15,8 +15,9 @@ lint_and_test:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     FF_NETWORK_PER_BUILD: "1"
     
   services:
@@ -132,8 +133,9 @@ pentest:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     FF_NETWORK_PER_BUILD: "1"
     
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
@@ -263,8 +265,9 @@ integration_tests:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     FF_NETWORK_PER_BUILD: "1"
     
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
