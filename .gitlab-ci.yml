@@ -14,7 +14,7 @@ lint_and_test:
     POSTGRES_USER: syndicateclaw
     POSTGRES_HOST_AUTH_METHOD: "trust"
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
   services:
     - postgres:16
