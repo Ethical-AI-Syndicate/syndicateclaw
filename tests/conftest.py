@@ -178,18 +178,15 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                     await asyncio.to_thread(stamp_head)
                 else:
                     # Wait for master worker to create tables. We poll for "principals" table.
-                    from sqlalchemy import inspect
-
-                    def check_tables(conn: typing.Any) -> bool:
-                        insp = inspect(conn)
-                        return "principals" in insp.get_table_names()
+                    from sqlalchemy import text
 
                     for _ in range(10):
-                        async with engine.connect() as conn:
-                            exists = await conn.run_sync(check_tables)
-                            if exists:
+                        try:
+                            async with engine.connect() as conn:
+                                await conn.execute(text("SELECT 1 FROM principals LIMIT 1"))
                                 break
-                        await asyncio.sleep(1)
+                        except Exception:
+                            await asyncio.sleep(1)
                     else:
                         raise Exception("Timeout waiting for DB schema")
                 break
