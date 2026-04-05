@@ -11,17 +11,19 @@ lint_and_test:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    FF_NETWORK_PER_BUILD: "1"
+    
   services:
     - name: postgres:16-alpine
-      alias: postgres
+
     - name: redis:7-alpine
-      alias: redis
+
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -39,7 +41,7 @@ quality_gate:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
@@ -61,7 +63,7 @@ security_scan:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
@@ -130,14 +132,17 @@ pentest:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    FF_NETWORK_PER_BUILD: "1"
+    
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
+    
   services:
     - name: postgres:16-alpine
-      alias: postgres
+
     - name: redis:7-alpine
-      alias: redis
+
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -154,7 +159,7 @@ chaos_tests:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
@@ -174,7 +179,7 @@ benchmark:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
@@ -215,7 +220,7 @@ migration_check:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
@@ -236,7 +241,7 @@ runtime_contract_schemas:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
@@ -258,14 +263,17 @@ integration_tests:
     POSTGRES_USER: syndicateclaw
     POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
+    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
+    FF_NETWORK_PER_BUILD: "1"
+    
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
+    
   services:
     - name: postgres:16-alpine
-      alias: postgres
+
     - name: redis:7-alpine
-      alias: redis
+
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
     - pip install -U pip
@@ -282,7 +290,7 @@ nightly_quality_debt:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
   script:
@@ -304,7 +312,7 @@ provider_integration_tests:
     SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   secrets:
     OPENAI_API_KEY:
       vault: ci/syndicateclaw/openai_api_key@secret
@@ -368,7 +376,7 @@ mutation_test:
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
-    FF_NETWORK_PER_BUILD: "1"
+    
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server && rm -rf /var/lib/apt/lists/*
     - service postgresql start
