@@ -307,6 +307,8 @@ provider_integration_tests:
   image: python:3.12-slim
   variables:
     SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
+    OPENAI_API_KEY: 'sk-test-dummy-key-for-ci-gate'
+    ANTHROPIC_API_KEY: 'sk-ant-dummy-key-for-ci-gate'
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
     
