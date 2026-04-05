@@ -12,9 +12,9 @@ lint_and_test:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
     POSTGRES_USER: syndicateclaw
-    POSTGRES_HOST_AUTH_METHOD: "trust"
+    POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
   services:
     - postgres:16
@@ -26,8 +26,7 @@ lint_and_test:
   script:
     - ruff check src
     - mypy src
-    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch
-      --cov-report=term-missing
+    - pytest tests/ -q --tb=line -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH
@@ -119,10 +118,9 @@ pentest:
     - redis:7
   variables:
     POSTGRES_USER: syndicateclaw
-    POSTGRES_HOST_AUTH_METHOD: "trust"
-    POSTGRES_HOST_AUTH_METHOD: trust
+    POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
   before_script:
@@ -230,10 +228,9 @@ integration_tests:
     - redis:7
   variables:
     POSTGRES_USER: syndicateclaw
-    POSTGRES_HOST_AUTH_METHOD: "trust"
-    POSTGRES_HOST_AUTH_METHOD: trust
+    POSTGRES_PASSWORD: syndicateclaw
     POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw@postgres:5432/syndicateclaw_test
+    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test
     SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
   before_script:
