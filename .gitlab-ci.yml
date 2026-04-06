@@ -372,7 +372,6 @@ release:
 mutation_test:
   stage: test
   image: python:3.14.3-slim
-  allow_failure: true
   variables:
     PIP_DISABLE_PIP_VERSION_CHECK: '1'
     PIP_NO_CACHE_DIR: '1'
@@ -393,5 +392,4 @@ mutation_test:
     - test "$SCORE" -le 10 || (echo "Too many survived mutations" && exit 1)
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
-    - when: manual
-      if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
