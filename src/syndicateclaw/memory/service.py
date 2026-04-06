@@ -100,9 +100,7 @@ class MemoryService:
         )
         return persisted
 
-    async def read(
-        self, namespace: str, key: str, actor: str
-    ) -> MemoryRecord | None:
+    async def read(self, namespace: str, key: str, actor: str) -> MemoryRecord | None:
         """Read a memory record by namespace/key, checking cache first."""
         cached = await self._get_cached(namespace, key)
         if cached is not None:
@@ -177,9 +175,7 @@ class MemoryService:
         """Query records by namespace with optional filters."""
         async with self._session_factory() as session, session.begin():
             repo = MemoryRecordRepository(session)
-            db_records = await repo.get_by_namespace(
-                namespace, include_expired=include_expired
-            )
+            db_records = await repo.get_by_namespace(namespace, include_expired=include_expired)
 
             now = datetime.now(UTC)
             results: list[MemoryRecord] = []
@@ -221,9 +217,7 @@ class MemoryService:
         )
         return results
 
-    async def update(
-        self, record_id: str, updates: dict[str, Any], actor: str
-    ) -> MemoryRecord:
+    async def update(self, record_id: str, updates: dict[str, Any], actor: str) -> MemoryRecord:
         """Update a record, appending provenance lineage."""
         async with self._session_factory() as session, session.begin():
             repo = MemoryRecordRepository(session)
@@ -260,9 +254,7 @@ class MemoryService:
                 setattr(db_record, field, value)
 
             if "ttl_seconds" in updates and updates["ttl_seconds"] is not None:
-                db_record.expires_at = datetime.now(UTC) + timedelta(
-                    seconds=updates["ttl_seconds"]
-                )
+                db_record.expires_at = datetime.now(UTC) + timedelta(seconds=updates["ttl_seconds"])
 
             db_record.lineage = lineage.model_dump()
             db_record.updated_at = datetime.now(UTC)
@@ -289,9 +281,7 @@ class MemoryService:
         )
         return updated
 
-    async def delete(
-        self, record_id: str, actor: str, *, hard: bool = False
-    ) -> None:
+    async def delete(self, record_id: str, actor: str, *, hard: bool = False) -> None:
         """Soft-delete (mark) or hard-delete (purge) a memory record."""
         async with self._session_factory() as session, session.begin():
             repo = MemoryRecordRepository(session)
@@ -427,9 +417,7 @@ class MemoryService:
     @staticmethod
     def _validate_confidence(confidence: float) -> None:
         if not 0.0 <= confidence <= 1.0:
-            raise ValueError(
-                f"Confidence must be between 0.0 and 1.0, got {confidence}"
-            )
+            raise ValueError(f"Confidence must be between 0.0 and 1.0, got {confidence}")
 
     def _validate_write_guardrails(self, record: MemoryRecord) -> None:
         """Enforce size and structure constraints on memory writes."""
@@ -439,9 +427,7 @@ class MemoryService:
             )
 
         if len(record.key) > self._max_key_length:
-            raise ValueError(
-                f"Key too long: {len(record.key)} > {self._max_key_length}"
-            )
+            raise ValueError(f"Key too long: {len(record.key)} > {self._max_key_length}")
 
         value_bytes = len(json.dumps(record.value, default=str).encode())
         if value_bytes > self._max_value_bytes:
@@ -499,9 +485,7 @@ class MemoryService:
             )
             return None
 
-    async def _set_cached(
-        self, namespace: str, key: str, record: MemoryRecord
-    ) -> None:
+    async def _set_cached(self, namespace: str, key: str, record: MemoryRecord) -> None:
         if self._redis is None:
             return
         try:

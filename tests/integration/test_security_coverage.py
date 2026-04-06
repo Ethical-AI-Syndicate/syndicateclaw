@@ -45,6 +45,11 @@ def test_secondary_jwt_key_fallback() -> None:
     assert out["sub"] == "user-1"
 
 
-@pytest.mark.skip(reason="Requires Redis + app state for revocation list; run manually.")
+@pytest.mark.skip(
+    reason=(
+        "Requires Redis + app state for revocation list; run manually. "
+        "Unskip: v1.2 when revocation list is wired into the integration test fixture."
+    )
+)
 async def test_revoked_token_rejected() -> None:
     pass

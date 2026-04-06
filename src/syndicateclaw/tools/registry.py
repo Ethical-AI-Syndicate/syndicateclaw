@@ -44,11 +44,7 @@ class ToolRegistry:
     def list_tools(self, risk_level: ToolRiskLevel | None = None) -> list[Tool]:
         if risk_level is None:
             return [td.tool for td in self._tools.values()]
-        return [
-            td.tool
-            for td in self._tools.values()
-            if td.tool.risk_level == risk_level
-        ]
+        return [td.tool for td in self._tools.values() if td.tool.risk_level == risk_level]
 
     def unregister(self, name: str) -> None:
         removed = self._tools.pop(name, None)

@@ -62,4 +62,3 @@ def test_router_replay_stable() -> None:
     d = router.route_task(task, timestamp="2025-03-24T12:00:01Z")
     actual = json.loads(d.model_dump_json())
     assert actual == expected
-

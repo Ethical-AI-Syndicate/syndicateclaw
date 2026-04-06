@@ -29,7 +29,11 @@ async def test_policy_allow_rule_permits_matching_request(
     )
     await engine.add_rule(rule, actor="admin:test")
     decision = await engine.evaluate(
-        rt, "t1", "execute", "alice", {"actor": {"role": "user"}},
+        rt,
+        "t1",
+        "execute",
+        "alice",
+        {"actor": {"role": "user"}},
     )
     assert decision.effect == PolicyEffect.ALLOW
 
@@ -51,7 +55,11 @@ async def test_policy_deny_rule_blocks_matching_request(
     )
     await engine.add_rule(rule, actor="admin:test")
     decision = await engine.evaluate(
-        rt, "secret-x", "execute", "bob", {},
+        rt,
+        "secret-x",
+        "execute",
+        "bob",
+        {},
     )
     assert decision.effect == PolicyEffect.DENY
 
@@ -93,7 +101,11 @@ async def test_policy_no_matching_rule_defaults_to_deny(
     engine = PolicyEngine(session_factory)
     rt = f"tool_isolated_{str(ULID())}"
     decision = await engine.evaluate(
-        rt, "orphan-tool", "execute", "eve", {},
+        rt,
+        "orphan-tool",
+        "execute",
+        "eve",
+        {},
     )
     assert decision.effect == PolicyEffect.DENY
     assert "default" in decision.rule_name.lower()
@@ -110,23 +122,28 @@ async def test_policy_condition_evaluation_all_operators(
         "label": "hello-world",
     }
     assert pe._evaluate_condition(
-        PolicyCondition(field="actor.role", operator="eq", value="admin"), ctx,
+        PolicyCondition(field="actor.role", operator="eq", value="admin"),
+        ctx,
     )
     assert pe._evaluate_condition(
-        PolicyCondition(field="actor.role", operator="neq", value="guest"), ctx,
+        PolicyCondition(field="actor.role", operator="neq", value="guest"),
+        ctx,
     )
     assert pe._evaluate_condition(
-        PolicyCondition(field="actor.role", operator="in", value=["admin", "x"]), ctx,
+        PolicyCondition(field="actor.role", operator="in", value=["admin", "x"]),
+        ctx,
     )
     assert pe._evaluate_condition(
-        PolicyCondition(field="actor.role", operator="not_in", value=["guest", "bot"]), ctx,
+        PolicyCondition(field="actor.role", operator="not_in", value=["guest", "bot"]),
+        ctx,
     )
     assert pe._evaluate_condition(PolicyCondition(field="n", operator="gt", value=3), ctx)
     assert pe._evaluate_condition(PolicyCondition(field="n", operator="lt", value=10), ctx)
     assert pe._evaluate_condition(PolicyCondition(field="n", operator="gte", value=5), ctx)
     assert pe._evaluate_condition(PolicyCondition(field="n", operator="lte", value=5), ctx)
     assert pe._evaluate_condition(
-        PolicyCondition(field="label", operator="matches", value="hello.*"), ctx,
+        PolicyCondition(field="label", operator="matches", value="hello.*"),
+        ctx,
     )
 
 

@@ -19,29 +19,29 @@ def _utcnow() -> datetime:
     return datetime.now(UTC)
 
 
-class InferenceCapability(str, enum.Enum):
+class InferenceCapability(enum.StrEnum):
     CHAT = "chat"
     EMBEDDING = "embedding"
 
 
-class AdapterProtocol(str, enum.Enum):
+class AdapterProtocol(enum.StrEnum):
     OPENAI_COMPATIBLE = "openai_compatible"
     OLLAMA_NATIVE = "ollama_native"
 
 
-class ProviderType(str, enum.Enum):
+class ProviderType(enum.StrEnum):
     LOCAL = "local"
     REMOTE = "remote"
 
 
-class ProviderStatus(str, enum.Enum):
+class ProviderStatus(enum.StrEnum):
     ACTIVE = "active"
     DEGRADED = "degraded"
     UNAVAILABLE = "unavailable"
     DISABLED = "disabled"
 
 
-class HealthStrategy(str, enum.Enum):
+class HealthStrategy(enum.StrEnum):
     MODELS_LIST = "models_list"
     CHAT_NOOP = "chat_noop"
     EMBED_NOOP = "embed_noop"
@@ -50,7 +50,7 @@ class HealthStrategy(str, enum.Enum):
     TAGS_LIST = "tags_list"
 
 
-class InferenceStatus(str, enum.Enum):
+class InferenceStatus(enum.StrEnum):
     PENDING = "pending"
     ROUTING = "routing"
     EXECUTING = "executing"
@@ -60,7 +60,7 @@ class InferenceStatus(str, enum.Enum):
     TIMED_OUT = "timed_out"
 
 
-class InferenceEnvelopeStatus(str, enum.Enum):
+class InferenceEnvelopeStatus(enum.StrEnum):
     """Persisted idempotency envelope lifecycle (DB-backed)."""
 
     PENDING = "pending"
@@ -70,20 +70,20 @@ class InferenceEnvelopeStatus(str, enum.Enum):
     TIMED_OUT = "timed_out"
 
 
-class DataSensitivity(str, enum.Enum):
+class DataSensitivity(enum.StrEnum):
     PUBLIC = "public"
     INTERNAL = "internal"
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
 
 
-class ConcurrencyPolicy(str, enum.Enum):
+class ConcurrencyPolicy(enum.StrEnum):
     REJECT = "reject"
     QUEUE = "queue"
     SHED = "shed"
 
 
-class ErrorCategory(str, enum.Enum):
+class ErrorCategory(enum.StrEnum):
     POLICY = "policy"
     PROVIDER = "provider"
     TRANSPORT = "transport"
@@ -92,19 +92,19 @@ class ErrorCategory(str, enum.Enum):
     UNKNOWN = "unknown"
 
 
-class CircuitState(str, enum.Enum):
+class CircuitState(enum.StrEnum):
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"
 
 
-class ProviderTrustTier(str, enum.Enum):
+class ProviderTrustTier(enum.StrEnum):
     TRUSTED = "trusted"
     RESTRICTED = "restricted"
     UNTRUSTED = "untrusted"
 
 
-class RoutingFailureReason(str, enum.Enum):
+class RoutingFailureReason(enum.StrEnum):
     NO_MODELS = "no_models"
     NO_PROVIDER_MATCH = "no_provider_match"
     POLICY_DENIED = "policy_denied"
@@ -117,20 +117,20 @@ class RoutingFailureReason(str, enum.Enum):
     UNKNOWN = "unknown"
 
 
-class CatalogEntryStatus(str, enum.Enum):
+class CatalogEntryStatus(enum.StrEnum):
     ACTIVE = "active"
     QUARANTINED = "quarantined"
     REJECTED = "rejected"
 
 
-class CatalogEntrySource(str, enum.Enum):
+class CatalogEntrySource(enum.StrEnum):
     """Origin of a catalog row within a snapshot (YAML vs models.dev)."""
 
     YAML_STATIC = "yaml_static"
     MODELS_DEV = "models_dev"
 
 
-class ModelPinning(str, enum.Enum):
+class ModelPinning(enum.StrEnum):
     REQUIRED = "required"
     PREFERRED = "preferred"
     NONE = "none"

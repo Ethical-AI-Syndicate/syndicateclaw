@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -9,10 +9,15 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from syndicateclaw.api.decorators.quota import enforce_quota
 from syndicateclaw.api.dependencies import (
+    get_actor_org,
     get_audit_service,
+    get_builder_token_service,
     get_current_actor,
     get_db_session,
+    get_state_cache,
+    get_versioning_service,
     get_workflow_engine,
 )
 from syndicateclaw.config import Settings
@@ -21,6 +26,8 @@ from syndicateclaw.models import (
     NodeDefinition,
     WorkflowRunStatus,
 )
+from syndicateclaw.services.organization_service import count_workflows_for_org
+from syndicateclaw.services.versioning_service import VersionNotFoundError
 
 logger = structlog.get_logger(__name__)
 
@@ -30,6 +37,10 @@ DEP_CURRENT_ACTOR = Depends(get_current_actor)
 DEP_DB_SESSION = Depends(get_db_session)
 DEP_AUDIT_SERVICE = Depends(get_audit_service)
 DEP_WORKFLOW_ENGINE = Depends(get_workflow_engine)
+DEP_VERSIONING_SERVICE = Depends(get_versioning_service)
+DEP_ACTOR_ORG = Depends(get_actor_org)
+DEP_STATE_CACHE = Depends(get_state_cache)
+DEP_BUILDER_TOKEN_SERVICE = Depends(get_builder_token_service)
 Q_OFFSET = Query(0, ge=0)
 Q_LIMIT = Query(50, ge=1, le=200)
 Q_RUN_STATUS = Query(None, alias="status")
@@ -66,6 +77,16 @@ class WorkflowResponse(BaseModel):
 class StartRunRequest(BaseModel):
     initial_state: dict[str, Any] = Field(default_factory=dict)
     tags: dict[str, str] = Field(default_factory=dict)
+    version: int | None = None
+
+
+class UpdateWorkflowRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    nodes: list[NodeDefinition] | None = None
+    edges: list[EdgeDefinition] | None = None
+    metadata: dict[str, Any] | None = None
+    comment: str | None = None
 
 
 class WorkflowRunResponse(BaseModel):
@@ -141,17 +162,23 @@ async def create_workflow(
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
     audit: Any = DEP_AUDIT_SERVICE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> Any:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
+    await enforce_quota(actor_org, db, "max_workflows", count_workflows_for_org)
+    ns = actor_org.namespace if actor_org is not None else "default"
     workflow = WFModel(
         name=body.name,
         version=body.version,
+        current_version=1,
+        updated_by=actor,
         description=body.description or "",
         nodes=[n.model_dump() for n in body.nodes],
         edges=[e.model_dump() for e in body.edges],
         owner=actor,
         metadata_=body.metadata,
+        namespace=ns,
         owning_scope_type="PLATFORM",
         owning_scope_id="platform",
     )
@@ -203,12 +230,23 @@ async def get_run(
     run_id: str,
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
+    state_cache: Any = DEP_STATE_CACHE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
     run = await db.get(RunModel, run_id)
     if run is None or (run.initiated_by and run.initiated_by != actor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
+    if actor_org is not None and run.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
+    if state_cache is not None:
+        cached = await state_cache.get(run_id)
+        if cached is not None:
+            run.state = cached
     return WorkflowRunResponse.from_orm_redacted(run)
 
 
@@ -247,7 +285,11 @@ async def resume_run(
     run = await db.get(RunModel, run_id)
     if run is None or (run.initiated_by and run.initiated_by != actor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found")
-    if run.status not in (WorkflowRunStatus.PAUSED.value, WorkflowRunStatus.WAITING_APPROVAL.value):
+    if run.status not in (
+        WorkflowRunStatus.PAUSED.value,
+        WorkflowRunStatus.WAITING_APPROVAL.value,
+        WorkflowRunStatus.WAITING_AGENT_RESPONSE.value,
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Cannot resume run in status {run.status}",
@@ -322,17 +364,31 @@ async def get_node_executions(
 
     from syndicateclaw.db.models import NodeExecution as NEModel
 
-    stmt = (
-        select(NEModel)
-        .where(NEModel.run_id == run_id)
-        .order_by(NEModel.created_at.asc())
-    )
+    stmt = select(NEModel).where(NEModel.run_id == run_id).order_by(NEModel.created_at.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())
 
 
 # Parameterized /{workflow_id} routes must come AFTER all literal /runs/* routes,
 # otherwise FastAPI matches "runs" as a workflow_id.
+
+
+@router.post("/{workflow_id}/builder-token")
+async def issue_builder_token(
+    workflow_id: str,
+    actor: str = DEP_CURRENT_ACTOR,
+    db: AsyncSession = DEP_DB_SESSION,
+    builder_svc: Any = DEP_BUILDER_TOKEN_SERVICE,
+) -> dict[str, Any]:
+    """Issue a multi-use builder token for PUT /api/v1/workflows/{id} (CSRF)."""
+    from syndicateclaw.db.models import WorkflowDefinition as WFModel
+
+    wf = await db.get(WFModel, workflow_id)
+    if wf is None or (wf.owner and wf.owner != actor):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
+    bt = await builder_svc.issue(workflow_id, actor)
+    return {"builder_token": bt.token, "expires_at": bt.expires_at.isoformat()}
+
 
 @router.get("/{workflow_id}", response_model=WorkflowResponse)
 async def get_workflow(
@@ -348,6 +404,42 @@ async def get_workflow(
     return wf
 
 
+@router.put("/{workflow_id}", response_model=WorkflowResponse)
+async def update_workflow(
+    workflow_id: str,
+    body: UpdateWorkflowRequest,
+    actor: str = DEP_CURRENT_ACTOR,
+    db: AsyncSession = DEP_DB_SESSION,
+    versioning_service: Any = DEP_VERSIONING_SERVICE,
+) -> Any:
+    from syndicateclaw.db.models import WorkflowDefinition as WFModel
+
+    wf = await db.get(WFModel, workflow_id)
+    if wf is None or (wf.owner and wf.owner != actor):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow not found")
+    wf_any = cast(Any, wf)
+
+    if body.name is not None:
+        wf.name = body.name
+    if body.description is not None:
+        wf.description = body.description
+    if body.nodes is not None:
+        wf_any.nodes = [n.model_dump() for n in body.nodes]
+    if body.edges is not None:
+        wf_any.edges = [e.model_dump() for e in body.edges]
+    if body.metadata is not None:
+        wf.metadata_ = body.metadata
+
+    definition = {
+        "nodes": wf.nodes,
+        "edges": wf.edges,
+        "metadata": wf.metadata_,
+    }
+    await versioning_service.create_version(workflow_id, definition, actor, body.comment)
+    await db.flush()
+    return wf
+
+
 @router.post(
     "/{workflow_id}/runs",
     response_model=WorkflowRunResponse,
@@ -360,6 +452,8 @@ async def start_run(
     actor: str = DEP_CURRENT_ACTOR,
     db: AsyncSession = DEP_DB_SESSION,
     engine: Any = DEP_WORKFLOW_ENGINE,
+    versioning_service: Any = DEP_VERSIONING_SERVICE,
+    actor_org: Any = DEP_ACTOR_ORG,
 ) -> WorkflowRunResponse:
     from syndicateclaw.db.models import WorkflowDefinition as WFModel
 
@@ -369,9 +463,20 @@ async def start_run(
 
     from syndicateclaw.db.models import WorkflowRun as RunModel
 
-    active_statuses = {"PENDING", "RUNNING", "WAITING_APPROVAL"}
-    active_count_stmt = select(func.count()).select_from(RunModel).where(
-        RunModel.status.in_(active_statuses)
+    if actor_org is not None and actor_org.status == "DELETING":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Organization is being deleted; new runs are blocked",
+        )
+
+    active_statuses = {
+        "PENDING",
+        "RUNNING",
+        "WAITING_APPROVAL",
+        "WAITING_AGENT_RESPONSE",
+    }
+    active_count_stmt = (
+        select(func.count()).select_from(RunModel).where(RunModel.status.in_(active_statuses))
     )
     active_count = (await db.execute(active_count_stmt)).scalar() or 0
 
@@ -391,12 +496,32 @@ async def start_run(
             ),
         )
 
+    resolved_version: int
+    if body.version is not None:
+        try:
+            await versioning_service.get_version(workflow_id, body.version)
+        except VersionNotFoundError as err:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Workflow version not found",
+            ) from err
+        resolved_version = body.version
+    else:
+        resolved_version = int(getattr(wf, "current_version", 1) or 1)
+
+    ns = wf.namespace
+    if actor_org is not None and wf.namespace != actor_org.namespace:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cross-namespace access requires impersonation",
+        )
     run = RunModel(
         workflow_id=workflow_id,
-        workflow_version=wf.version,
+        workflow_version=str(resolved_version),
         initiated_by=actor,
         state=body.initial_state,
         tags=body.tags,
+        namespace=ns,
         owning_scope_type="PLATFORM",
         owning_scope_id="platform",
     )
@@ -416,10 +541,6 @@ async def get_run_timeline(
 
     from syndicateclaw.db.models import AuditEvent as AEModel
 
-    stmt = (
-        select(AEModel)
-        .where(AEModel.resource_id == run_id)
-        .order_by(AEModel.created_at.asc())
-    )
+    stmt = select(AEModel).where(AEModel.resource_id == run_id).order_by(AEModel.created_at.asc())
     result = await db.execute(stmt)
     return list(result.scalars().all())

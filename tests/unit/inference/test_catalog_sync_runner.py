@@ -29,9 +29,7 @@ async def test_runner_applies_models_dev_rows(monkeypatch: pytest.MonkeyPatch) -
         fake_resolve,
     )
 
-    payload = (
-        b'[{"provider_id":"allowed","model_id":"md1","capability":"chat","name":"MD"}]'
-    )
+    payload = b'[{"provider_id":"allowed","model_id":"md1","capability":"chat","name":"MD"}]'
 
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, content=payload)

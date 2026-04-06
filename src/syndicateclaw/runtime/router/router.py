@@ -66,10 +66,7 @@ class SkillRouter:
         ambiguous = False
         if len(candidates) > 1:
             second_m, second_score, _ = candidates[1]
-            if (
-                compare_candidates(best_m, second_m, score_a=best_score, score_b=second_score)
-                == 0
-            ):
+            if compare_candidates(best_m, second_m, score_a=best_score, score_b=second_score) == 0:
                 ambiguous = True
 
         if ambiguous:

@@ -34,9 +34,7 @@ def inference_error_to_http(exc: BaseException) -> HTTPException:
 
     if isinstance(
         exc,
-        IdempotencyConflictError
-        | IdempotencyInProgressError
-        | IdempotencyTerminalKeyError,
+        IdempotencyConflictError | IdempotencyInProgressError | IdempotencyTerminalKeyError,
     ):
         return HTTPException(status_code=409, detail=str(exc))
 

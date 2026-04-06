@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: syndicateclaw-config
+data:
+  SYNDICATECLAW_API_HOST: "0.0.0.0"
+  SYNDICATECLAW_API_PORT: "8000"
+  SYNDICATECLAW_LOG_LEVEL: "INFO"
+  SYNDICATECLAW_ENVIRONMENT: "production"

@@ -4,15 +4,23 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
     Float,
     ForeignKey,
     Index,
     Integer,
     LargeBinary,
+    String,
+    Table,
     Text,
     UniqueConstraint,
+    desc,
+    func,
+    text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
@@ -21,23 +29,76 @@ from .base import Base
 class WorkflowDefinition(Base):
     __tablename__ = "workflow_definitions"
     __table_args__ = (
-        UniqueConstraint("name", "version"),
+        UniqueConstraint(
+            "name",
+            "version",
+            "namespace",
+            name="uq_workflow_definitions_name_version_namespace",
+        ),
     )
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
     version: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="default",
+        server_default="default",
+    )
     description: Mapped[str | None] = mapped_column(Text)
     nodes: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     edges: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     owner: Mapped[str | None] = mapped_column(Text)
     metadata_: Mapped[dict[str, Any]] = mapped_column("metadata", JSONB, default=dict)
+    current_version: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        default=1,
+        server_default="1",
+    )
+    updated_by: Mapped[str | None] = mapped_column(Text)
     owner_principal_id: Mapped[str | None] = mapped_column(
         ForeignKey("principals.id", ondelete="SET NULL")
     )
     owning_scope_type: Mapped[str | None] = mapped_column(Text)
     owning_scope_id: Mapped[str | None] = mapped_column(Text)
 
-    runs: Mapped[list[WorkflowRun]] = relationship(back_populates="workflow", lazy="selectin")
+    runs: Mapped[list[WorkflowRun]] = relationship(back_populates="workflow", lazy="raise")
+
+
+class WorkflowVersion(Base):
+    __tablename__ = "workflow_versions"
+    __table_args__ = (
+        UniqueConstraint("workflow_id", "version", name="uq_workflow_version"),
+        Index("idx_workflow_versions_wf", "workflow_id", "version"),
+    )
+
+    workflow_id: Mapped[str] = mapped_column(
+        ForeignKey("workflow_definitions.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    changed_by: Mapped[str] = mapped_column(Text, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(UTC),
+        server_default=func.now(),
+    )
+    comment: Mapped[str | None] = mapped_column(Text)
+
+
+class WorkflowVersionArchive(Base):
+    __tablename__ = "workflow_versions_archive"
+    __table_args__ = (Index("idx_workflow_versions_archive_wf", "workflow_id", "version"),)
+
+    workflow_id: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    definition: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    changed_by: Mapped[str] = mapped_column(Text, nullable=False)
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text)
 
 
 class WorkflowRun(Base):
@@ -45,6 +106,7 @@ class WorkflowRun(Base):
     __table_args__ = (
         Index("ix_workflow_runs_status", "status"),
         Index("ix_workflow_runs_initiated_by", "initiated_by"),
+        Index("idx_workflow_runs_namespace_status", "namespace", "status"),
     )
 
     workflow_id: Mapped[str] = mapped_column(
@@ -74,9 +136,92 @@ class WorkflowRun(Base):
     parent_run: Mapped[WorkflowRun | None] = relationship(
         remote_side="WorkflowRun.id", lazy="selectin"
     )
-    node_executions: Mapped[list[NodeExecution]] = relationship(
-        back_populates="run", lazy="selectin"
+    node_executions: Mapped[list[NodeExecution]] = relationship(back_populates="run", lazy="raise")
+    parent_schedule_id: Mapped[str | None]
+    triggered_by: Mapped[str | None]
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, default="default")
+
+
+class Agent(Base):
+    __tablename__ = "agents"
+    __table_args__ = (
+        UniqueConstraint("name", "namespace", name="uq_agents_name_namespace"),
+        Index("idx_agents_namespace_status", "namespace", "status"),
+        Index("idx_agents_capabilities", "capabilities", postgresql_using="gin"),
     )
+
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
+    capabilities: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        default=list,
+        server_default="{}",
+    )
+    metadata_: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSONB,
+        nullable=False,
+        default=dict,
+        server_default="{}",
+    )
+    status: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="OFFLINE",
+        server_default="OFFLINE",
+    )
+    registered_by: Mapped[str] = mapped_column(Text, nullable=False)
+    heartbeat_at: Mapped[datetime | None]
+    deregistered_at: Mapped[datetime | None]
+
+
+class AgentMessage(Base):
+    __tablename__ = "agent_messages"
+    __table_args__ = (
+        Index("idx_messages_recipient_status", "recipient", "status"),
+        Index("idx_messages_topic_status", "topic", "status"),
+        Index("idx_messages_conversation", "conversation_id"),
+        Index("idx_messages_sender", "sender"),
+    )
+
+    conversation_id: Mapped[str] = mapped_column(Text, nullable=False)
+    sender: Mapped[str] = mapped_column(Text, nullable=False)
+    recipient: Mapped[str | None] = mapped_column(Text)
+    topic: Mapped[str | None] = mapped_column(Text)
+    message_type: Mapped[str] = mapped_column(Text, nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    metadata_: Mapped[dict[str, Any]] = mapped_column(
+        "metadata",
+        JSONB,
+        nullable=False,
+        default=dict,
+    )
+    priority: Mapped[str] = mapped_column(Text, nullable=False, default="NORMAL")
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="PENDING")
+    ttl_seconds: Mapped[int] = mapped_column(Integer, nullable=False, default=3600)
+    hop_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    parent_message_id: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime | None]
+    delivered_at: Mapped[datetime | None]
+    acked_at: Mapped[datetime | None]
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, default="default")
+
+
+class TopicSubscription(Base):
+    __tablename__ = "topic_subscriptions"
+    __table_args__ = (
+        UniqueConstraint("agent_id", "topic", name="uq_topic_subscriptions"),
+        Index("idx_topic_subs_topic", "topic", "namespace"),
+    )
+
+    agent_id: Mapped[str] = mapped_column(
+        ForeignKey("agents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    topic: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
 
 
 class NodeExecution(Base):
@@ -105,9 +250,7 @@ class NodeExecution(Base):
 
 class Tool(Base):
     __tablename__ = "tools"
-    __table_args__ = (
-        UniqueConstraint("name"),
-    )
+    __table_args__ = (UniqueConstraint("name"),)
 
     name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text)
@@ -194,11 +337,18 @@ class MemoryRecord(Base):
 class PolicyRule(Base):
     __tablename__ = "policy_rules"
     __table_args__ = (
+        UniqueConstraint("name", "namespace", name="uq_policy_rules_name_namespace"),
         Index("ix_policy_rules_resource_type", "resource_type"),
         Index("ix_policy_rules_enabled", "enabled"),
     )
 
-    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        default="default",
+        server_default="default",
+    )
     description: Mapped[str | None] = mapped_column(Text)
     resource_type: Mapped[str] = mapped_column(Text, nullable=False)
     resource_pattern: Mapped[str] = mapped_column(Text, nullable=False)
@@ -278,6 +428,7 @@ class AuditEvent(Base):
         Index("ix_audit_events_trace_id", "trace_id"),
         Index("ix_audit_events_resource_scope", "resource_scope_type", "resource_scope_id"),
         Index("ix_audit_events_actor_principal", "actor_principal_id"),
+        Index("idx_audit_events_actor_created", "actor", desc("created_at")),
     )
 
     event_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -300,6 +451,7 @@ class AuditEvent(Base):
 
 class DecisionRecord(Base):
     """Append-only structured decision ledger."""
+
     __tablename__ = "decision_records"
     __table_args__ = (
         Index("ix_decision_records_domain", "domain"),
@@ -326,6 +478,7 @@ class DecisionRecord(Base):
 
 class InputSnapshot(Base):
     """Captures external inputs for deterministic replay."""
+
     __tablename__ = "input_snapshots"
     __table_args__ = (
         Index("ix_input_snapshots_run_id", "run_id"),
@@ -349,6 +502,7 @@ class InputSnapshot(Base):
 
 class DeadLetterRecord(Base):
     """Persistent dead letter queue with classification."""
+
     __tablename__ = "dead_letter_records"
     __table_args__ = (
         Index("ix_dead_letter_records_status", "status"),
@@ -369,6 +523,7 @@ class DeadLetterRecord(Base):
 
 class ApiKey(Base):
     """Database-backed API key with lifecycle tracking."""
+
     __tablename__ = "api_keys"
     __table_args__ = (
         Index("ix_api_keys_key_hash", "key_hash", unique=True),
@@ -387,6 +542,16 @@ class ApiKey(Base):
     actor_principal_id: Mapped[str | None] = mapped_column(
         ForeignKey("principals.id", ondelete="SET NULL")
     )
+    scopes: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        default=list,
+        server_default="{}",
+        comment=(
+            "Empty array intentionally grants full access for v1.0 backward "
+            "compatibility. See v1.1.0 spec section 4.3.2."
+        ),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -396,10 +561,9 @@ class ApiKey(Base):
 
 class Principal(Base):
     """Identity record for users, service accounts, and teams."""
+
     __tablename__ = "principals"
-    __table_args__ = (
-        UniqueConstraint("principal_type", "name"),
-    )
+    __table_args__ = (UniqueConstraint("principal_type", "name"),)
 
     principal_type: Mapped[str] = mapped_column(Text, nullable=False)
     name: Mapped[str] = mapped_column(Text, nullable=False)
@@ -412,7 +576,8 @@ class Principal(Base):
         lazy="selectin",
     )
     role_assignments: Mapped[list[RoleAssignment]] = relationship(
-        back_populates="principal", lazy="selectin",
+        back_populates="principal",
+        lazy="selectin",
     )
 
 
@@ -424,10 +589,12 @@ class TeamMembership(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     team_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     granted_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(UTC),
@@ -435,18 +602,18 @@ class TeamMembership(Base):
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
 
     principal: Mapped[Principal] = relationship(
-        foreign_keys=[principal_id], lazy="selectin",
+        foreign_keys=[principal_id],
+        lazy="selectin",
     )
     team: Mapped[Principal] = relationship(
-        foreign_keys=[team_id], lazy="selectin",
+        foreign_keys=[team_id],
+        lazy="selectin",
     )
 
 
 class Role(Base):
     __tablename__ = "roles"
-    __table_args__ = (
-        UniqueConstraint("name", "scope_type"),
-    )
+    __table_args__ = (UniqueConstraint("name", "scope_type"),)
 
     name: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -466,10 +633,12 @@ class RoleAssignment(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     role_id: Mapped[str] = mapped_column(
-        ForeignKey("roles.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("roles.id", ondelete="CASCADE"),
+        nullable=False,
     )
     scope_type: Mapped[str] = mapped_column(Text, nullable=False)
     scope_id: Mapped[str] = mapped_column(Text, nullable=False)
@@ -494,7 +663,8 @@ class DenyAssignment(Base):
     )
 
     principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     permission: Mapped[str] = mapped_column(Text, nullable=False)
     scope_type: Mapped[str] = mapped_column(Text, nullable=False)
@@ -513,7 +683,8 @@ class NamespaceBinding(Base):
 
     namespace_pattern: Mapped[str] = mapped_column(Text, nullable=False)
     team_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     access_level: Mapped[str] = mapped_column(Text, nullable=False)
     granted_by: Mapped[str] = mapped_column(Text, nullable=False)
@@ -527,10 +698,12 @@ class ImpersonationSession(Base):
     )
 
     real_principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     effective_principal_id: Mapped[str] = mapped_column(
-        ForeignKey("principals.id", ondelete="CASCADE"), nullable=False,
+        ForeignKey("principals.id", ondelete="CASCADE"),
+        nullable=False,
     )
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     approval_reference: Mapped[str | None] = mapped_column(Text)
@@ -735,3 +908,93 @@ class InferenceModelPin(Base):
     embedding_dimensions: Mapped[int | None] = mapped_column(Integer)
     pinned_by: Mapped[str] = mapped_column(Text, nullable=False)
     pinned_at: Mapped[datetime] = mapped_column(nullable=False)
+
+
+class StreamingToken(Base):
+    """Single-use streaming or builder token."""
+
+    __tablename__ = "streaming_tokens"
+    __table_args__ = (
+        Index("idx_streaming_tokens_run", "run_id"),
+        Index("idx_streaming_tokens_type", "token_type"),
+        Index("idx_streaming_tokens_expires", "expires_at"),
+    )
+
+    token: Mapped[str] = mapped_column(Text, primary_key=True)
+    run_id: Mapped[str | None] = mapped_column(Text)
+    actor: Mapped[str] = mapped_column(Text, nullable=False)
+    token_type: Mapped[str] = mapped_column(Text, nullable=False, default="streaming")
+    workflow_id: Mapped[str | None] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(nullable=False)
+    used_at: Mapped[datetime | None]
+
+
+class Organization(Base):
+    """Tenant organization (v1.4.0 multi-tenancy)."""
+
+    __tablename__ = "organizations"
+    __table_args__ = ()
+
+    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    display_name: Mapped[str] = mapped_column(Text, nullable=False)
+    owner_actor: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="ACTIVE")
+    quotas: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+
+
+organization_members = Table(
+    "organization_members",
+    Base.metadata,
+    Column("id", Text, primary_key=True),
+    Column(
+        "organization_id",
+        Text,
+        ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+    ),
+    Column("actor", Text, nullable=False),
+    Column("org_role", Text, nullable=False),
+    Column("rbac_role", Text, nullable=False),
+    Column("joined_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("organization_id", "actor", name="uq_organization_members_org_actor"),
+    Index("idx_org_members_actor", "actor"),
+)
+
+organization_quotas_usage = Table(
+    "organization_quotas_usage",
+    Base.metadata,
+    Column("organization_id", Text, ForeignKey("organizations.id"), primary_key=True),
+    Column("storage_bytes_used", BigInteger, nullable=False, server_default="0"),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+
+class WorkflowSchedule(Base):
+    __tablename__ = "workflow_schedules"
+    __table_args__ = (
+        Index("idx_schedules_next_run", "next_run_at", postgresql_where=text("status = 'ACTIVE'")),
+    )
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True)
+    workflow_id: Mapped[str] = mapped_column(Text, nullable=False)
+    workflow_version: Mapped[int | None]
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None]
+    schedule_type: Mapped[str] = mapped_column(Text, nullable=False)
+    schedule_value: Mapped[str] = mapped_column(Text, nullable=False)
+    input_state: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
+    actor: Mapped[str] = mapped_column(Text, nullable=False)
+    namespace: Mapped[str] = mapped_column(Text, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False, default="ACTIVE")
+    next_run_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    last_run_at: Mapped[datetime | None]
+    max_runs: Mapped[int | None]
+    run_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    locked_by: Mapped[str | None]
+    locked_until: Mapped[datetime | None]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

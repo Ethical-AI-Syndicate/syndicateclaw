@@ -25,8 +25,7 @@ class SkillHandler(Protocol):
         *,
         manifest: SkillManifest,
         tool_invoker: ToolInvoker,
-    ) -> dict[str, Any]:
-        ...
+    ) -> dict[str, Any]: ...
 
 
 class ExecutionEngine:

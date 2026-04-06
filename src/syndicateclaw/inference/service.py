@@ -162,8 +162,10 @@ class ProviderService:
                         category=ErrorCategory.PROVIDER,
                         retryable=False,
                     )
-                return inference_id, False, EmbeddingInferenceResponse.model_validate(
-                    row.result_json
+                return (
+                    inference_id,
+                    False,
+                    EmbeddingInferenceResponse.model_validate(row.result_json),
                 )
 
             if st in (
@@ -414,18 +416,14 @@ class ProviderService:
         Idempotency replay applies when ``idempotency_key`` is set.
         """
         binding = ExecutionBinding.capture(self._loader, self._catalog)
-        inference_id, idem_finalize, replay = await self._idempotency_embedding_begin(
-            req, binding
-        )
+        inference_id, idem_finalize, replay = await self._idempotency_embedding_begin(req, binding)
         if replay is not None:
             return replay
 
         req = req.model_copy(update={"trace_id": req.trace_id or inference_id})
 
         try:
-            return await self._infer_embedding_execute(
-                req, binding, inference_id, idem_finalize
-            )
+            return await self._infer_embedding_execute(req, binding, inference_id, idem_finalize)
         except Exception as exc:
             if idem_finalize and self._idempotency:
                 await self._idempotency.update_failed(

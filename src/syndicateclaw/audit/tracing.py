@@ -11,10 +11,12 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import ConsoleSpanExporter, SimpleSpanProcessor
 
+from syndicateclaw import __version__
+
 if TYPE_CHECKING:
     from opentelemetry.trace import Span, Tracer
 
-_SERVICE_VERSION = "0.1.0"
+_SERVICE_VERSION = __version__
 
 logger = structlog.get_logger(__name__)
 

@@ -26,36 +26,36 @@ from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
 
 
 class TestSafeEvalCondition:
-    def test_safe_eval_simple_equality(self):
+    def test_safe_eval_simple_equality(self) -> None:
         assert safe_eval_condition("state.x == 1", {"x": 1}) is True
         assert safe_eval_condition("state.x == 1", {"x": 2}) is False
 
-    def test_safe_eval_string_comparison(self):
+    def test_safe_eval_string_comparison(self) -> None:
         assert safe_eval_condition("state.name == 'foo'", {"name": "foo"}) is True
         assert safe_eval_condition("state.name == 'foo'", {"name": "bar"}) is False
 
-    def test_safe_eval_in_list(self):
+    def test_safe_eval_in_list(self) -> None:
         assert safe_eval_condition("state.x in [1, 2, 3]", {"x": 2}) is True
         assert safe_eval_condition("state.x in [1, 2, 3]", {"x": 5}) is False
 
-    def test_safe_eval_and_or(self):
+    def test_safe_eval_and_or(self) -> None:
         assert safe_eval_condition("state.x == 1 and state.y == 2", {"x": 1, "y": 2}) is True
         assert safe_eval_condition("state.x == 1 and state.y == 2", {"x": 1, "y": 3}) is False
         assert safe_eval_condition("state.x == 1 or state.y == 2", {"x": 1, "y": 3}) is True
         assert safe_eval_condition("state.x == 1 or state.y == 2", {"x": 0, "y": 3}) is False
 
-    def test_safe_eval_not(self):
+    def test_safe_eval_not(self) -> None:
         assert safe_eval_condition("not state.x == 1", {"x": 2}) is True
         assert safe_eval_condition("not state.x == 1", {"x": 1}) is False
 
-    def test_safe_eval_greater_less(self):
+    def test_safe_eval_greater_less(self) -> None:
         assert safe_eval_condition("state.x > 5", {"x": 10}) is True
         assert safe_eval_condition("state.x > 5", {"x": 3}) is False
         assert safe_eval_condition("state.x < 5", {"x": 3}) is True
         assert safe_eval_condition("state.x >= 5", {"x": 5}) is True
         assert safe_eval_condition("state.x <= 5", {"x": 5}) is True
 
-    def test_safe_eval_parentheses(self):
+    def test_safe_eval_parentheses(self) -> None:
         result = safe_eval_condition(
             "(state.x == 1 or state.y == 2) and state.z == 3",
             {"x": 1, "y": 0, "z": 3},
@@ -68,14 +68,14 @@ class TestSafeEvalCondition:
         )
         assert result is False
 
-    def test_safe_eval_rejects_injection(self):
+    def test_safe_eval_rejects_injection(self) -> None:
         with pytest.raises(ValueError):
             safe_eval_condition("__import__('os').system('rm -rf /')", {})
 
         with pytest.raises(ValueError):
             safe_eval_condition("eval('1+1')", {})
 
-    def test_safe_eval_empty_expression(self):
+    def test_safe_eval_empty_expression(self) -> None:
         with pytest.raises(ValueError, match="Unexpected end of expression"):
             safe_eval_condition("", {})
 
@@ -86,7 +86,7 @@ class TestSafeEvalCondition:
 
 
 class TestWorkflowEngine:
-    async def test_workflow_engine_execute_simple(self):
+    async def test_workflow_engine_execute_simple(self) -> None:
         workflow = WorkflowDefinition.new(
             name="test",
             version="1.0",
@@ -97,9 +97,7 @@ class TestWorkflowEngine:
             ],
             edges=[EdgeDefinition(source_node_id="start", target_node_id="end")],
         )
-        run = WorkflowRun.new(
-            workflow_id=workflow.id, workflow_version="1.0", initiated_by="test"
-        )
+        run = WorkflowRun.new(workflow_id=workflow.id, workflow_version="1.0", initiated_by="test")
         engine = WorkflowEngine(BUILTIN_HANDLERS)
         context = ExecutionContext(run_id=run.id)
         result = await engine.execute(run, context, workflow=workflow)
@@ -108,7 +106,7 @@ class TestWorkflowEngine:
         assert result.run.completed_at is not None
         assert len(result.node_executions) == 2
 
-    async def test_workflow_engine_decision_node(self):
+    async def test_workflow_engine_decision_node(self) -> None:
         workflow = WorkflowDefinition.new(
             name="decision-test",
             version="1.0",
@@ -151,7 +149,7 @@ class TestWorkflowEngine:
         assert "end_a" in executed_node_ids
         assert "end_b" not in executed_node_ids
 
-    async def test_workflow_engine_missing_handler(self):
+    async def test_workflow_engine_missing_handler(self) -> None:
         workflow = WorkflowDefinition.new(
             name="missing-handler",
             version="1.0",
@@ -171,9 +169,7 @@ class TestWorkflowEngine:
                 EdgeDefinition(source_node_id="bad", target_node_id="end"),
             ],
         )
-        run = WorkflowRun.new(
-            workflow_id=workflow.id, workflow_version="1.0", initiated_by="test"
-        )
+        run = WorkflowRun.new(workflow_id=workflow.id, workflow_version="1.0", initiated_by="test")
         engine = WorkflowEngine(BUILTIN_HANDLERS)
         context = ExecutionContext(run_id=run.id)
         result = await engine.execute(run, context, workflow=workflow)
@@ -181,7 +177,7 @@ class TestWorkflowEngine:
         assert result.run.status == WorkflowRunStatus.FAILED
         assert "nonexistent_handler" in (result.run.error or "")
 
-    async def test_workflow_engine_pause_resume(self):
+    async def test_workflow_engine_pause_resume(self) -> None:
         async def pause_handler(state: dict[str, Any], ctx: ExecutionContext) -> NodeResult:
             from syndicateclaw.orchestrator.engine import PauseExecutionError
 
@@ -208,9 +204,7 @@ class TestWorkflowEngine:
                 EdgeDefinition(source_node_id="pause_node", target_node_id="end"),
             ],
         )
-        run = WorkflowRun.new(
-            workflow_id=workflow.id, workflow_version="1.0", initiated_by="test"
-        )
+        run = WorkflowRun.new(workflow_id=workflow.id, workflow_version="1.0", initiated_by="test")
         engine = WorkflowEngine(handlers)
         context = ExecutionContext(run_id=run.id)
 

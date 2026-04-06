@@ -10,7 +10,7 @@ from syndicateclaw.inference.types import (
 )
 
 
-def test_chat_request_defaults():
+def test_chat_request_defaults() -> None:
     r = ChatInferenceRequest(
         messages=[ChatMessage(role="user", content="hi")],
         actor="user:alice",
@@ -20,7 +20,7 @@ def test_chat_request_defaults():
     assert r.sensitivity == DataSensitivity.INTERNAL
 
 
-def test_embedding_request_defaults_pinning_required():
+def test_embedding_request_defaults_pinning_required() -> None:
     r = EmbeddingInferenceRequest(
         inputs=["hello"],
         actor="user:alice",
@@ -29,7 +29,7 @@ def test_embedding_request_defaults_pinning_required():
     assert r.model_pinning == ModelPinning.REQUIRED
 
 
-def test_embedding_dimensions_validated_when_flag_set():
+def test_embedding_dimensions_validated_when_flag_set() -> None:
     m = ModelDescriptor(
         model_id="e1",
         name="E",

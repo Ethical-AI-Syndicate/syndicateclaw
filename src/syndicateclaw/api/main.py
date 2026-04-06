@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import sys
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Any, cast
 
@@ -10,22 +11,114 @@ import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import make_asgi_app
 from sqlalchemy import text
 
+from syndicateclaw import __version__
 from syndicateclaw.api.middleware import (
     AuditMiddleware,
     PrometheusMetricsMiddleware,
     RequestIDMiddleware,
 )
 from syndicateclaw.api.rate_limit import RateLimitMiddleware
+from syndicateclaw.api.routers.admin import router as admin_router
 from syndicateclaw.api.routes import ALL_ROUTERS
 from syndicateclaw.authz.shadow_middleware import ShadowRBACMiddleware
 from syndicateclaw.config import Settings
+from syndicateclaw.connectors.discord.bot import router as discord_router
+from syndicateclaw.connectors.registry import build_registry
+from syndicateclaw.connectors.slack.bot import router as slack_router
+from syndicateclaw.connectors.telegram.bot import router as telegram_router
+from syndicateclaw.middleware import RBACMiddleware
+from syndicateclaw.middleware.csrf import BuilderCSRFMiddleware
 
 logger = structlog.get_logger(__name__)
 
-VERSION = "0.1.0"
+VERSION = __version__
+
+
+async def configure_system_engine(session_factory: Any) -> None:
+    """Ensure system:engine has run:control + tool:execute before serving traffic."""
+    from sqlalchemy import select
+    from sqlalchemy.exc import IntegrityError
+
+    from syndicateclaw.db.models import Principal, Role, RoleAssignment
+
+    async with session_factory() as session, session.begin():
+        principal = (
+            await session.execute(
+                select(Principal).where(
+                    Principal.principal_type == "service",
+                    Principal.name == "system:engine",
+                )
+            )
+        ).scalar_one_or_none()
+        if principal is None:
+            principal = Principal(
+                principal_type="service",
+                name="system:engine",
+                enabled=True,
+            )
+            session.add(principal)
+            try:
+                await session.flush()
+            except IntegrityError:
+                await session.rollback()
+                session.begin()
+                principal = (
+                    await session.execute(
+                        select(Principal).where(
+                            Principal.principal_type == "service",
+                            Principal.name == "system:engine",
+                        )
+                    )
+                ).scalar_one_or_none()
+
+        role = (
+            await session.execute(
+                select(Role).where(
+                    Role.name == "system_engine_runtime",
+                    Role.scope_type == "PLATFORM",
+                )
+            )
+        ).scalar_one_or_none()
+        if role is None:
+            role = Role(
+                name="system_engine_runtime",
+                description="Runtime permissions for system:engine service account",
+                built_in=True,
+                permissions=["run:control", "tool:execute"],
+                inherits_from=None,
+                display_base=None,
+                scope_type="PLATFORM",
+                created_by="system",
+            )
+            session.add(role)
+            await session.flush()
+
+        assignment = (
+            await session.execute(
+                select(RoleAssignment).where(
+                    RoleAssignment.principal_id == principal.id,
+                    RoleAssignment.role_id == role.id,
+                    RoleAssignment.scope_type == "PLATFORM",
+                    RoleAssignment.scope_id == "platform",
+                    RoleAssignment.revoked.is_(False),
+                )
+            )
+        ).scalar_one_or_none()
+        if assignment is None:
+            session.add(
+                RoleAssignment(
+                    principal_id=principal.id,
+                    role_id=role.id,
+                    scope_type="PLATFORM",
+                    scope_id="platform",
+                    granted_by="system",
+                    revoked=False,
+                )
+            )
 
 
 def _configure_structlog() -> None:
@@ -77,6 +170,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from syndicateclaw.approval.service import ApprovalService
     from syndicateclaw.audit.service import AuditService
+    from syndicateclaw.cache.state_cache import StateCache
     from syndicateclaw.db.base import get_engine, get_session_factory
     from syndicateclaw.memory.service import MemoryService
     from syndicateclaw.orchestrator.engine import WorkflowEngine
@@ -105,6 +199,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     except Exception:
         logger.debug("otel.httpx_instrument_skipped", exc_info=True)
     session_factory = get_session_factory(engine)
+    await configure_system_engine(session_factory)
     redis_client = cast(
         Redis,
         aioredis.from_url(settings.redis_url, decode_responses=True),  # type: ignore[no-untyped-call]
@@ -117,6 +212,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     asymmetric_keypair = None
     if settings.ed25519_private_key_path:
         from syndicateclaw.security.signing import SigningKeyPair
+
         key_path = Path(settings.ed25519_private_key_path)
         if not key_path.exists():
             raise RuntimeError(
@@ -136,6 +232,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.engine = engine
     app.state.session_factory = session_factory
     app.state.redis_client = redis_client
+    state_cache = StateCache(redis_client)
+    app.state.state_cache = state_cache
 
     audit_service = AuditService(session_factory, signing_key=signing_key)
     memory_service = MemoryService(
@@ -147,6 +245,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     policy_engine = PolicyEngine(session_factory)
     from syndicateclaw.approval.authority import ApprovalAuthorityResolver
+
     authority_resolver = ApprovalAuthorityResolver(session_factory=session_factory)
     approval_service = ApprovalService(
         session_factory,
@@ -161,16 +260,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     tool_registry = ToolRegistry()
     tool_executor = ToolExecutor(
-        tool_registry, policy_engine, audit_service,
+        tool_registry,
+        policy_engine,
+        audit_service,
         decision_ledger=decision_ledger,
         snapshot_store=snapshot_store,
-    )
-
-    workflow_engine = WorkflowEngine(
-        BUILTIN_HANDLERS,
-        checkpoint_store=None,
-        audit_service=audit_service,
-        signing_key=signing_key,
     )
 
     for tool, handler in BUILTIN_TOOLS:
@@ -182,11 +276,25 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yaml_path.write_text("inference_enabled: false\nproviders: []\n", encoding="utf-8")
 
     from syndicateclaw.inference.catalog import ModelCatalog
-    from syndicateclaw.inference.config_loader import ProviderConfigLoader
+    from syndicateclaw.inference.config_loader import (
+        ProviderConfigLoader,
+        validate_provider_env_vars,
+    )
     from syndicateclaw.inference.config_schema import ProviderSystemConfig
     from syndicateclaw.inference.idempotency import IdempotencyStore
     from syndicateclaw.inference.registry import ProviderRegistry
     from syndicateclaw.inference.service import ProviderService
+    from syndicateclaw.messaging.router import MessageRouter
+    from syndicateclaw.services.agent_service import AgentService
+    from syndicateclaw.services.message_service import MessageService
+    from syndicateclaw.services.streaming_token_service import (
+        StreamingTokenRepository,
+        StreamingTokenService,
+    )
+    from syndicateclaw.services.subscription_service import SubscriptionService
+    from syndicateclaw.services.versioning_service import VersioningService
+    from syndicateclaw.tasks.agent_response_resume import run_agent_response_resume_loop
+    from syndicateclaw.tasks.message_delivery import run_message_delivery_loop
     from syndicateclaw.tools.inference_tools import build_inference_tools
 
     provider_config_loader = ProviderConfigLoader(yaml_path)
@@ -197,6 +305,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         provider_config_loader.activate(ProviderSystemConfig(inference_enabled=False, providers=()))
 
     _cfg, _ver = provider_config_loader.current()
+    validate_provider_env_vars(_cfg)
     inference_catalog = ModelCatalog()
     inference_catalog.replace_from_yaml_static(_cfg, snapshot_version=_ver)
     provider_registry = ProviderRegistry(_cfg)
@@ -209,13 +318,74 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         audit_service=audit_service,
         idempotency_store=idempotency_store,
     )
+    connector_registry = build_registry(settings, provider_service)
+    app.state.connector_registry = connector_registry
+    await connector_registry.start_all()
+    streaming_token_repository = StreamingTokenRepository(session_factory)
+    streaming_token_service = StreamingTokenService(
+        streaming_token_repository,
+        streaming_token_ttl_seconds=settings.streaming_token_ttl_seconds,
+    )
+    from syndicateclaw.plugins.executor import PluginExecutor
+    from syndicateclaw.plugins.registry import PluginRegistry
+    from syndicateclaw.services.builder_token_service import BuilderTokenService
+
+    builder_token_service = BuilderTokenService(
+        streaming_token_repository,
+        ttl_seconds=settings.builder_token_ttl_seconds,
+    )
+    _plugins_yaml = Path(settings.plugins_config_path or (repo_root / "plugins.yaml"))
+    _plugin_registry = PluginRegistry()
+    _plugin_registry.load_from_config(_plugins_yaml)
+    _plugin_executor = PluginExecutor(
+        _plugin_registry.plugins,
+        audit_service=audit_service,
+        timeout_seconds=float(settings.plugin_timeout_seconds),
+    )
+
+    workflow_engine = WorkflowEngine(
+        BUILTIN_HANDLERS,
+        checkpoint_store=None,
+        audit_service=audit_service,
+        signing_key=signing_key,
+        state_cache=state_cache,
+        plugin_executor=_plugin_executor,
+    )
+    agent_service = AgentService(
+        session_factory,
+        heartbeat_timeout_seconds=getattr(settings, "agent_heartbeat_timeout_seconds", 60),
+    )
+    subscription_service = SubscriptionService(session_factory, agent_service=agent_service)
+    message_router = MessageRouter(
+        session_factory,
+        max_hops=settings.message_max_hops,
+    )
+    message_service = MessageService(
+        session_factory,
+        agent_service=agent_service,
+        subscription_service=subscription_service,
+        router=message_router,
+        redis_client=redis_client,
+    )
+    versioning_service = VersioningService(session_factory)
     for tool, handler in build_inference_tools(provider_service):
         tool_registry.register(tool, handler)
+
+    from syndicateclaw.services.schedule_service import ScheduleService
+
+    schedule_service = ScheduleService(session_factory)
+    app.state.schedule_service = schedule_service
 
     app.state.provider_config_loader = provider_config_loader
     app.state.inference_catalog = inference_catalog
     app.state.provider_registry = provider_registry
     app.state.provider_service = provider_service
+    app.state.streaming_token_service = streaming_token_service
+    app.state.builder_token_service = builder_token_service
+    app.state.agent_service = agent_service
+    app.state.subscription_service = subscription_service
+    app.state.message_service = message_service
+    app.state.versioning_service = versioning_service
 
     app.state.audit_service = audit_service
     app.state.memory_service = memory_service
@@ -230,8 +400,44 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.asymmetric_keypair = asymmetric_keypair
 
     from syndicateclaw.security.api_keys import ApiKeyService
+    from syndicateclaw.tasks.agent_heartbeat import run_agent_heartbeat_expiry_loop
+
     api_key_service = ApiKeyService(session_factory)
     app.state.api_key_service = api_key_service
+
+    scheduler_task: asyncio.Task[None] | None = None
+    if getattr(settings, "scheduler_enabled", True):
+        from syndicateclaw.services.scheduler_service import SchedulerService
+
+        scheduler_service = SchedulerService(session_factory, settings)
+        scheduler_task = asyncio.create_task(
+            scheduler_service.start(),
+            name="scheduler-loop",
+        )
+
+    heartbeat_task = asyncio.create_task(
+        run_agent_heartbeat_expiry_loop(
+            agent_service,
+            interval_seconds=settings.agent_heartbeat_check_interval,
+        ),
+        name="agent-heartbeat-expiry-loop",
+    )
+    message_delivery_task = asyncio.create_task(
+        run_message_delivery_loop(
+            message_service,
+            session_factory,
+            poll_interval_seconds=5,
+        ),
+        name="message-delivery-loop",
+    )
+    agent_response_resume_task = asyncio.create_task(
+        run_agent_response_resume_loop(
+            session_factory,
+            message_service,
+            poll_interval_seconds=5,
+        ),
+        name="agent-response-resume-loop",
+    )
 
     logger.info(
         "app.startup",
@@ -245,6 +451,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
     logger.info("app.shutdown")
+    await connector_registry.stop_all()
+    heartbeat_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await heartbeat_task
+    if scheduler_task is not None:
+        scheduler_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await scheduler_task
+    message_delivery_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await message_delivery_task
+    agent_response_resume_task.cancel()
+    with suppress(asyncio.CancelledError):
+        await agent_response_resume_task
     await engine.dispose()
     await redis_client.aclose()
 
@@ -256,14 +476,15 @@ def create_app() -> FastAPI:
         title="SyndicateClaw",
         version=VERSION,
         description=(
-            "Production-oriented agent orchestration platform with "
-            "stateful graph-based workflows"
+            "Production-oriented agent orchestration platform with stateful graph-based workflows"
         ),
         lifespan=lifespan,
     )
 
     app.add_middleware(PrometheusMetricsMiddleware)
     app.add_middleware(AuditMiddleware)
+    app.add_middleware(BuilderCSRFMiddleware)
+    app.add_middleware(RBACMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(RequestIDMiddleware)
     app.add_middleware(ShadowRBACMiddleware)
@@ -279,6 +500,15 @@ def create_app() -> FastAPI:
 
     for router in ALL_ROUTERS:
         app.include_router(router)
+
+    app.include_router(admin_router)
+    app.include_router(telegram_router, prefix="/webhooks/telegram")
+    app.include_router(discord_router, prefix="/webhooks/discord")
+    app.include_router(slack_router, prefix="/webhooks/slack")
+
+    _console = Path(settings.console_static_dir)
+    if settings.console_enabled and _console.exists():
+        app.mount("/console", StaticFiles(directory=_console, html=True), name="console")
 
     app.mount("/metrics", make_asgi_app())
 
@@ -318,6 +548,29 @@ def create_app() -> FastAPI:
         dl = getattr(request.app.state, "decision_ledger", None)
         checks["decision_ledger"] = "ok" if dl is not None else "missing"
         if dl is None:
+            healthy = False
+
+        try:
+            sf = request.app.state.session_factory
+            async with sf() as session:
+                waiting_approval = (
+                    await session.execute(
+                        text("SELECT COUNT(*) FROM workflow_runs WHERE status = 'WAITING_APPROVAL'")
+                    )
+                ).scalar_one()
+                waiting_agent_response = (
+                    await session.execute(
+                        text(
+                            "SELECT COUNT(*) FROM workflow_runs "
+                            "WHERE status = 'WAITING_AGENT_RESPONSE'"
+                        )
+                    )
+                ).scalar_one()
+            checks["waiting_approval"] = str(waiting_approval)
+            checks["waiting_agent_response"] = str(waiting_agent_response)
+        except Exception as e:
+            checks["waiting_approval"] = f"error: {e}"
+            checks["waiting_agent_response"] = f"error: {e}"
             healthy = False
 
         rate_limit_ok = checks.get("redis") == "ok"

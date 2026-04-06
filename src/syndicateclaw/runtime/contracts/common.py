@@ -2,62 +2,62 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 
-class RiskLevel(str, Enum):
+class RiskLevel(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
-class DeterminismTarget(str, Enum):
+class DeterminismTarget(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
 
 
-class RoutingStatus(str, Enum):
+class RoutingStatus(StrEnum):
     SELECTED = "selected"
     UNCERTAIN = "uncertain"
     BLOCKED = "blocked"
 
 
-class ResultStatus(str, Enum):
+class ResultStatus(StrEnum):
     SUCCESS = "success"
     PARTIAL = "partial"
     BLOCKED = "blocked"
     FAILED = "failed"
 
 
-class ExecutionMode(str, Enum):
+class ExecutionMode(StrEnum):
     SINGLE_STEP = "single_step"
     PLANNED_STEP = "planned_step"
 
 
-class ToolInvocationStatus(str, Enum):
+class ToolInvocationStatus(StrEnum):
     SUCCESS = "success"
     RETRYABLE_FAILURE = "retryable_failure"
     TERMINAL_FAILURE = "terminal_failure"
 
 
-class RequesterType(str, Enum):
+class RequesterType(StrEnum):
     USER = "user"
     SYSTEM = "system"
     SERVICE = "service"
 
 
-class ApprovalMode(str, Enum):
+class ApprovalMode(StrEnum):
     AUTO = "auto"
     HUMAN_REQUIRED = "human_required"
     POLICY_DRIVEN = "policy_driven"
 
 
-class TriggerType(str, Enum):
+class TriggerType(StrEnum):
     INTENT = "intent"
 
 
-class ToolPolicy(str, Enum):
+class ToolPolicy(StrEnum):
     """How tool authorization is interpreted for audit and enforcement."""
 
     EXPLICIT_ALLOWLIST = "explicit_allowlist"

@@ -140,12 +140,15 @@ class InferenceRouter:
             )
 
         cap = _capability_for(request)
-        if await policy.gate_inference_capability(
-            capability=cap,
-            actor=request.actor,
-            scope_type=request.scope_type,
-            scope_id=request.scope_id,
-        ) != "allow":
+        if (
+            await policy.gate_inference_capability(
+                capability=cap,
+                actor=request.actor,
+                scope_type=request.scope_type,
+                scope_id=request.scope_id,
+            )
+            != "allow"
+        ):
             raise InferenceRoutingError(
                 "inference_capability_denied",
                 failure_reason=RoutingFailureReason.POLICY_DENIED,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import UTC, datetime, timedelta
-from typing import Any, cast
+from typing import Any
 
 import jwt
 import structlog
@@ -22,15 +22,17 @@ def _get_secret_key() -> str:
 
 def create_access_token(
     actor: str,
-    permissions: list[str],
     expires_delta: timedelta,
     *,
+    org_id: str | None = None,
+    org_role: str | None = None,
     secret_key: str | None = None,
     algorithm: str | None = None,
     private_key: Any = None,
 ) -> str:
-    """Create a signed JWT containing actor identity and permissions.
+    """Create a signed JWT with ``sub``, optional ``org_id`` / ``org_role``, and ``exp``.
 
+    Permissions are resolved at request time via live RBAC (not embedded in the token).
     When *algorithm* is ``"EdDSA"`` and *private_key* is provided, the token
     is signed with an Ed25519 private key (asymmetric). Otherwise falls back
     to HS256 with the shared secret.
@@ -38,11 +40,14 @@ def create_access_token(
     now = datetime.now(UTC)
     payload: dict[str, Any] = {
         "sub": actor,
-        "permissions": permissions,
         "iat": now,
         "exp": now + expires_delta,
         "jti": str(uuid.uuid4()),
     }
+    if org_id is not None:
+        payload["org_id"] = org_id
+    if org_role is not None:
+        payload["org_role"] = org_role
     alg = algorithm or "HS256"
     if alg == "EdDSA" and private_key is not None:
         return jwt.encode(payload, private_key, algorithm="EdDSA")
@@ -93,7 +98,7 @@ def decode_access_token(
             }
             if audience:
                 kw["audience"] = audience
-            return cast(dict[str, Any], jwt.decode(token, try_key, **kw))
+            return jwt.decode(token, try_key, **kw)
         except jwt.exceptions.PyJWTError as exc:
             last_error = exc
             continue

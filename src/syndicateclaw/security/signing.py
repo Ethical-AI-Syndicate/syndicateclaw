@@ -85,6 +85,7 @@ class SigningKeyPair:
             Encoding,
             PublicFormat,
         )
+
         return self._public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
 
     @property
@@ -94,9 +95,8 @@ class SigningKeyPair:
             NoEncryption,
             PrivateFormat,
         )
-        return self._private_key.private_bytes(
-            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
-        )
+
+        return self._private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
 
     def sign(self, payload: dict[str, Any]) -> str:
         """Sign canonical JSON with Ed25519. Returns hex-encoded signature."""

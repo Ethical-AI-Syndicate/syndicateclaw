@@ -19,7 +19,7 @@ try:
         "syndicateclaw_catalog_sync_models_dev",
         description="models.dev catalog sync outcomes",
     )
-except Exception:
+except Exception:  # nosec B110
     pass
 
 

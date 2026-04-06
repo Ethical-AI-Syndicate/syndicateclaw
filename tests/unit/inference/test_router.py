@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from syndicateclaw.inference.catalog import ModelCatalog
@@ -36,14 +38,14 @@ class _DenySpecificModel(PolicyRoutingPort):
     def __init__(self, denied: set[str]) -> None:
         self._denied = denied
 
-    async def gate_inference_capability(self, **kwargs):
+    async def gate_inference_capability(self, **kwargs: Any) -> Any:
         return "allow"
 
-    async def gate_model_use(self, *, model_id: str, **kwargs):
+    async def gate_model_use(self, *, model_id: str, **kwargs: Any) -> Any:
         return "deny" if model_id in self._denied else "allow"
 
 
-def _chat(**kwargs):
+def _chat(**kwargs: Any) -> Any:
     return ChatInferenceRequest(
         messages=[ChatMessage(role="user", content="hi")],
         actor="a:1",

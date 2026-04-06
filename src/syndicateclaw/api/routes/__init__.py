@@ -1,21 +1,41 @@
 from __future__ import annotations
 
+from syndicateclaw.api.routes.agents import router as agents_router
+from syndicateclaw.api.routes.api_keys import router as api_keys_router
 from syndicateclaw.api.routes.approvals import router as approvals_router
 from syndicateclaw.api.routes.audit import router as audit_router
+from syndicateclaw.api.routes.builder import router as builder_router
 from syndicateclaw.api.routes.inference import router as inference_router
 from syndicateclaw.api.routes.memory import router as memory_router
+from syndicateclaw.api.routes.messages import router as messages_router
+from syndicateclaw.api.routes.organizations import router as organizations_router
+from syndicateclaw.api.routes.policy import legacy_router as legacy_policy_router
 from syndicateclaw.api.routes.policy import router as policy_router
 from syndicateclaw.api.routes.providers_ops import router as providers_ops_router
+from syndicateclaw.api.routes.runs import router as runs_router
+from syndicateclaw.api.routes.schedules import router as schedules_router
+from syndicateclaw.api.routes.streaming import router as streaming_router
 from syndicateclaw.api.routes.tools import router as tools_router
+from syndicateclaw.api.routes.workflow_versions import router as workflow_versions_router
 from syndicateclaw.api.routes.workflows import router as workflows_router
 
 ALL_ROUTERS = [
+    builder_router,
+    agents_router,
+    organizations_router,
     approvals_router,
+    api_keys_router,
     audit_router,
     inference_router,
     memory_router,
+    messages_router,
     policy_router,
+    legacy_policy_router,
     providers_ops_router,
+    runs_router,
+    schedules_router,
+    streaming_router,
     tools_router,
     workflows_router,
+    workflow_versions_router,
 ]

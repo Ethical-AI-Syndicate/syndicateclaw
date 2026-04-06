@@ -1,0 +1,1906 @@
+[
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 83
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 83
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 83,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 88
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 88
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 88,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 102
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 102
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 102,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 107
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 107
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 107,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 141
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 141
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 141,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 155
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 155
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 155,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 169
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 169
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 169,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 183
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 183
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 183,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 200
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 200
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 200,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 218
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 218
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 218,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 224
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 224
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 224,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 86,
+      "row": 227
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 77,
+      "row": 227
+    },
+    "message": "Variable `MockModel` in function should be lowercase",
+    "noqa_row": 227,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 244
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 244
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 244,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 249
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 249
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 249,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 265
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 265
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 265,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 271
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 70,
+      "row": 271
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 271,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 86,
+      "row": 274
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 77,
+      "row": 274
+    },
+    "message": "Variable `MockModel` in function should be lowercase",
+    "noqa_row": 274,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 293
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 293
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 293,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 309
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 309
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 309,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 87,
+      "row": 324
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 324
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 324,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 354
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 354
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 354,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 376
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_approval_service_new_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 376
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 137
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 137
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 137,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 161
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 161
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 161,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 187
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 187
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 187,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 236
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 236
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 236,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 261
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 261
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 261,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 282
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 282
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 282,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 330
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 330
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 330,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 350
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_audit_service_ledger_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 350
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 350,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 189
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 189
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 189,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 194
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 194
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 194,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 210
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 210
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 210,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 215
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 215
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 215,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 246
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 246
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 246,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 261
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 261
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 261,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 276
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 276
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 276,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 291
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 291
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 291,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 311
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 311
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 311,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 358
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 358
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 358,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 372
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 372
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 372,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 386
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 386
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 386,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 400
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 400
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 400,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 406
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 406
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 406,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 426
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 426
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 426,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 432
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 432
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 432,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 446
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 446
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 446,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 460
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 460
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 460,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 466
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 466
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 466,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 480
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 480
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 480,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 500
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 500
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 500,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 505
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 505
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 505,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 519
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 519
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 519,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 524
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 524
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 524,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 545
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 545
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 545,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 550
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 550
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 550,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 82,
+      "row": 565
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 74,
+      "row": 565
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 565,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 85,
+      "row": 570
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_memory_service_unit.py",
+    "fix": null,
+    "location": {
+      "column": 76,
+      "row": 570
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 570,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 66
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 66
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 71
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 71
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 71,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 76
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 76
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 76,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 101
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 101
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 101,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 106
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 106
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 106,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 111
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 111
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 111,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 141
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 141
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 141,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 146
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 146
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 146,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 151
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 151
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 151,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 175
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 175
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 175,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 180
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 180
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 180,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 185
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 185
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 185,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 207
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 207
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 207,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 90,
+      "row": 212
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 79,
+      "row": 212
+    },
+    "message": "Variable `MockDecRepo` in function should be lowercase",
+    "noqa_row": 212,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 80,
+      "row": 217
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 217
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 217,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 83,
+      "row": 241
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 241
+    },
+    "message": "Variable `MockRuleRepo` in function should be lowercase",
+    "noqa_row": 241,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 248
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 248
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 248,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 283
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 283
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 283,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 288
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 288
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 288,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 306
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 306
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 306,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 320
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 320
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 320,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 326
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 326
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 326,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 339
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 339
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 339,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 345
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 345
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 345,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 370
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 370
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 370,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 76,
+      "row": 376
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 67,
+      "row": 376
+    },
+    "message": "Variable `MockAudit` in function should be lowercase",
+    "noqa_row": 376,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 388
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 388
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 388,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 407
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 407
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 407,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "N806",
+    "end_location": {
+      "column": 79,
+      "row": 423
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_policy_engine_async_unit.py",
+    "fix": null,
+    "location": {
+      "column": 71,
+      "row": 423
+    },
+    "message": "Variable `MockRepo` in function should be lowercase",
+    "noqa_row": 423,
+    "url": "https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 334
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 330
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 330,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 96,
+      "row": 343
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 342
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 342,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 353
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 352
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 352,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 365
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 364
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 364,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 379
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 378
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 378,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 402
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 401
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 401,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 441
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 440
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 440,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 475
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 474
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 474,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 506
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 505
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 505,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 534
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 533
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 533,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 96,
+      "row": 578
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 577
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 577,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 587
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 586
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 586,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 97,
+      "row": 597
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 596
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 596,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 85,
+      "row": 617
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 616
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 616,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 85,
+      "row": 632
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 631
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 631,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 101,
+      "row": 646
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 645
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 645,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 670
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 667
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 667,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 705
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 702
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 702,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 739
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 736
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 736,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 11,
+      "row": 776
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 773
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 773,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 65,
+      "row": 836
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_shadow_middleware_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 835
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 835,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 95,
+      "row": 70
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_tools_builtin_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 69
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 69,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  },
+  {
+    "cell": null,
+    "code": "SIM117",
+    "end_location": {
+      "column": 95,
+      "row": 99
+    },
+    "filename": "/home/mike/syndicateclaw/tests/unit/test_tools_builtin_unit.py",
+    "fix": null,
+    "location": {
+      "column": 5,
+      "row": 98
+    },
+    "message": "Use a single `with` statement with multiple contexts instead of nested `with` statements",
+    "noqa_row": 98,
+    "url": "https://docs.astral.sh/ruff/rules/multiple-with-statements"
+  }
+]

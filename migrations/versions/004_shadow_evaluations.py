@@ -5,16 +5,17 @@ Revises: 003_audit
 Create Date: 2026-03-24
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 revision: str = "004_shadow"
-down_revision: Union[str, None] = "003_audit"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "003_audit"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -44,10 +45,18 @@ def upgrade() -> None:
         sa.Column("disagreement_type", sa.Text(), nullable=True),
         sa.Column("cache_hit", sa.Boolean(), server_default="false"),
         sa.Column("evaluation_latency_us", sa.Integer(), server_default="0"),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
+        sa.Column(
+            "created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
+        sa.Column(
+            "updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False
+        ),
     )
-    op.create_index("ix_shadow_evaluations_disagreement", "shadow_evaluations", ["agreement", "disagreement_type"])
+    op.create_index(
+        "ix_shadow_evaluations_disagreement",
+        "shadow_evaluations",
+        ["agreement", "disagreement_type"],
+    )
     op.create_index("ix_shadow_evaluations_timestamp", "shadow_evaluations", ["created_at"])
     op.create_index("ix_shadow_evaluations_route", "shadow_evaluations", ["route_name"])
     op.create_index("ix_shadow_evaluations_actor", "shadow_evaluations", ["actor"])

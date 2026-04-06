@@ -28,14 +28,14 @@ from syndicateclaw.models import (
 class TestRateLimitMiddleware:
     """Verify rate limit middleware enforces per-actor limits."""
 
-    def test_skip_paths_are_defined(self):
+    def test_skip_paths_are_defined(self) -> None:
         from syndicateclaw.api.rate_limit import _RATE_LIMIT_SKIP_PATHS
 
         assert "/healthz" in _RATE_LIMIT_SKIP_PATHS
         assert "/readyz" in _RATE_LIMIT_SKIP_PATHS
         assert "/docs" in _RATE_LIMIT_SKIP_PATHS
 
-    def test_rate_limit_response_format(self):
+    def test_rate_limit_response_format(self) -> None:
         from syndicateclaw.api.rate_limit import _rate_limit_response
 
         resp = _rate_limit_response("user:alice", 101, 100, 30, "sustained")
@@ -46,7 +46,7 @@ class TestRateLimitMiddleware:
         assert "sustained" in body["detail"]
         assert body["retry_after"] == 30
 
-    def test_burst_rate_limit_response(self):
+    def test_burst_rate_limit_response(self) -> None:
         from syndicateclaw.api.rate_limit import _rate_limit_response
 
         resp = _rate_limit_response("user:bob", 25, 20, 1, "burst")
@@ -54,7 +54,7 @@ class TestRateLimitMiddleware:
         body = json.loads(resp.body)
         assert "burst" in body["detail"]
 
-    def test_extract_actor_hint_from_api_key(self):
+    def test_extract_actor_hint_from_api_key(self) -> None:
         from syndicateclaw.api.rate_limit import _extract_actor_hint
 
         request = MagicMock()
@@ -62,7 +62,7 @@ class TestRateLimitMiddleware:
         result = _extract_actor_hint(request)
         assert result == "apikey:abcdefgh"
 
-    def test_extract_actor_hint_from_bearer(self):
+    def test_extract_actor_hint_from_bearer(self) -> None:
         from syndicateclaw.api.rate_limit import _extract_actor_hint
 
         request = MagicMock()
@@ -70,7 +70,7 @@ class TestRateLimitMiddleware:
         result = _extract_actor_hint(request)
         assert result == "bearer:eyJhbGci"
 
-    def test_extract_actor_hint_returns_none_without_auth(self):
+    def test_extract_actor_hint_returns_none_without_auth(self) -> None:
         from syndicateclaw.api.rate_limit import _extract_actor_hint
 
         request = MagicMock()
@@ -78,11 +78,16 @@ class TestRateLimitMiddleware:
         result = _extract_actor_hint(request)
         assert result is None
 
-    def test_config_has_rate_limit_fields(self):
+    def test_config_has_rate_limit_fields(self) -> None:
         import os
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert hasattr(s, "rate_limit_requests")
         assert hasattr(s, "rate_limit_window_seconds")
@@ -91,12 +96,17 @@ class TestRateLimitMiddleware:
         assert s.rate_limit_window_seconds > 0
         assert s.rate_limit_burst > 0
 
-    def test_middleware_is_wired_in_app(self):
+    def test_middleware_is_wired_in_app(self) -> None:
         import inspect
         import os
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         from syndicateclaw.api.main import create_app
+
         source = inspect.getsource(create_app)
         assert "RateLimitMiddleware" in source
 
@@ -110,7 +120,7 @@ class TestApprovalAuthorityResolver:
     """Verify approver resolution prevents requester self-selection."""
 
     @pytest.mark.asyncio
-    async def test_resolve_by_risk_level(self):
+    async def test_resolve_by_risk_level(self) -> None:
         from syndicateclaw.approval.authority import ApprovalAuthorityResolver
 
         resolver = ApprovalAuthorityResolver()
@@ -123,7 +133,7 @@ class TestApprovalAuthorityResolver:
         assert "user:alice" not in approvers
 
     @pytest.mark.asyncio
-    async def test_requester_excluded_from_approvers(self):
+    async def test_requester_excluded_from_approvers(self) -> None:
         from syndicateclaw.approval.authority import (
             ApprovalAuthorityResolver,
         )
@@ -139,7 +149,7 @@ class TestApprovalAuthorityResolver:
         assert "admin:ops" in approvers
 
     @pytest.mark.asyncio
-    async def test_fallback_when_all_resolved_match_requester(self):
+    async def test_fallback_when_all_resolved_match_requester(self) -> None:
         from syndicateclaw.approval.authority import ApprovalAuthorityResolver
 
         overrides = {ToolRiskLevel.LOW: ["admin:ops"]}
@@ -153,7 +163,7 @@ class TestApprovalAuthorityResolver:
         assert "admin:ops" not in approvers
 
     @pytest.mark.asyncio
-    async def test_custom_overrides(self):
+    async def test_custom_overrides(self) -> None:
         from syndicateclaw.approval.authority import ApprovalAuthorityResolver
 
         overrides = {ToolRiskLevel.CRITICAL: ["admin:ciso", "admin:board"]}
@@ -167,7 +177,7 @@ class TestApprovalAuthorityResolver:
         assert "admin:board" in approvers
 
     @pytest.mark.asyncio
-    async def test_default_authorities_cover_all_risk_levels(self):
+    async def test_default_authorities_cover_all_risk_levels(self) -> None:
         from syndicateclaw.approval.authority import DEFAULT_APPROVAL_AUTHORITIES
 
         for level in ToolRiskLevel:
@@ -179,7 +189,7 @@ class TestApprovalServiceAuthority:
     """Verify ApprovalService uses authority resolver."""
 
     @pytest.mark.asyncio
-    async def test_authority_overrides_assigned_to(self):
+    async def test_authority_overrides_assigned_to(self) -> None:
         from syndicateclaw.approval.authority import ApprovalAuthorityResolver
         from syndicateclaw.approval.service import ApprovalService
 
@@ -212,8 +222,10 @@ class TestApprovalServiceAuthority:
             context={"test": True},
         )
 
-        with patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls, \
-             patch.object(service, "_emit_audit", new_callable=AsyncMock):
+        with (
+            patch("syndicateclaw.approval.service.ApprovalRequestRepository") as mock_repo_cls,
+            patch.object(service, "_emit_audit", new_callable=AsyncMock),
+        ):
             mock_repo = AsyncMock()
             mock_repo_cls.return_value = mock_repo
 
@@ -223,7 +235,7 @@ class TestApprovalServiceAuthority:
         assert "user:colluder" not in result.assigned_to
 
     @pytest.mark.asyncio
-    async def test_no_resolver_requires_assigned_to(self):
+    async def test_no_resolver_requires_assigned_to(self) -> None:
         from syndicateclaw.approval.service import ApprovalService
 
         factory = MagicMock()
@@ -252,14 +264,14 @@ class TestApprovalServiceAuthority:
 class TestEd25519Signing:
     """Verify asymmetric key generation, signing, and verification."""
 
-    def test_key_pair_generation(self):
+    def test_key_pair_generation(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
         assert kp.public_key_pem.startswith(b"-----BEGIN PUBLIC KEY-----")
         assert kp.private_key_pem.startswith(b"-----BEGIN PRIVATE KEY-----")
 
-    def test_sign_and_verify_roundtrip(self):
+    def test_sign_and_verify_roundtrip(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
@@ -268,7 +280,7 @@ class TestEd25519Signing:
         assert isinstance(sig, str)
         assert kp.verify(payload, sig)
 
-    def test_tampered_payload_rejected(self):
+    def test_tampered_payload_rejected(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
@@ -277,7 +289,7 @@ class TestEd25519Signing:
         tampered = {"action": "delete"}
         assert not kp.verify(tampered, sig)
 
-    def test_wrong_key_rejected(self):
+    def test_wrong_key_rejected(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp1 = SigningKeyPair()
@@ -286,7 +298,7 @@ class TestEd25519Signing:
         sig = kp1.sign(payload)
         assert not kp2.verify(payload, sig)
 
-    def test_verifier_from_public_key(self):
+    def test_verifier_from_public_key(self) -> None:
         from syndicateclaw.security.signing import Ed25519Verifier, SigningKeyPair
 
         kp = SigningKeyPair()
@@ -297,7 +309,7 @@ class TestEd25519Signing:
         assert verifier.verify(payload, sig)
         assert not verifier.verify({"event": "forged"}, sig)
 
-    def test_key_persistence_roundtrip(self):
+    def test_key_persistence_roundtrip(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp1 = SigningKeyPair()
@@ -308,7 +320,7 @@ class TestEd25519Signing:
         sig = kp1.sign(payload)
         assert kp2.verify(payload, sig)
 
-    def test_from_public_key_pem_classmethod(self):
+    def test_from_public_key_pem_classmethod(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
@@ -317,7 +329,7 @@ class TestEd25519Signing:
         sig = kp.sign(payload)
         assert verifier.verify(payload, sig)
 
-    def test_canonical_json_order_invariant(self):
+    def test_canonical_json_order_invariant(self) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
@@ -333,7 +345,7 @@ class TestEd25519Signing:
 class TestStateRedaction:
     """Verify sensitive fields are stripped from workflow state."""
 
-    def test_redacts_password_fields(self):
+    def test_redacts_password_fields(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"db_password": "hunter2", "name": "test"}
@@ -341,7 +353,7 @@ class TestStateRedaction:
         assert result["db_password"] == "[REDACTED]"
         assert result["name"] == "test"
 
-    def test_redacts_nested_secrets(self):
+    def test_redacts_nested_secrets(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {
@@ -354,7 +366,7 @@ class TestStateRedaction:
         assert result["config"]["api_key"] == "[REDACTED]"
         assert result["config"]["endpoint"] == "https://api.example.com"
 
-    def test_redacts_token_fields(self):
+    def test_redacts_token_fields(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"access_token": "abc", "refresh_token": "xyz", "user": "alice"}
@@ -363,7 +375,7 @@ class TestStateRedaction:
         assert result["refresh_token"] == "[REDACTED]"
         assert result["user"] == "alice"
 
-    def test_redacts_credential_fields(self):
+    def test_redacts_credential_fields(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"aws_credentials": {"key": "AKIA..."}, "region": "us-east-1"}
@@ -371,7 +383,7 @@ class TestStateRedaction:
         assert result["aws_credentials"] == "[REDACTED]"
         assert result["region"] == "us-east-1"
 
-    def test_preserves_allowlisted_fields(self):
+    def test_preserves_allowlisted_fields(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"_run_id": "run-123", "auth_token": "secret"}
@@ -379,7 +391,7 @@ class TestStateRedaction:
         assert result["_run_id"] == "run-123"
         assert result["auth_token"] == "[REDACTED]"
 
-    def test_extra_patterns(self):
+    def test_extra_patterns(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"custom_field": "sensitive", "normal": "ok"}
@@ -387,7 +399,7 @@ class TestStateRedaction:
         assert result["custom_field"] == "[REDACTED]"
         assert result["normal"] == "ok"
 
-    def test_does_not_mutate_original(self):
+    def test_does_not_mutate_original(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"password": "hunter2", "name": "test"}
@@ -395,7 +407,7 @@ class TestStateRedaction:
         assert state["password"] == "hunter2"
         assert result["password"] == "[REDACTED]"
 
-    def test_handles_lists_in_state(self):
+    def test_handles_lists_in_state(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {
@@ -409,7 +421,7 @@ class TestStateRedaction:
         assert result["items"][0]["secret_key"] == "[REDACTED]"
         assert result["items"][1]["secret_key"] == "[REDACTED]"
 
-    def test_case_insensitive_matching(self):
+    def test_case_insensitive_matching(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         state = {"PASSWORD": "x", "Api_Key": "y", "TOKEN": "z"}
@@ -418,12 +430,12 @@ class TestStateRedaction:
         assert result["Api_Key"] == "[REDACTED]"
         assert result["TOKEN"] == "[REDACTED]"
 
-    def test_empty_state_unchanged(self):
+    def test_empty_state_unchanged(self) -> None:
         from syndicateclaw.security.redaction import redact_state
 
         assert redact_state({}) == {}
 
-    def test_unknown_policy_fail_closed_for_unknown_patterns(self):
+    def test_unknown_policy_fail_closed_for_unknown_patterns(self) -> None:
         """Non-sensitive fields should NOT be redacted."""
         from syndicateclaw.security.redaction import redact_state
 
@@ -435,7 +447,7 @@ class TestStateRedaction:
 class TestWorkflowRunResponseRedaction:
     """Verify WorkflowRunResponse.from_orm_redacted applies redaction."""
 
-    def test_from_orm_redacted_strips_secrets(self):
+    def test_from_orm_redacted_strips_secrets(self) -> None:
         from syndicateclaw.api.routes.workflows import WorkflowRunResponse
 
         obj = MagicMock()
@@ -458,7 +470,7 @@ class TestWorkflowRunResponseRedaction:
         assert result.state["_run_id"] == "run-1"
         assert result.state["data"] == "ok"
 
-    def test_from_orm_redacted_preserves_internal_fields(self):
+    def test_from_orm_redacted_preserves_internal_fields(self) -> None:
         from syndicateclaw.api.routes.workflows import WorkflowRunResponse
 
         obj = MagicMock()
@@ -498,24 +510,29 @@ class TestAppWiring:
 
     @pytest.fixture(autouse=True)
     def _env(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+        monkeypatch.setenv(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
 
-    def test_lifespan_creates_authority_resolver(self):
+    def test_lifespan_creates_authority_resolver(self) -> None:
         import importlib
         import inspect
 
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.lifespan)
         assert "ApprovalAuthorityResolver" in source
         assert "authority_resolver" in source
 
-    def test_create_app_has_rate_limit_middleware(self):
+    def test_create_app_has_rate_limit_middleware(self) -> None:
         import importlib
         import inspect
 
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.create_app)
         assert "RateLimitMiddleware" in source

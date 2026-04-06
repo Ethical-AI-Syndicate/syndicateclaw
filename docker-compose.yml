@@ -4,10 +4,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: development
-      LOG_LEVEL: debug
+      SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw
+      SYNDICATECLAW_REDIS_URL: redis://redis:6379/0
+      SYNDICATECLAW_ENVIRONMENT: development
+      SYNDICATECLAW_SECRET_KEY: dev-only-change-in-production
+      SYNDICATECLAW_LOG_LEVEL: debug
     depends_on:
       postgres:
         condition: service_healthy
@@ -22,8 +23,6 @@ services:
       POSTGRES_USER: syndicateclaw
       POSTGRES_PASSWORD: syndicateclaw
       POSTGRES_DB: syndicateclaw
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -36,8 +35,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:

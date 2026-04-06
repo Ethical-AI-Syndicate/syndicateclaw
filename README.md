@@ -49,7 +49,7 @@ open http://localhost:8000/docs
 
 ### Development Setup
 
-Requires Python 3.12+, a running PostgreSQL instance, and optionally Redis.
+Requires Python 3.14.3+, a running PostgreSQL instance, and optionally Redis.
 
 ```bash
 # Create virtual environment

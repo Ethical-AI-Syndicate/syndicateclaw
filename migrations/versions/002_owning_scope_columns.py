@@ -5,15 +5,16 @@ Revises: 001_rbac
 Create Date: 2026-03-24
 
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
+from alembic import op
 
 revision: str = "002_scope"
-down_revision: Union[str, None] = "001_rbac"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "001_rbac"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 _SCOPE_TABLES = [
     "workflow_definitions",

@@ -1,5 +1,5 @@
 # ---------- base ----------
-FROM python:3.12-slim AS base
+FROM python:3.14.3-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,6 +12,8 @@ WORKDIR /app
 
 # ---------- builder ----------
 FROM base AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir --upgrade pip
 

@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import time
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, cast
 
 import structlog
@@ -28,12 +28,12 @@ CACHE_TTL_SECONDS = 60
 SCOPE_CONTAINMENT_ORDER = ["PLATFORM", "TENANT", "TEAM", "NAMESPACE"]
 
 
-class Decision(str, Enum):
+class Decision(StrEnum):
     ALLOW = "ALLOW"
     DENY = "DENY"
 
 
-class DenyReason(str, Enum):
+class DenyReason(StrEnum):
     NO_PRINCIPAL = "no_principal"
     NO_MATCHING_GRANT = "no_matching_grant"
     EXPLICIT_DENY = "explicit_deny"
@@ -304,13 +304,15 @@ class RBACEvaluator:
                 continue
             deny_scope = Scope(scope_type=scope_type, scope_id=scope_id)
             if _scope_contains(deny_scope, resource_scope):
-                matched.append(MatchedDeny(
-                    deny_id=deny_id,
-                    permission=deny_perm,
-                    scope_type=scope_type,
-                    scope_id=scope_id,
-                    reason=reason or "",
-                ))
+                matched.append(
+                    MatchedDeny(
+                        deny_id=deny_id,
+                        permission=deny_perm,
+                        scope_type=scope_type,
+                        scope_id=scope_id,
+                        reason=reason or "",
+                    )
+                )
         return matched
 
     async def _resolve_assignments(
@@ -332,18 +334,29 @@ class RBACEvaluator:
         now = time.time()
         assignments = []
         for row in result.fetchall():
-            (assignment_id, role_id, role_name, permissions, inherits_from,
-             scope_type, scope_id, source, expires_at) = row
+            (
+                assignment_id,
+                role_id,
+                role_name,
+                permissions,
+                inherits_from,
+                scope_type,
+                scope_id,
+                source,
+                expires_at,
+            ) = row
             expired = expires_at is not None and expires_at.timestamp() < now
-            assignments.append({
-                "assignment_id": assignment_id,
-                "role_id": role_id,
-                "role_name": role_name,
-                "scope_type": scope_type,
-                "scope_id": scope_id,
-                "source": source,
-                "expired": expired,
-            })
+            assignments.append(
+                {
+                    "assignment_id": assignment_id,
+                    "role_id": role_id,
+                    "role_name": role_name,
+                    "scope_type": scope_type,
+                    "scope_id": scope_id,
+                    "source": source,
+                    "expired": expired,
+                }
+            )
 
         await self._cache_set(principal_id, assignments)
         return assignments, False

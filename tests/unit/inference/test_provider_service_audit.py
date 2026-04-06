@@ -66,9 +66,7 @@ async def test_infer_chat_emits_started_and_completed(
 
     async def allow_eval(*a, **k):
         m = MagicMock()
-        m.effect = __import__(
-            "syndicateclaw.models", fromlist=["PolicyEffect"]
-        ).PolicyEffect.ALLOW
+        m.effect = __import__("syndicateclaw.models", fromlist=["PolicyEffect"]).PolicyEffect.ALLOW
         return m
 
     pe.evaluate = allow_eval

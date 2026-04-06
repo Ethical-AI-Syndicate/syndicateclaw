@@ -33,6 +33,7 @@ def _require_policy_admin(actor: str) -> None:
 
 
 router = APIRouter(prefix="/api/v1/policies", tags=["policies"])
+legacy_router = APIRouter(prefix="/api/v1/policy", tags=["policies"])
 
 Q_RESOURCE_TYPE = Query(None)
 Q_ENABLED = Query(None)
@@ -120,6 +121,7 @@ async def create_policy_rule(
         conditions=[c.model_dump() for c in body.conditions],
         priority=body.priority,
         owner=actor,
+        namespace="default",
     )
     db.add(rule)
     await db.flush()
@@ -161,9 +163,7 @@ async def get_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
     return rule
 
 
@@ -179,9 +179,7 @@ async def update_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
 
     if body.description is not None:
         rule.description = body.description
@@ -217,9 +215,7 @@ async def delete_policy_rule(
 
     rule = await db.get(PRModel, rule_id)
     if rule is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Policy rule not found")
     rule.enabled = False
     await db.flush()
     logger.info("policy.disabled", rule_id=rule_id)
@@ -268,3 +264,9 @@ async def evaluate_policy(
         rule_name=None,
         reason="No matching policy rule — default DENY (fail-closed)",
     )
+
+
+@legacy_router.get("/", response_model=None)
+async def legacy_policy_root() -> dict[str, str]:
+    """Back-compat OpenAPI marker for legacy `/api/v1/policy/` clients."""
+    return {"detail": "Policy API moved to /api/v1/policies/"}

@@ -12,17 +12,18 @@ from ulid import ULID
 # ---------------------------------------------------------------------------
 
 
-class WorkflowRunStatus(str, enum.Enum):
+class WorkflowRunStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     PAUSED = "PAUSED"
     WAITING_APPROVAL = "WAITING_APPROVAL"
+    WAITING_AGENT_RESPONSE = "WAITING_AGENT_RESPONSE"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     CANCELLED = "CANCELLED"
 
 
-class NodeExecutionStatus(str, enum.Enum):
+class NodeExecutionStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -30,23 +31,24 @@ class NodeExecutionStatus(str, enum.Enum):
     SKIPPED = "SKIPPED"
 
 
-class NodeType(str, enum.Enum):
+class NodeType(enum.StrEnum):
     START = "START"
     END = "END"
     ACTION = "ACTION"
     DECISION = "DECISION"
     APPROVAL = "APPROVAL"
+    AGENT = "AGENT"
     CHECKPOINT = "CHECKPOINT"
 
 
-class ToolRiskLevel(str, enum.Enum):
+class ToolRiskLevel(enum.StrEnum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
 
-class ToolExecutionStatus(str, enum.Enum):
+class ToolExecutionStatus(enum.StrEnum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
     COMPLETED = "COMPLETED"
@@ -54,32 +56,32 @@ class ToolExecutionStatus(str, enum.Enum):
     TIMED_OUT = "TIMED_OUT"
 
 
-class PolicyEffect(str, enum.Enum):
+class PolicyEffect(enum.StrEnum):
     ALLOW = "ALLOW"
     DENY = "DENY"
     REQUIRE_APPROVAL = "REQUIRE_APPROVAL"
 
 
-class ApprovalStatus(str, enum.Enum):
+class ApprovalStatus(enum.StrEnum):
     PENDING = "PENDING"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     EXPIRED = "EXPIRED"
 
 
-class MemoryType(str, enum.Enum):
+class MemoryType(enum.StrEnum):
     EPISODIC = "EPISODIC"
     SEMANTIC = "SEMANTIC"
     STRUCTURED = "STRUCTURED"
 
 
-class MemoryDeletionStatus(str, enum.Enum):
+class MemoryDeletionStatus(enum.StrEnum):
     ACTIVE = "ACTIVE"
     MARKED_FOR_DELETION = "MARKED_FOR_DELETION"
     DELETED = "DELETED"
 
 
-class AuditEventType(str, enum.Enum):
+class AuditEventType(enum.StrEnum):
     # Workflow events
     WORKFLOW_CREATED = "WORKFLOW_CREATED"
     WORKFLOW_STARTED = "WORKFLOW_STARTED"
@@ -155,8 +157,15 @@ class AuditEventType(str, enum.Enum):
     CATALOG_SYNC_FAILED = "CATALOG_SYNC_FAILED"
     CATALOG_SYNC_ANOMALY_ABORTED = "CATALOG_SYNC_ANOMALY_ABORTED"
 
+    # Plugin lifecycle (v1.5.0) — values match audit string convention
+    PLUGIN_HOOK_INVOKED = "plugin.hook_invoked"
+    PLUGIN_HOOK_COMPLETED = "plugin.hook_completed"
+    PLUGIN_HOOK_FAILED = "plugin.hook_failed"
+    PLUGIN_HOOK_TIMEOUT = "plugin.hook_timeout"
+    PLUGIN_SECURITY_VIOLATION = "plugin.security_violation"
 
-class MemorySourceType(str, enum.Enum):
+
+class MemorySourceType(enum.StrEnum):
     HUMAN = "HUMAN"
     SYSTEM = "SYSTEM"
     DERIVED = "DERIVED"
@@ -164,7 +173,7 @@ class MemorySourceType(str, enum.Enum):
     LLM = "LLM"
 
 
-class DecisionDomain(str, enum.Enum):
+class DecisionDomain(enum.StrEnum):
     POLICY = "POLICY"
     TOOL_EXECUTION = "TOOL_EXECUTION"
     MEMORY_WRITE = "MEMORY_WRITE"
@@ -173,19 +182,19 @@ class DecisionDomain(str, enum.Enum):
     WORKFLOW_ROUTING = "WORKFLOW_ROUTING"
 
 
-class ReplayMode(str, enum.Enum):
+class ReplayMode(enum.StrEnum):
     LIVE = "LIVE"
     DETERMINISTIC = "DETERMINISTIC"
 
 
-class ApprovalScopeType(str, enum.Enum):
+class ApprovalScopeType(enum.StrEnum):
     SINGLE_ACTION = "SINGLE_ACTION"
     TIME_WINDOW = "TIME_WINDOW"
     CONDITIONAL = "CONDITIONAL"
     BLANKET = "BLANKET"
 
 
-class DeadLetterStatus(str, enum.Enum):
+class DeadLetterStatus(enum.StrEnum):
     PENDING = "PENDING"
     RETRIED = "RETRIED"
     FAILED_PERMANENT = "FAILED_PERMANENT"
@@ -229,7 +238,9 @@ class MemoryTrustMetadata(BaseModel):
     """Trust scoring and decay metadata for memory records."""
 
     trust_score: float = Field(
-        default=1.0, ge=0.0, le=1.0,
+        default=1.0,
+        ge=0.0,
+        le=1.0,
         description="Current trust score (decays over time, downgraded on conflict)",
     )
     source_type: MemorySourceType = Field(
@@ -244,7 +255,9 @@ class MemoryTrustMetadata(BaseModel):
         description="Links conflicting records together for resolution",
     )
     decay_rate: float = Field(
-        default=0.01, ge=0.0, le=1.0,
+        default=0.01,
+        ge=0.0,
+        le=1.0,
         description="Trust decay per day (score -= decay_rate * days_since_validation)",
     )
     frozen: bool = Field(
@@ -261,7 +274,7 @@ class VersionManifest(BaseModel):
     )
     policy_version: str = Field(default="", description="Policy ruleset hash or version identifier")
     memory_schema_version: str = Field(default="", description="Memory schema version")
-    platform_version: str = Field(default="0.1.0", description="SyndicateClaw platform version")
+    platform_version: str = Field(default="2.0.0", description="SyndicateClaw platform version")
     captured_at: datetime = Field(
         default_factory=_utcnow,
         description="When the manifest was frozen",
@@ -527,12 +540,12 @@ class ApprovalScope(BaseModel):
     allowed_actions: list[str] = Field(
         default_factory=list,
         description=(
-            "Specific action identifiers this approval covers "
-            "(empty = the one requested action)"
+            "Specific action identifiers this approval covers (empty = the one requested action)"
         ),
     )
     time_window_seconds: int | None = Field(
-        default=None, ge=1,
+        default=None,
+        ge=1,
         description="If scope_type=TIME_WINDOW, approval valid for this many seconds",
     )
     conditions: list[PolicyCondition] = Field(
@@ -584,8 +597,7 @@ class PolicyDecision(BaseEntity):
     all_rules_considered: list[dict[str, Any]] = Field(
         default_factory=list,
         description=(
-            "Every rule that was evaluated, including non-matching, "
-            "with reasons for non-match"
+            "Every rule that was evaluated, including non-matching, with reasons for non-match"
         ),
     )
     input_attributes: dict[str, Any] = Field(
@@ -677,9 +689,7 @@ class DecisionRecord(BaseEntity):
     domain: DecisionDomain = Field(..., description="Which subsystem produced this decision")
     decision_type: str = Field(
         ...,
-        description=(
-            "Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')"
-        ),
+        description=("Specific decision kind (e.g. 'tool_allowed', 'memory_write_permitted')"),
     )
     actor: str = Field(..., description="Identity of the actor")
     run_id: str | None = Field(default=None, description="Associated workflow run")
@@ -691,9 +701,7 @@ class DecisionRecord(BaseEntity):
     )
     rules_evaluated: list[dict[str, Any]] = Field(
         default_factory=list,
-        description=(
-            "All rules evaluated, not just the match — includes why others didn't match"
-        ),
+        description=("All rules evaluated, not just the match — includes why others didn't match"),
     )
     matched_rule: str | None = Field(
         default=None,
@@ -734,13 +742,10 @@ class InputSnapshot(BaseEntity):
     snapshot_type: str = Field(
         ...,
         description=(
-            "What was captured: 'tool_response', 'memory_read', "
-            "'external_api', 'llm_response'"
+            "What was captured: 'tool_response', 'memory_read', 'external_api', 'llm_response'"
         ),
     )
-    source_identifier: str = Field(
-        ..., description="Tool name, memory key, API URL, etc."
-    )
+    source_identifier: str = Field(..., description="Tool name, memory key, API URL, etc.")
     request_data: dict[str, Any] = Field(default_factory=dict, description="What was requested")
     response_data: dict[str, Any] = Field(default_factory=dict, description="What was received")
     content_hash: str = Field(

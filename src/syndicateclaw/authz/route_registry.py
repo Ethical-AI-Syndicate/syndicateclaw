@@ -11,11 +11,14 @@ They must not have side effects. A None return signals scope resolution failure.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Coroutine
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import text
+
+from syndicateclaw.authz.permissions import PERMISSION_VOCABULARY
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -65,6 +68,7 @@ class RouteAuthzSpec:
 # Each resolver is a module-level async function: (Request, AsyncSession) -> Scope | None
 # The registry references them by string name; the shadow middleware looks them
 # up via SCOPE_RESOLVERS[name].
+
 
 async def resolve_platform(request: Request, session: AsyncSession) -> Scope | None:
     """All platform-scoped resources (tools, system endpoints)."""
@@ -253,13 +257,43 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         owner_field="owner",
         notes="Legacy: 404 if owner set and != actor.",
     ),
+    ("PUT", "/api/v1/workflows/{workflow_id}"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="ownership_check",
+        owner_field="owner",
+    ),
     ("POST", "/api/v1/workflows/{workflow_id}/runs"): RouteAuthzSpec(
         permission="run:create",
         scope_resolver="workflow_for_run_start",
         legacy_check="authenticated_only",
         notes="Concurrency limit also checked.",
     ),
-
+    ("GET", "/api/v1/workflows/{workflow_id}/versions"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/workflows/{workflow_id}/versions/{version}"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/workflows/{workflow_id}/rollback"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/workflows/{workflow_id}/diff"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/workflows/{workflow_id}/builder-token"): RouteAuthzSpec(
+        permission="workflow:manage",
+        scope_resolver="workflow_by_id",
+        legacy_check="authenticated_only",
+    ),
     # ── Workflow Runs ──────────────────────────────────────────────────
     ("GET", "/api/v1/workflows/runs"): RouteAuthzSpec(
         permission="run:read",
@@ -311,7 +345,183 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy has NO ownership check — scope gap.",
     ),
-
+    ("POST", "/api/v1/runs/{run_id}/streaming-token"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Issues single-use streaming token scoped to run.",
+    ),
+    ("GET", "/api/v1/runs/{run_id}/stream"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Streaming-token auth is enforced by endpoint handler.",
+    ),
+    ("GET", "/api/v1/runs/{run_id}/events"): RouteAuthzSpec(
+        permission="run:read",
+        scope_resolver="run_by_id",
+        legacy_check="authenticated_only",
+        notes="Reconnect recovery endpoint returns run-scoped audit events.",
+    ),
+    # ── Agents ─────────────────────────────────────────────────────────
+    ("POST", "/api/v1/agents"): RouteAuthzSpec(
+        permission="agent:register",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/agents"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    ("DELETE", "/api/v1/agents/{id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Soft-delete is enforced in AgentService.",
+    ),
+    ("POST", "/api/v1/agents/{id}/heartbeat"): RouteAuthzSpec(
+        permission="agent:heartbeat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    # FastAPI registers {agent_id}; mirror specs so shadow/enforcement resolve.
+    ("GET", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    ("DELETE", "/api/v1/agents/{agent_id}"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Soft-delete is enforced in AgentService.",
+    ),
+    ("POST", "/api/v1/agents/{agent_id}/heartbeat"): RouteAuthzSpec(
+        permission="agent:heartbeat",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Service-layer ownership/admin checks return 403 for non-owners.",
+    ),
+    # ── Messages / Topics ──────────────────────────────────────────────
+    ("POST", "/api/v1/messages"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/messages"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/messages/{id}"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{id}/ack"): RouteAuthzSpec(
+        permission="message:ack",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{id}/reply"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/messages/{message_id}"): RouteAuthzSpec(
+        permission="message:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{message_id}/ack"): RouteAuthzSpec(
+        permission="message:ack",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/messages/{message_id}/reply"): RouteAuthzSpec(
+        permission="message:send",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("POST", "/api/v1/topics/{topic}/subscribe"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("DELETE", "/api/v1/topics/{topic}/subscribe"): RouteAuthzSpec(
+        permission="agent:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/topics"): RouteAuthzSpec(
+        permission="agent:read",
+        scope_resolver="actor_scope",
+        legacy_check="authenticated_only",
+    ),
+    # ── Organizations ─────────────────────────────────────────────────
+    ("POST", "/api/v1/organizations"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Org creation restricted to platform admins.",
+    ),
+    ("GET", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces organization membership.",
+    ),
+    ("PUT", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces OWNER/ADMIN.",
+    ),
+    ("DELETE", "/api/v1/organizations/{org_id}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Handler enforces OWNER/ADMIN.",
+    ),
+    ("POST", "/api/v1/organizations/{org_id}/members"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("GET", "/api/v1/organizations/{org_id}/members"): RouteAuthzSpec(
+        permission="org:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("DELETE", "/api/v1/organizations/{org_id}/members/{member_actor}"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
+    ("PUT", "/api/v1/organizations/{org_id}/members/{member_actor}/role"): RouteAuthzSpec(
+        permission="org:manage",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
     # ── Memory ─────────────────────────────────────────────────────────
     ("POST", "/api/v1/memory/"): RouteAuthzSpec(
         permission="memory:write",
@@ -346,8 +556,13 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="memory_record_by_id",
         legacy_check="access_policy",
     ),
-
     # ── Policies ───────────────────────────────────────────────────────
+    ("GET", "/api/v1/policy/"): RouteAuthzSpec(
+        permission="policy:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Legacy back-compat redirect endpoint.",
+    ),
     ("POST", "/api/v1/policies/"): RouteAuthzSpec(
         permission="policy:manage",
         scope_resolver="platform",
@@ -382,8 +597,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Body carries actor/resource for evaluation; no admin check.",
     ),
-
     # ── Inference / providers (Gate 1 absent; ProviderService runs 2–4) ──
+    ("GET", "/api/v1/inference/"): RouteAuthzSpec(
+        permission="inference:read",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+    ),
     ("POST", "/api/v1/inference/chat"): RouteAuthzSpec(
         permission="inference:invoke_chat",
         scope_resolver="platform",
@@ -410,7 +629,12 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Pull models.dev JSON (SSRF-hardened); merge into ModelCatalog only.",
     ),
-
+    ("POST", "/api/v1/providers/{name}/test"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Connectivity check endpoint; generic unreachable response on errors.",
+    ),
     # ── Tools ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/tools/"): RouteAuthzSpec(
         permission="tool:read",
@@ -428,7 +652,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: executor may 403 via ToolDeniedError (policy engine, not auth).",
     ),
-
     # ── Approvals ──────────────────────────────────────────────────────
     ("GET", "/api/v1/approvals/"): RouteAuthzSpec(
         permission="approval:read",
@@ -459,7 +682,6 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         scope_resolver="approval_run",
         legacy_check="approval_visibility",
     ),
-
     # ── Audit ──────────────────────────────────────────────────────────
     ("GET", "/api/v1/audit/"): RouteAuthzSpec(
         permission="audit:read",
@@ -478,6 +700,97 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: no run ownership check.",
     ),
+    # ── Admin console ──────────────────────────────────────────────────
+    ("GET", "/api/v1/admin/dashboard"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/connectors"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/approvals"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("POST", "/api/v1/admin/approvals/{id}/decide"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/workflows/runs"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/workflows/runs/{run_id}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/memory/namespaces"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("DELETE", "/api/v1/admin/memory/namespaces/{namespace}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/audit"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/providers"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("GET", "/api/v1/admin/api-keys"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("POST", "/api/v1/admin/api-keys"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    ("DELETE", "/api/v1/admin/api-keys/{key_id}"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="prefix_admin",
+    ),
+    # ── Connector webhooks — authenticated by provider secrets, not RBAC ──
+    ("POST", "/webhooks/telegram/update"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Telegram secret token, not RBAC.",
+    ),
+    ("POST", "/webhooks/discord/interactions"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Discord signature, not RBAC.",
+    ),
+    ("POST", "/webhooks/slack/events"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Slack signing secret, not RBAC.",
+    ),
+    ("POST", "/webhooks/slack/command"): RouteAuthzSpec(
+        permission="admin:*",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Authenticated by Slack signing secret, not RBAC.",
+    ),
 }
 
 # Public routes that skip shadow evaluation entirely.
@@ -485,6 +798,19 @@ PUBLIC_ROUTES: set[tuple[str, str]] = {
     ("GET", "/healthz"),
     ("GET", "/readyz"),
     ("GET", "/api/v1/info"),
+    ("GET", "/builder/new"),
+    ("GET", "/builder/{workflow_id}"),
+}
+
+# Routes that are authenticated by non-RBAC mechanisms.
+EXEMPT_ROUTES: set[tuple[str, str]] = {
+    ("GET", "/api/v1/runs/{id}/stream"),
+    ("GET", "/api/v1/runs/{run_id}/stream"),
+    # Webhook endpoints — authenticated by provider-specific secrets, not RBAC
+    ("POST", "/webhooks/telegram/update"),
+    ("POST", "/webhooks/discord/interactions"),
+    ("POST", "/webhooks/slack/events"),
+    ("POST", "/webhooks/slack/command"),
 }
 
 
@@ -501,6 +827,11 @@ def is_public_route(method: str, path_template: str) -> bool:
     return (method.upper(), path_template) in PUBLIC_ROUTES
 
 
+def is_exempt_route(method: str, path_template: str) -> bool:
+    """Check if a route skips RBAC because it has alternate auth."""
+    return (method.upper(), path_template) in EXEMPT_ROUTES
+
+
 def get_scope_resolver(
     name: str,
 ) -> Callable[[Request, AsyncSession], Coroutine[Any, Any, Scope | None]]:
@@ -514,3 +845,183 @@ def get_scope_resolver(
 def get_all_registered_routes() -> list[tuple[str, str]]:
     """Return all registered route keys for validation against app routes."""
     return list(ROUTE_PERMISSION_MAP.keys())
+
+
+_ULID_RE = re.compile(r"^[0-9A-HJKMNP-TV-Z]{26}$")
+_UUID_RE = re.compile(
+    r"^[0-9a-fA-F]{8}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{12}$"
+)
+
+
+def _normalize_path(path: str) -> str:
+    """Normalize runtime paths to registry templates.
+
+    Replaces ULID- or UUID-like path segments with ``{id}`` so dynamic
+    route lookups can be resolved via static registry entries.
+    """
+
+    if not path:
+        return path
+
+    trimmed = path.rstrip("/")
+    if not trimmed:
+        return "/"
+
+    parts = trimmed.split("/")
+    normalized: list[str] = []
+    for idx, part in enumerate(parts):
+        if idx == 0:
+            normalized.append(part)
+            continue
+        if _ULID_RE.match(part) or _UUID_RE.match(part):
+            normalized.append("{id}")
+        else:
+            normalized.append(part)
+
+    return "/".join(normalized)
+
+
+def _path_matches_template(path: str, template: str) -> bool:
+    path_parts = [p for p in path.strip("/").split("/") if p]
+    tpl_parts = [p for p in template.strip("/").split("/") if p]
+    if len(path_parts) != len(tpl_parts):
+        return False
+    for path_part, tpl_part in zip(path_parts, tpl_parts, strict=False):
+        if tpl_part.startswith("{") and tpl_part.endswith("}"):
+            continue
+        if path_part != tpl_part:
+            return False
+    return True
+
+
+ROUTE_REGISTRY: dict[tuple[str, str], str | None] = {
+    (
+        method,
+        path,
+    ): (spec.permission if spec.permission in PERMISSION_VOCABULARY else "admin:*")
+    for (method, path), spec in ROUTE_PERMISSION_MAP.items()
+}
+ROUTE_REGISTRY.update(
+    {
+        # v1.1.0 revised route matrix (forward-compatible entries)
+        ("GET", "/api/v1/workflows"): "workflow:read",
+        ("POST", "/api/v1/workflows"): "workflow:create",
+        ("GET", "/api/v1/workflows/{id}"): "workflow:read",
+        ("PUT", "/api/v1/workflows/{id}"): "workflow:manage",
+        ("DELETE", "/api/v1/workflows/{id}"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/versions"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/versions/{version}"): "workflow:manage",
+        ("POST", "/api/v1/workflows/{id}/rollback"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/diff"): "workflow:manage",
+        ("GET", "/api/v1/workflows/{id}/runs"): "run:read",
+        ("POST", "/api/v1/workflows/{id}/runs"): "run:create",
+        ("GET", "/api/v1/runs/{id}"): "run:read",
+        ("POST", "/api/v1/runs/{id}/streaming-token"): "run:read",
+        ("GET", "/api/v1/runs/{id}/stream"): "run:read",
+        ("GET", "/api/v1/runs/{id}/events"): "run:read",
+        ("POST", "/api/v1/runs/{id}/pause"): "run:control",
+        ("POST", "/api/v1/runs/{id}/resume"): "run:control",
+        ("POST", "/api/v1/runs/{id}/cancel"): "run:control",
+        ("POST", "/api/v1/runs/{id}/replay"): "run:replay",
+        ("GET", "/api/v1/runs/{id}/nodes"): "run:read",
+        ("POST", "/api/v1/approvals/{id}/approve"): "approval:decide",
+        ("POST", "/api/v1/approvals/{id}/reject"): "approval:decide",
+        ("GET", "/api/v1/approvals/{id}"): "approval:read",
+        ("GET", "/api/v1/approvals"): "approval:read",
+        ("POST", "/api/v1/policies"): "policy:manage",
+        ("GET", "/api/v1/policies"): "policy:read",
+        ("GET", "/api/v1/policies/{id}"): "policy:read",
+        ("PUT", "/api/v1/policies/{id}"): "policy:manage",
+        ("DELETE", "/api/v1/policies/{id}"): "policy:manage",
+        ("GET", "/api/v1/tools"): "tool:read",
+        ("POST", "/api/v1/tools/{name}/execute"): "tool:execute",
+        ("GET", "/api/v1/memory"): "memory:read",
+        ("POST", "/api/v1/memory"): "memory:write",
+        ("GET", "/api/v1/memory/{id}"): "memory:read",
+        ("PUT", "/api/v1/memory/{id}"): "memory:update",
+        ("DELETE", "/api/v1/memory/{id}"): "memory:delete",
+        ("GET", "/api/v1/memory/{id}/lineage"): "memory:read",
+        ("GET", "/api/v1/audit"): "audit:read",
+        ("GET", "/api/v1/api-keys"): "admin:*",
+        ("POST", "/api/v1/api-keys"): "admin:*",
+        ("DELETE", "/api/v1/api-keys/{id}"): "admin:*",
+        ("GET", "/api/v1/api-keys/scopes"): None,
+        ("POST", "/api/v1/providers/{name}/test"): "admin:*",
+        ("POST", "/api/v1/agents"): "agent:register",
+        ("GET", "/api/v1/agents"): "agent:read",
+        ("GET", "/api/v1/agents/{id}"): "agent:read",
+        ("PUT", "/api/v1/agents/{id}"): "agent:manage",
+        ("DELETE", "/api/v1/agents/{id}"): "agent:manage",
+        ("POST", "/api/v1/agents/{id}/heartbeat"): "agent:heartbeat",
+        ("POST", "/api/v1/messages"): "message:send",
+        ("GET", "/api/v1/messages"): "message:read",
+        ("GET", "/api/v1/messages/{id}"): "message:read",
+        ("POST", "/api/v1/messages/{id}/ack"): "message:ack",
+        ("POST", "/api/v1/messages/{id}/reply"): "message:send",
+        ("POST", "/api/v1/topics/{topic}/subscribe"): "agent:manage",
+        ("DELETE", "/api/v1/topics/{topic}/subscribe"): "agent:manage",
+        ("GET", "/api/v1/topics"): "agent:read",
+        ("GET", "/healthz"): None,
+        ("GET", "/readyz"): None,
+        ("GET", "/api/v1/info"): None,
+        ("POST", "/api/v1/schedules"): "schedule:manage",
+        ("GET", "/api/v1/schedules"): "schedule:read",
+        ("GET", "/api/v1/schedules/{schedule_id}"): "schedule:read",
+        ("PUT", "/api/v1/schedules/{schedule_id}"): "schedule:manage",
+        ("DELETE", "/api/v1/schedules/{schedule_id}"): "schedule:manage",
+        ("POST", "/api/v1/schedules/{schedule_id}/pause"): "schedule:manage",
+        ("POST", "/api/v1/schedules/{schedule_id}/resume"): "schedule:manage",
+        ("GET", "/api/v1/schedules/{schedule_id}/preview-next-run"): "schedule:read",
+        ("POST", "/api/v1/organizations"): "admin:*",
+        ("GET", "/api/v1/organizations/{id}"): "org:read",
+        ("PUT", "/api/v1/organizations/{id}"): "org:manage",
+        ("DELETE", "/api/v1/organizations/{id}"): "org:manage",
+        ("POST", "/api/v1/organizations/{id}/members"): "org:manage",
+        ("GET", "/api/v1/organizations/{id}/members"): "org:read",
+        ("DELETE", "/api/v1/organizations/{id}/members/{id}"): "org:manage",
+        ("PUT", "/api/v1/organizations/{id}/members/{id}/role"): "org:manage",
+        ("POST", "/api/v1/workflows/{id}/builder-token"): "workflow:manage",
+        ("GET", "/builder/new"): None,
+        ("GET", "/builder/{id}"): None,
+    }
+)
+
+
+def get_required_permission(method: str, path: str) -> str | None | str:
+    """Resolve required permission for an HTTP request.
+
+    Returns:
+      - permission string for protected route
+      - ``None`` for exempt/public routes
+      - ``"DENY"`` when route is not registered
+    """
+
+    normalized = _normalize_path(path)
+    key = (method.upper(), normalized)
+
+    if key in ROUTE_REGISTRY:
+        if key in EXEMPT_ROUTES:
+            return None
+        return ROUTE_REGISTRY[key]
+
+    # Compatibility lookup for routes registered with trailing slash.
+    alt_path = f"{normalized}/" if not normalized.endswith("/") else normalized[:-1]
+    alt_key = (method.upper(), alt_path)
+    if alt_key in ROUTE_REGISTRY:
+        if alt_key in EXEMPT_ROUTES:
+            return None
+        return ROUTE_REGISTRY[alt_key]
+
+    for (registered_method, template), permission in ROUTE_REGISTRY.items():
+        if registered_method != method.upper():
+            continue
+        if _path_matches_template(normalized, template):
+            if (registered_method, template) in EXEMPT_ROUTES:
+                return None
+            return permission
+
+    return "DENY"

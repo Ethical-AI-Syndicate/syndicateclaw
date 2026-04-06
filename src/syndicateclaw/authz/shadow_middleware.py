@@ -30,6 +30,7 @@ from syndicateclaw.authz.route_registry import (
     SCOPE_RESOLVERS,
     RouteAuthzSpec,
     get_route_spec,
+    is_exempt_route,
     is_public_route,
 )
 
@@ -84,6 +85,8 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
         route_path = self._resolve_route_template(request)
         method = request.method.upper()
         if is_public_route(method, route_path):
+            return None
+        if is_exempt_route(method, route_path):
             return None
         spec = get_route_spec(method, route_path)
         if spec is None:
@@ -152,6 +155,8 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
         method = request.method.upper()
 
         if is_public_route(method, route_path):
+            return
+        if is_exempt_route(method, route_path):
             return
 
         await self._incr_metric(request, "rbac.shadow.expected")
@@ -392,9 +397,7 @@ class ShadowRBACMiddleware(BaseHTTPMiddleware):
             "permission": required_permission,
             "rbac_decision": rbac_result.decision.value if rbac_result else None,
             "legacy_decision": (
-                legacy_decision.value
-                if isinstance(legacy_decision, Decision)
-                else legacy_decision
+                legacy_decision.value if isinstance(legacy_decision, Decision) else legacy_decision
             ),
             "agreement": agreement,
             "disagreement_type": disagreement_type,

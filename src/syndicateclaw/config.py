@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     database_url: str = Field(..., description="Async PostgreSQL DSN (e.g. postgresql+asyncpg://…)")
     redis_url: str = Field(default="redis://localhost:6379/0", description="Redis connection URL")
-    api_host: str = Field(default="0.0.0.0", description="Host to bind the API server")
+    api_host: str = Field(default="127.0.0.1", description="Host to bind the API server")
     api_port: int = Field(default=8000, ge=1, le=65535, description="Port for the API server")
     log_level: str = Field(default="INFO", description="Logging level (DEBUG, INFO, WARNING, …)")
     otel_endpoint: str | None = Field(
@@ -56,15 +56,18 @@ class Settings(BaseSettings):
         default=86400 * 30, ge=1, description="Default TTL for memory records (30 days)"
     )
     memory_max_value_bytes: int = Field(
-        default=1_048_576, ge=1,
+        default=1_048_576,
+        ge=1,
         description="Maximum size in bytes for a memory record value (1MB default)",
     )
     memory_max_key_length: int = Field(
-        default=256, ge=1,
+        default=256,
+        ge=1,
         description="Maximum length of a memory key string",
     )
     memory_max_namespace_length: int = Field(
-        default=128, ge=1,
+        default=128,
+        ge=1,
         description="Maximum length of a memory namespace string",
     )
     max_workflow_depth: int = Field(
@@ -141,9 +144,62 @@ class Settings(BaseSettings):
         description="Only these host suffixes (e.g. models.dev, sub.models.dev) may be fetched.",
     )
     rbac_enforcement_enabled: bool = Field(
-        default=False,
+        default=True,
         description="When True, RBAC decisions deny before the route runs (403). "
-        "When False (default), RBAC runs in shadow mode only.",
+        "When False, RBAC runs in shadow mode only.",
+    )
+    allow_unscoped_keys: bool = Field(
+        default=True,
+        description=(
+            "When False, API keys without explicit scopes are rejected with 401. "
+            "Default True preserves backward compatibility for legacy unscoped keys."
+        ),
+    )
+    streaming_token_ttl_seconds: int = Field(
+        default=300,
+        ge=1,
+        description="Single-use streaming token TTL in seconds.",
+    )
+    agent_heartbeat_check_interval: int = Field(
+        default=30,
+        ge=1,
+        description="Background poll interval in seconds for stale agent heartbeat checks.",
+    )
+    agent_heartbeat_timeout_seconds: int = Field(
+        default=60,
+        ge=1,
+        description=(
+            "Heartbeat staleness timeout in seconds before ONLINE agents are marked OFFLINE."
+        ),
+    )
+    scheduler_enabled: bool = Field(
+        default=True,
+        description="When True, the scheduler background worker polls for due schedules.",
+    )
+    scheduler_poll_interval: int = Field(
+        default=10,
+        ge=1,
+        description="Seconds between scheduler poll cycles.",
+    )
+    scheduler_max_concurrent: int = Field(
+        default=50,
+        ge=1,
+        description="Maximum schedules processed concurrently per scheduler instance.",
+    )
+    scheduler_lock_lease_seconds: int = Field(
+        default=120,
+        ge=1,
+        description="Lock lease duration in seconds before another instance can claim.",
+    )
+    scheduler_batch_size: int = Field(
+        default=20,
+        ge=1,
+        description="Maximum schedules claimed per poll cycle.",
+    )
+    message_max_hops: int = Field(
+        default=10,
+        ge=1,
+        description="Maximum relay hops for agent messages before forced termination.",
     )
     runtime_enabled: bool = Field(
         default=False,
@@ -157,3 +213,45 @@ class Settings(BaseSettings):
         default=None,
         description="Optional second HS256 secret for key rotation (tried after primary).",
     )
+
+    builder_enabled: bool = Field(
+        default=True,
+        description="When True, BuilderCSRFMiddleware enforces X-Builder-Token on workflow PUT.",
+    )
+    builder_token_ttl_seconds: int = Field(
+        default=3600,
+        ge=60,
+        description="TTL for multi-use builder tokens (seconds).",
+    )
+    plugins_config_path: str | None = Field(
+        default=None,
+        description="Path to plugins.yaml; default is repo-root plugins.yaml when unset.",
+    )
+    plugin_timeout_seconds: int = Field(
+        default=5,
+        ge=1,
+        le=300,
+        description="Wall-clock timeout for each plugin hook invocation.",
+    )
+
+    # ── Connectors ────────────────────────────────────────────────────────────
+    public_base_url: str = Field(default="", description="Public HTTPS base URL")
+
+    telegram_bot_token: str | None = Field(default=None)
+    telegram_webhook_secret: str | None = Field(default=None)
+
+    discord_bot_token: str | None = Field(default=None)
+    discord_app_id: str = Field(default="")
+    discord_public_key: str = Field(default="")
+    discord_guild_ids: str = Field(default="", description="comma-separated guild IDs")
+
+    slack_bot_token: str | None = Field(default=None)
+    slack_signing_secret: str | None = Field(default=None)
+
+    connector_default_model_id: str | None = Field(default=None)
+    connector_default_provider_id: str | None = Field(default=None)
+    connector_system_prompt: str | None = Field(default=None)
+
+    # ── Console ───────────────────────────────────────────────────────────────
+    console_enabled: bool = Field(default=True)
+    console_static_dir: str = Field(default="console/dist")

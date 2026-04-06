@@ -4,11 +4,12 @@ from collections.abc import AsyncGenerator
 from typing import Any, cast
 
 import structlog
-from fastapi import HTTPException, Request, status
+from fastapi import Depends, HTTPException, Request, status
 from opentelemetry import trace
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from syndicateclaw.config import Settings
+from syndicateclaw.security.api_keys import UnscopedApiKeyNotPermittedError
 from syndicateclaw.security.auth import JWTError, decode_access_token, verify_api_key
 from syndicateclaw.security.revocation import is_token_revoked
 
@@ -75,6 +76,38 @@ def get_provider_loader(request: Request) -> Any:
     return _get_service(request, "provider_config_loader")
 
 
+def get_streaming_token_service(request: Request) -> Any:
+    return _get_service(request, "streaming_token_service")
+
+
+def get_builder_token_service(request: Request) -> Any:
+    return _get_service(request, "builder_token_service")
+
+
+def get_agent_service(request: Request) -> Any:
+    return _get_service(request, "agent_service")
+
+
+def get_message_service(request: Request) -> Any:
+    return _get_service(request, "message_service")
+
+
+def get_subscription_service(request: Request) -> Any:
+    return _get_service(request, "subscription_service")
+
+
+def get_versioning_service(request: Request) -> Any:
+    return _get_service(request, "versioning_service")
+
+
+def get_schedule_service(request: Request) -> Any:
+    return _get_service(request, "schedule_service")
+
+
+def get_state_cache(request: Request) -> Any:
+    return getattr(request.app.state, "state_cache", None)
+
+
 def get_inference_catalog(request: Request) -> Any:
     """In-memory ModelCatalog shared with ProviderService (models.dev merge target)."""
     return _get_service(request, "inference_catalog")
@@ -120,6 +153,8 @@ async def get_current_actor(request: Request) -> str:
                     )
                 span.set_attribute("actor.id", str(actor))
                 request.state.actor = actor
+                request.state.jwt_org_id = claims.get("org_id")
+                request.state.jwt_org_role = claims.get("org_role")
                 return cast(str, actor)
         except JWTError as err:
             raise HTTPException(
@@ -135,7 +170,24 @@ async def get_current_actor(request: Request) -> str:
         ) as span:
             api_key_service = getattr(request.app.state, "api_key_service", None)
             if api_key_service is not None:
-                actor = await api_key_service.verify_key(api_key)
+                api_key_settings: Settings = request.app.state.settings
+                try:
+                    verification = await api_key_service.verify_key_details(
+                        api_key,
+                        allow_unscoped_keys=getattr(api_key_settings, "allow_unscoped_keys", True),
+                    )
+                except UnscopedApiKeyNotPermittedError as err:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail={
+                            "detail": "unscoped_key_not_permitted",
+                            "upgrade_guide": "https://docs.syndicateclaw.dev/upgrade/api-key-scopes",
+                        },
+                    ) from err
+
+                actor = verification.actor if verification is not None else None
+                request.state.api_key_scopes = verification.scopes if verification else []
+                request.state.unscoped_key = verification.unscoped if verification else False
             else:
                 actor = verify_api_key(api_key)
             if actor is None:
@@ -158,3 +210,14 @@ async def get_current_actor(request: Request) -> str:
     logger.warning("auth.anonymous_fallback", environment=environment)
     request.state.actor = "anonymous"
     return "anonymous"
+
+
+async def get_actor_org(
+    actor: str = Depends(get_current_actor),
+    session: AsyncSession = Depends(get_db_session),  # noqa: B008
+) -> Any:
+    """Resolve the caller's organization from ``organization_members``, if any."""
+    from syndicateclaw.services.organization_service import OrganizationService
+
+    svc = OrganizationService(session)
+    return await svc.get_actor_org(actor)

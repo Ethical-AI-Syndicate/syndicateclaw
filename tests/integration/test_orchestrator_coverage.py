@@ -153,6 +153,11 @@ async def test_workflow_cancel_transitions_to_cancelled_state() -> None:
     assert rr.run.status == WorkflowRunStatus.CANCELLED
 
 
-@pytest.mark.skip(reason="Replay re-queues run; full re-execute requires second execute() call.")
+@pytest.mark.skip(
+    reason=(
+        "Replay re-queues run; full re-execute requires second execute() call. "
+        "Unskip: v1.2 when orchestrator replay path is validated in integration harness."
+    )
+)
 async def test_workflow_replay_reruns_from_checkpoint() -> None:
     pass

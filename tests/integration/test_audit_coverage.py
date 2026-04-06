@@ -88,6 +88,7 @@ async def test_audit_export_returns_ordered_events(
                 edges={},
                 owner="test",
                 metadata_={},
+                namespace="default",
             )
         )
         session.add(
@@ -99,6 +100,7 @@ async def test_audit_export_returns_ordered_events(
                 state={},
                 initiated_by="test",
                 version_manifest={},
+                namespace="default",
             )
         )
         for i in range(3):
@@ -166,4 +168,3 @@ async def test_audit_integrity_hash_present(
         row = await session.get(DBAuditEvent, event.id)
         assert row is not None
         assert row.details.get("integrity_signature")
-

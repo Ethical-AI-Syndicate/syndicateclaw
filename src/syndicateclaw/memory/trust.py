@@ -88,8 +88,7 @@ class MemoryTrustService:
                 elapsed_days = (now - last_v).total_seconds() / 86400
                 new_score = max(
                     0.0,
-                    (rec.trust_score or 1.0)
-                    - ((rec.decay_rate or 0.01) * elapsed_days),
+                    (rec.trust_score or 1.0) - ((rec.decay_rate or 0.01) * elapsed_days),
                 )
                 if new_score != rec.trust_score:
                     rec.trust_score = new_score
@@ -135,9 +134,7 @@ class MemoryTrustService:
 
         logger.info("memory.frozen", record_id=record_id, actor=actor)
 
-    async def detect_conflicts(
-        self, namespace: str, key: str
-    ) -> list[str]:
+    async def detect_conflicts(self, namespace: str, key: str) -> list[str]:
         """Find records that conflict (same namespace/key but different values).
         Links them via conflict_set_id and downgrades trust on all conflicting records.
         Returns list of conflict_set_ids created.
@@ -202,20 +199,20 @@ class MemoryTrustService:
                 rec.last_validated_at,
                 rec.trust_frozen or False,
             )
-            report.append({
-                "id": rec.id,
-                "namespace": rec.namespace,
-                "key": rec.key,
-                "source_type": rec.source_type,
-                "trust_score": rec.trust_score,
-                "effective_trust": round(effective, 4),
-                "usable": self.is_usable(effective),
-                "frozen": rec.trust_frozen,
-                "last_validated_at": (
-                    rec.last_validated_at.isoformat()
-                    if rec.last_validated_at
-                    else None
-                ),
-                "conflict_set_id": rec.conflict_set_id,
-            })
+            report.append(
+                {
+                    "id": rec.id,
+                    "namespace": rec.namespace,
+                    "key": rec.key,
+                    "source_type": rec.source_type,
+                    "trust_score": rec.trust_score,
+                    "effective_trust": round(effective, 4),
+                    "usable": self.is_usable(effective),
+                    "frozen": rec.trust_frozen,
+                    "last_validated_at": (
+                        rec.last_validated_at.isoformat() if rec.last_validated_at else None
+                    ),
+                    "conflict_set_id": rec.conflict_set_id,
+                }
+            )
         return report

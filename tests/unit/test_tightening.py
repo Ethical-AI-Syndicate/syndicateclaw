@@ -28,27 +28,33 @@ class TestReadyzRateLimitStatus:
 
     @pytest.fixture(autouse=True)
     def _env(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+        monkeypatch.setenv(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
 
-    def test_readyz_includes_rate_limiting_check(self):
+    def test_readyz_includes_rate_limiting_check(self) -> None:
         import importlib
         import inspect
 
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.create_app)
         assert "rate_limiting" in source
 
-    def test_config_has_rate_limit_strict(self):
+    def test_config_has_rate_limit_strict(self) -> None:
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert hasattr(s, "rate_limit_strict")
         assert s.rate_limit_strict is False
 
-    def test_strict_mode_config(self, monkeypatch):
+    def test_strict_mode_config(self, monkeypatch) -> None:
         monkeypatch.setenv("SYNDICATECLAW_RATE_LIMIT_STRICT", "true")
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert s.rate_limit_strict is True
 
@@ -63,33 +69,39 @@ class TestAsymmetricSigningGate:
 
     @pytest.fixture(autouse=True)
     def _env(self, monkeypatch):
-        monkeypatch.setenv("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+        monkeypatch.setenv(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "test-key")
 
-    def test_config_has_require_asymmetric_signing(self):
+    def test_config_has_require_asymmetric_signing(self) -> None:
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert hasattr(s, "require_asymmetric_signing")
         assert s.require_asymmetric_signing is False
 
-    def test_config_has_ed25519_key_path(self):
+    def test_config_has_ed25519_key_path(self) -> None:
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert hasattr(s, "ed25519_private_key_path")
         assert s.ed25519_private_key_path is None
 
-    def test_lifespan_enforces_key_requirement(self):
+    def test_lifespan_enforces_key_requirement(self) -> None:
         import importlib
         import inspect
 
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.lifespan)
         assert "require_asymmetric_signing" in source
         assert "RuntimeError" in source
         assert "asymmetric_keypair" in source
 
-    def test_ed25519_key_file_loading(self, tmp_path):
+    def test_ed25519_key_file_loading(self, tmp_path) -> None:
         from syndicateclaw.security.signing import SigningKeyPair
 
         kp = SigningKeyPair()
@@ -110,14 +122,16 @@ class TestAsymmetricSigningGate:
 class TestApiKeyHashing:
     """Verify key hashing is correct."""
 
-    def test_key_hash_is_sha256(self):
+    def test_key_hash_is_sha256(self) -> None:
         from syndicateclaw.security.api_keys import _hash_key
+
         raw = "sc-test-key-12345"
         expected = hashlib.sha256(raw.encode()).hexdigest()
         assert _hash_key(raw) == expected
 
-    def test_hash_differs_for_different_keys(self):
+    def test_hash_differs_for_different_keys(self) -> None:
         from syndicateclaw.security.api_keys import _hash_key
+
         assert _hash_key("key-a") != _hash_key("key-b")
 
 
@@ -125,7 +139,7 @@ class TestApiKeyServiceCreate:
     """Verify key creation returns key_id and raw key."""
 
     @pytest.mark.asyncio
-    async def test_create_returns_id_and_raw_key(self):
+    async def test_create_returns_id_and_raw_key(self) -> None:
         from syndicateclaw.security.api_keys import ApiKeyService
 
         session = MagicMock()
@@ -158,7 +172,7 @@ class TestApiKeyServiceVerify:
     """Verify key validation handles valid, revoked, and expired keys."""
 
     @pytest.mark.asyncio
-    async def test_verify_returns_actor_for_valid_key(self):
+    async def test_verify_returns_actor_for_valid_key(self) -> None:
         from syndicateclaw.security.api_keys import ApiKeyService
 
         row = MagicMock()
@@ -185,7 +199,7 @@ class TestApiKeyServiceVerify:
         assert actor == "user:bob"
 
     @pytest.mark.asyncio
-    async def test_verify_returns_none_for_revoked_key(self):
+    async def test_verify_returns_none_for_revoked_key(self) -> None:
         from syndicateclaw.security.api_keys import ApiKeyService
 
         row = MagicMock()
@@ -209,7 +223,7 @@ class TestApiKeyServiceVerify:
         assert await service.verify_key("sc-test") is None
 
     @pytest.mark.asyncio
-    async def test_verify_returns_none_for_expired_key(self):
+    async def test_verify_returns_none_for_expired_key(self) -> None:
         from syndicateclaw.security.api_keys import ApiKeyService
 
         row = MagicMock()
@@ -234,7 +248,7 @@ class TestApiKeyServiceVerify:
         assert await service.verify_key("sc-test") is None
 
     @pytest.mark.asyncio
-    async def test_verify_returns_none_for_unknown_key(self):
+    async def test_verify_returns_none_for_unknown_key(self) -> None:
         from syndicateclaw.security.api_keys import ApiKeyService
 
         session = MagicMock()
@@ -257,12 +271,14 @@ class TestApiKeyServiceVerify:
 class TestApiKeyDbModel:
     """Verify the ApiKey DB model exists with correct fields."""
 
-    def test_api_key_table_exists(self):
+    def test_api_key_table_exists(self) -> None:
         from syndicateclaw.db.models import ApiKey
+
         assert ApiKey.__tablename__ == "api_keys"
 
-    def test_api_key_has_lifecycle_fields(self):
+    def test_api_key_has_lifecycle_fields(self) -> None:
         from syndicateclaw.db.models import ApiKey
+
         columns = {c.name for c in ApiKey.__table__.columns}
         assert "key_hash" in columns
         assert "key_prefix" in columns
@@ -274,13 +290,18 @@ class TestApiKeyDbModel:
         assert "expires_at" in columns
         assert "created_at" in columns
 
-    def test_dependency_wiring(self):
+    def test_dependency_wiring(self) -> None:
         import importlib
         import inspect
         import os
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         import syndicateclaw.api.main as main_mod
+
         importlib.reload(main_mod)
         source = inspect.getsource(main_mod.lifespan)
         assert "ApiKeyService" in source
@@ -315,7 +336,7 @@ def _make_record(**kwargs) -> MemoryRecord:
 class TestMemoryWriteGuardrails:
     """Verify size and structure constraints on memory writes."""
 
-    def test_rejects_oversized_value(self):
+    def test_rejects_oversized_value(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         service = MemoryService(MagicMock(), max_value_bytes=100)
@@ -323,14 +344,14 @@ class TestMemoryWriteGuardrails:
         with pytest.raises(ValueError, match="Value too large"):
             service._validate_write_guardrails(record)
 
-    def test_accepts_small_value(self):
+    def test_accepts_small_value(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         service = MemoryService(MagicMock(), max_value_bytes=10000)
         record = _make_record(value={"ok": True})
         service._validate_write_guardrails(record)
 
-    def test_rejects_long_key(self):
+    def test_rejects_long_key(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         service = MemoryService(MagicMock(), max_key_length=10)
@@ -338,7 +359,7 @@ class TestMemoryWriteGuardrails:
         with pytest.raises(ValueError, match="Key too long"):
             service._validate_write_guardrails(record)
 
-    def test_rejects_long_namespace(self):
+    def test_rejects_long_namespace(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         service = MemoryService(MagicMock(), max_namespace_length=10)
@@ -346,7 +367,7 @@ class TestMemoryWriteGuardrails:
         with pytest.raises(ValueError, match="Namespace too long"):
             service._validate_write_guardrails(record)
 
-    def test_rejects_deeply_nested_value(self):
+    def test_rejects_deeply_nested_value(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         nested: dict[str, Any] = {"level": 0}
@@ -361,7 +382,7 @@ class TestMemoryWriteGuardrails:
         with pytest.raises(ValueError, match="nesting depth"):
             service._validate_write_guardrails(record)
 
-    def test_accepts_moderately_nested_value(self):
+    def test_accepts_moderately_nested_value(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         nested: dict[str, Any] = {"a": {"b": {"c": {"d": "ok"}}}}
@@ -369,7 +390,7 @@ class TestMemoryWriteGuardrails:
         record = _make_record(value=nested)
         service._validate_write_guardrails(record)
 
-    def test_default_limits_are_reasonable(self):
+    def test_default_limits_are_reasonable(self) -> None:
         from syndicateclaw.memory.service import MemoryService
 
         service = MemoryService(MagicMock())
@@ -378,26 +399,32 @@ class TestMemoryWriteGuardrails:
         assert service._max_namespace_length == 128
         assert service._max_nesting_depth == 20
 
-    def test_config_has_memory_guardrail_fields(self):
+    def test_config_has_memory_guardrail_fields(self) -> None:
         import os
-        os.environ.setdefault("SYNDICATECLAW_DATABASE_URL", "postgresql+asyncpg://x:x@localhost/x")
+
+        os.environ.setdefault(
+            "SYNDICATECLAW_DATABASE_URL",
+            "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+        )
         os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-key")
         from syndicateclaw.config import Settings
+
         s = Settings()
         assert hasattr(s, "memory_max_value_bytes")
         assert hasattr(s, "memory_max_key_length")
         assert hasattr(s, "memory_max_namespace_length")
         assert s.memory_max_value_bytes == 1_048_576
 
-    def test_write_calls_guardrails(self):
+    def test_write_calls_guardrails(self) -> None:
         """Verify that write() calls _validate_write_guardrails."""
         import inspect
 
         from syndicateclaw.memory.service import MemoryService
+
         source = inspect.getsource(MemoryService.write)
         assert "_validate_write_guardrails" in source
 
-    def test_nesting_depth_check_handles_lists(self):
+    def test_nesting_depth_check_handles_lists(self) -> None:
         from syndicateclaw.memory.service import _check_nesting_depth
 
         deep_list: list[Any] = [[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]
@@ -413,10 +440,11 @@ class TestMemoryWriteGuardrails:
 class TestAuthDependencyWiring:
     """Verify auth dependency uses DB-backed API key service when available."""
 
-    def test_dependency_checks_api_key_service(self):
+    def test_dependency_checks_api_key_service(self) -> None:
         import inspect
 
         from syndicateclaw.api.dependencies import get_current_actor
+
         source = inspect.getsource(get_current_actor)
         assert "api_key_service" in source
         assert "verify_key" in source

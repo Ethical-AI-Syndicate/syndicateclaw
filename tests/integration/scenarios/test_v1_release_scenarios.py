@@ -22,7 +22,8 @@ pytestmark = [pytest.mark.integration]
 @pytest.mark.xfail(
     reason=(
         "Engine execution is async/separate from API run creation; "
-        "audit events not emitted synchronously in test environment"
+        "audit events not emitted synchronously in test environment. "
+        "Unskip: v1.2 when audit event emission is synchronous or test awaits event flush."
     ),
     strict=False,
 )
@@ -136,7 +137,8 @@ async def test_memory_namespace_isolation(session_factory) -> None:
 @pytest.mark.xfail(
     reason=(
         "Idempotency store requires wired provider adapter in test environment; "
-        "deferred to v1.1 integration harness"
+        "deferred to v1.1 integration harness. "
+        "Unskip: v1.2 when provider adapter is injectable in integration fixture."
     ),
     strict=False,
 )
@@ -267,7 +269,8 @@ async def test_expired_jwt_returns_401_not_500(client: AsyncClient) -> None:
 @pytest.mark.skip(
     reason=(
         "v1.1: per-API-key OAuth-style scopes not implemented — verified keys map to an "
-        "actor; authorization is RBAC on that principal, not a scope string on the key"
+        "actor; authorization is RBAC on that principal, not a scope string on the key. "
+        "Unskip: v2.0 if per-key scope enforcement is added."
     ),
 )
 async def test_api_key_wrong_scope_returns_403_not_401() -> None:
@@ -282,16 +285,14 @@ def test_audit_log_has_no_update_or_delete_api_surface(
     monkeypatch.setenv("SYNDICATECLAW_SECRET_KEY", "k" * 40)
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
-        "postgresql+asyncpg://u:p@127.0.0.1:5432/db",
+        "postgresql+asyncpg://u:p@localhost:5432/db",
     )
     import syndicateclaw.api.main as main_mod
 
     importlib.reload(main_mod)
     app = main_mod.create_app()
     audit_routes = [
-        r
-        for r in app.routes
-        if hasattr(r, "path") and "audit" in getattr(r, "path", "")
+        r for r in app.routes if hasattr(r, "path") and "audit" in getattr(r, "path", "")
     ]
     for route in audit_routes:
         methods = getattr(route, "methods", None) or set()

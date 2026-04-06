@@ -1,0 +1,23 @@
+{
+  "version": "2.0.0",
+  "captured_at": "2026-03-27T21:10:02Z",
+  "source": "pytest-benchmark smoke (tests/perf/test_smoke_benchmark.py::test_benchmark_smoke)",
+  "note": "Reference capture for CI regression (mean must not exceed baseline mean by >10%). Regenerate on same job image if hardware changes.",
+  "benchmarks": [
+    {
+      "group": null,
+      "name": "test_benchmark_smoke",
+      "fullname": "tests/perf/test_smoke_benchmark.py::test_benchmark_smoke",
+      "params": null,
+      "param": null,
+      "stats": {
+        "min": 1.0737421689555049e-07,
+        "max": 6.522530020447448e-05,
+        "mean": 1.317514520277547e-07,
+        "stddev": 1.5891282261218637e-07,
+        "rounds": 198254,
+        "median": 1.2219970813021064e-07
+      }
+    }
+  ]
+}

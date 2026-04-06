@@ -50,8 +50,8 @@ def get_engine(url: str, **kwargs: Any) -> AsyncEngine:
     return create_async_engine(
         url,
         echo=kwargs.pop("echo", False),
-        pool_size=kwargs.pop("pool_size", 10),
-        max_overflow=kwargs.pop("max_overflow", 20),
+        pool_size=kwargs.pop("pool_size", 20),
+        max_overflow=kwargs.pop("max_overflow", 30),
         pool_timeout=kwargs.pop("pool_timeout", 30),
         pool_recycle=kwargs.pop("pool_recycle", 3600),
         pool_pre_ping=True,

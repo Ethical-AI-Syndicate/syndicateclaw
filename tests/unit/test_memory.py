@@ -14,7 +14,7 @@ from syndicateclaw.models import (
 
 
 class TestMemoryRecordProvenance:
-    def test_memory_record_provenance_required_source(self):
+    def test_memory_record_provenance_required_source(self) -> None:
         """Source is a required field and cannot be omitted."""
         with pytest.raises((ValidationError, TypeError)):
             MemoryRecord.new(
@@ -26,7 +26,7 @@ class TestMemoryRecordProvenance:
                 # source omitted
             )
 
-    def test_memory_record_provenance_required_actor(self):
+    def test_memory_record_provenance_required_actor(self) -> None:
         """Actor is a required field and cannot be omitted."""
         with pytest.raises((ValidationError, TypeError)):
             MemoryRecord.new(
@@ -38,7 +38,7 @@ class TestMemoryRecordProvenance:
                 # actor omitted
             )
 
-    def test_memory_record_provenance_empty_rejected_by_service(self):
+    def test_memory_record_provenance_empty_rejected_by_service(self) -> None:
         """MemoryService._validate_provenance rejects empty source/actor."""
         from syndicateclaw.memory.service import MemoryService
 
@@ -64,7 +64,7 @@ class TestMemoryRecordProvenance:
         with pytest.raises(ValueError, match="actor"):
             MemoryService._validate_provenance(record2)
 
-    def test_memory_record_provenance_valid(self):
+    def test_memory_record_provenance_valid(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -78,7 +78,7 @@ class TestMemoryRecordProvenance:
 
 
 class TestMemoryLineageDefaults:
-    def test_memory_record_lineage_defaults(self):
+    def test_memory_record_lineage_defaults(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -93,7 +93,7 @@ class TestMemoryLineageDefaults:
         assert record.lineage.tool_name is None
         assert record.lineage.derivation_method is None
 
-    def test_memory_record_lineage_custom(self):
+    def test_memory_record_lineage_custom(self) -> None:
         lineage = MemoryLineage(
             parent_ids=["parent1"],
             workflow_run_id="wfr-001",
@@ -114,7 +114,7 @@ class TestMemoryLineageDefaults:
 
 
 class TestMemoryRecordTTL:
-    def test_memory_record_ttl_calculation(self):
+    def test_memory_record_ttl_calculation(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -126,7 +126,7 @@ class TestMemoryRecordTTL:
         )
         assert record.ttl_seconds == 3600
 
-    def test_memory_record_ttl_none_by_default(self):
+    def test_memory_record_ttl_none_by_default(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -138,7 +138,7 @@ class TestMemoryRecordTTL:
         assert record.ttl_seconds is None
         assert record.expires_at is None
 
-    def test_memory_record_ttl_with_explicit_expiry(self):
+    def test_memory_record_ttl_with_explicit_expiry(self) -> None:
         future = datetime.now(UTC) + timedelta(hours=2)
         record = MemoryRecord.new(
             namespace="ns",
@@ -155,7 +155,7 @@ class TestMemoryRecordTTL:
 
 
 class TestMemoryDeletionStatusLifecycle:
-    def test_memory_deletion_status_lifecycle(self):
+    def test_memory_deletion_status_lifecycle(self) -> None:
         record = MemoryRecord.new(
             namespace="ns",
             key="k",
@@ -175,7 +175,7 @@ class TestMemoryDeletionStatusLifecycle:
         record.deletion_status = MemoryDeletionStatus.DELETED
         assert record.deletion_status == MemoryDeletionStatus.DELETED
 
-    def test_all_deletion_statuses_exist(self):
+    def test_all_deletion_statuses_exist(self) -> None:
         expected = {"ACTIVE", "MARKED_FOR_DELETION", "DELETED"}
         actual = {s.value for s in MemoryDeletionStatus}
         assert actual == expected

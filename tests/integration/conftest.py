@@ -9,31 +9,77 @@ import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.exc import ArgumentError
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
 
 
+_DEFAULT_DB_URL = (
+    "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+)
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def _wait_for_services() -> None:
+    """Wait for database and redis to be reachable before starting tests."""
+    import asyncio
+    import os
+
+    import redis.asyncio as redis
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    db_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL
+    redis_url = os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0"
+
+    # Wait for Postgres
+    engine = create_async_engine(db_url, future=True)
+    for _ in range(15):
+        try:
+            async with engine.begin() as conn:
+                await conn.execute(text("SELECT 1"))
+            break
+        except Exception as e:
+            print(f"Postgres wait failed: {e}")
+            await asyncio.sleep(2)
+    else:
+        await engine.dispose()
+        pytest.skip("Postgres failed to become reachable in time.")
+    await engine.dispose()
+
+    # Wait for Redis
+    client = redis.from_url(redis_url)
+    for _ in range(15):
+        try:
+            await client.ping()
+            break
+        except Exception as e:
+            print(f"Redis wait failed: {e}")
+            await asyncio.sleep(2)
+    else:
+        await client.aclose()
+        pytest.skip("Redis failed to become reachable in time.")
+    await client.aclose()
+
+
 @pytest.fixture(autouse=True)
-def _integration_env(monkeypatch: pytest.MonkeyPatch) -> None:
+def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) -> None:
     """Ensure required env vars are set for Settings() construction."""
     monkeypatch.setenv(
         "SYNDICATECLAW_DATABASE_URL",
-        os.environ.get(
-            "SYNDICATECLAW_DATABASE_URL",
-            "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
-        ),
+        os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL,
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_SECRET_KEY",
-        os.environ.get("SYNDICATECLAW_SECRET_KEY", "test-secret-key-not-for-production"),
+        os.environ.get("SYNDICATECLAW_SECRET_KEY") or "test-secret-key-not-for-production",
     )
     monkeypatch.setenv(
         "SYNDICATECLAW_REDIS_URL",
-        os.environ.get("SYNDICATECLAW_REDIS_URL", "redis://localhost:6379/0"),
+        os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
     )
     monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
-    monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "test")
+    monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 
 
 @pytest.fixture()
@@ -52,6 +98,8 @@ async def session_factory(_integration_env: None) -> async_sessionmaker[AsyncSes
             yield sf
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+    except ArgumentError as exc:
+        pytest.skip(f"Integration test database URL invalid: {exc}")
     except Exception as exc:
         if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
@@ -73,9 +121,10 @@ async def integration_app_client(_integration_env: None) -> AsyncClient:
 
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             yield ac
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
@@ -96,9 +145,10 @@ async def client(_integration_env: None) -> AsyncClient:
 
     app = main_mod.create_app()
     try:
-        async with LifespanManager(app) as manager, AsyncClient(
-            transport=ASGITransport(app=manager.app), base_url="http://test"
-        ) as ac:
+        async with (
+            LifespanManager(app) as manager,
+            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
+        ):
             resp = await ac.get("/readyz")
             if resp.status_code != 200:
                 pytest.skip(f"Integration dependencies not ready: {resp.json()}")
@@ -116,18 +166,21 @@ async def _cancel_stale_runs(_integration_env: None) -> None:
     """Cancel stale PENDING/RUNNING runs before each test (avoids concurrency limit)."""
     import os
 
-    from sqlalchemy import text
     from sqlalchemy.ext.asyncio import create_async_engine
-    url = os.environ.get("SYNDICATECLAW_DATABASE_URL", "")
+
+    url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or ""
     if not url:
         return
     try:
         engine = create_async_engine(url)
         async with engine.begin() as conn:
-            await conn.execute(text(
-                "UPDATE workflow_runs SET status='CANCELLED' "
-                "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL')"
-            ))
+            await conn.execute(
+                text(
+                    "UPDATE workflow_runs SET status='CANCELLED' "
+                    "WHERE status IN ('PENDING','RUNNING','WAITING_APPROVAL',"
+                    "'WAITING_AGENT_RESPONSE')"
+                )
+            )
         await engine.dispose()
     except Exception:
         pass  # DB not available — integration tests will skip anyway

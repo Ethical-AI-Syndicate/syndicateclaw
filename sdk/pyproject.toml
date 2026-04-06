@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "syndicateclaw-sdk"
+version = "0.1.0"
+description = "Python client for SyndicateClaw API (v1.5.0 developer experience track)"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+    "packaging>=24",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.8", "mypy>=1.11"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/syndicateclaw_sdk"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

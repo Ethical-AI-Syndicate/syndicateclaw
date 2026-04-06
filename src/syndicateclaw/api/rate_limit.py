@@ -26,9 +26,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     revisited for hostile environments.
     """
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         if request.url.path in _RATE_LIMIT_SKIP_PATHS:
             return await call_next(request)
 
@@ -89,9 +87,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 max_requests=max_requests,
                 kind="sustained",
             )
-            return _rate_limit_response(
-                actor, window_count, max_requests, retry_after, "sustained"
-            )
+            return _rate_limit_response(actor, window_count, max_requests, retry_after, "sustained")
 
         if burst_count > burst:
             logger.warning(

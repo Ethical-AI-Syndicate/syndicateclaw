@@ -43,7 +43,9 @@ from syndicateclaw.tools.registry import ToolRegistry
 
 def _make_tool(name: str = "test_tool", **overrides: Any) -> Tool:
     defaults = dict(
-        name=name, version="1.0.0", owner="test",
+        name=name,
+        version="1.0.0",
+        owner="test",
         risk_level=ToolRiskLevel.LOW,
         sandbox_policy=ToolSandboxPolicy(allowed_protocols=["https"]),
     )
@@ -82,7 +84,7 @@ class TestPolicyFailClosed:
     """Policy evaluation returns DENY when engine is missing, not ALLOW."""
 
     @pytest.mark.asyncio
-    async def test_tool_denied_when_policy_engine_is_none(self):
+    async def test_tool_denied_when_policy_engine_is_none(self) -> None:
         """Without a policy engine, tool execution is DENIED."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -108,7 +110,7 @@ class TestPolicyFailClosed:
             await executor.execute("test_tool", {}, ctx)
 
     @pytest.mark.asyncio
-    async def test_tool_allowed_when_policy_engine_allows(self):
+    async def test_tool_allowed_when_policy_engine_allows(self) -> None:
         """With a policy engine that allows, execution proceeds."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -137,7 +139,7 @@ class TestPolicyFailClosed:
         assert result == {"result": "ok"}
 
     @pytest.mark.asyncio
-    async def test_policy_engine_none_records_deny_decision(self):
+    async def test_policy_engine_none_records_deny_decision(self) -> None:
         """DENY from missing engine still gets a decision record."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -174,40 +176,40 @@ class TestPolicyFailClosed:
 class TestMemoryAccessPolicyEnforcement:
     """Memory access_policy is checked on read/search, not just stored."""
 
-    def test_default_policy_allows_any_authenticated_actor(self):
+    def test_default_policy_allows_any_authenticated_actor(self) -> None:
         record = _make_memory_record(access_policy="default", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:bob") is True
 
-    def test_owner_only_denies_other_actors(self):
+    def test_owner_only_denies_other_actors(self) -> None:
         record = _make_memory_record(access_policy="owner_only", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:bob") is False
 
-    def test_owner_only_allows_owner(self):
+    def test_owner_only_allows_owner(self) -> None:
         record = _make_memory_record(access_policy="owner_only", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:alice") is True
 
-    def test_system_only_denies_non_system_actors(self):
+    def test_system_only_denies_non_system_actors(self) -> None:
         record = _make_memory_record(access_policy="system_only", actor="system:core")
         assert MemoryService._check_access_policy(record, "user:alice") is False
 
-    def test_system_only_allows_system_actors(self):
+    def test_system_only_allows_system_actors(self) -> None:
         record = _make_memory_record(access_policy="system_only", actor="system:core")
         assert MemoryService._check_access_policy(record, "system:retention") is True
 
-    def test_restricted_denies_non_owner(self):
+    def test_restricted_denies_non_owner(self) -> None:
         record = _make_memory_record(access_policy="restricted", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:bob") is False
 
-    def test_restricted_allows_owner(self):
+    def test_restricted_allows_owner(self) -> None:
         record = _make_memory_record(access_policy="restricted", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:alice") is True
 
-    def test_unknown_policy_denies_by_default(self):
+    def test_unknown_policy_denies_by_default(self) -> None:
         """Unknown access policies fail closed."""
         record = _make_memory_record(access_policy="nonexistent_policy", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:alice") is False
 
-    def test_private_policy_denies_by_default(self):
+    def test_private_policy_denies_by_default(self) -> None:
         """DB default 'private' is an unknown policy, so fail-closed."""
         record = _make_memory_record(access_policy="private", actor="user:alice")
         assert MemoryService._check_access_policy(record, "user:alice") is False
@@ -222,7 +224,7 @@ class TestSelfApprovalPrevention:
     """Self-approval is prohibited at the service layer."""
 
     @pytest.mark.asyncio
-    async def test_self_approval_blocked_in_service(self):
+    async def test_self_approval_blocked_in_service(self) -> None:
         """ApprovalService._decide raises PermissionError on self-approval."""
         from syndicateclaw.approval.service import ApprovalService
         from syndicateclaw.models import ApprovalStatus
@@ -271,38 +273,44 @@ class TestSelfApprovalPrevention:
 class TestPolicyRBAC:
     """Policy management endpoints require admin prefix."""
 
-    def test_require_policy_admin_allows_admin(self):
+    def test_require_policy_admin_allows_admin(self) -> None:
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         _require_policy_admin("admin:superuser")
 
-    def test_require_policy_admin_allows_policy_prefix(self):
+    def test_require_policy_admin_allows_policy_prefix(self) -> None:
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         _require_policy_admin("policy:editor")
 
-    def test_require_policy_admin_allows_system_prefix(self):
+    def test_require_policy_admin_allows_system_prefix(self) -> None:
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         _require_policy_admin("system:bootstrap")
 
-    def test_require_policy_admin_blocks_regular_user(self):
+    def test_require_policy_admin_blocks_regular_user(self) -> None:
         from fastapi import HTTPException
 
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("user:alice")
         assert exc_info.value.status_code == 403
 
-    def test_require_policy_admin_blocks_anonymous(self):
+    def test_require_policy_admin_blocks_anonymous(self) -> None:
         from fastapi import HTTPException
 
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("anonymous")
         assert exc_info.value.status_code == 403
 
-    def test_require_policy_admin_blocks_agent(self):
+    def test_require_policy_admin_blocks_agent(self) -> None:
         from fastapi import HTTPException
 
         from syndicateclaw.api.routes.policy import _require_policy_admin
+
         with pytest.raises(HTTPException) as exc_info:
             _require_policy_admin("agent:workflow-bot")
         assert exc_info.value.status_code == 403
@@ -316,20 +324,20 @@ class TestPolicyRBAC:
 class TestDeadLetterClassification:
     """Dead letter queue classifies errors correctly."""
 
-    def test_transient_error_classification(self):
+    def test_transient_error_classification(self) -> None:
         assert _classify_error("Connection timed out") == "transient"
         assert _classify_error("Database temporarily unavailable") == "transient"
 
-    def test_permanent_error_classification(self):
+    def test_permanent_error_classification(self) -> None:
         assert _classify_error("Validation failed: missing field") == "permanent"
         assert _classify_error("Schema mismatch") == "permanent"
         assert _classify_error("Permission denied") == "permanent"
         assert _classify_error("Resource not found") == "permanent"
 
-    def test_unknown_defaults_to_transient(self):
+    def test_unknown_defaults_to_transient(self) -> None:
         assert _classify_error("Something weird happened") == "transient"
 
-    def test_permanent_gets_zero_retries(self):
+    def test_permanent_gets_zero_retries(self) -> None:
         """Permanent errors should get 0 max_retries."""
         error = "validation error: invalid schema"
         category = _classify_error(error)
@@ -337,7 +345,7 @@ class TestDeadLetterClassification:
         max_retries = 3 if category == "transient" else 0
         assert max_retries == 0
 
-    def test_transient_gets_retries(self):
+    def test_transient_gets_retries(self) -> None:
         """Transient errors should get retry attempts."""
         error = "connection reset by peer"
         category = _classify_error(error)
@@ -354,17 +362,19 @@ class TestDeadLetterClassification:
 class TestReadinessProbeDesign:
     """Readiness probe checks real dependencies, not just process status."""
 
-    def test_liveness_and_readiness_are_separate_endpoints(self):
+    def test_liveness_and_readiness_are_separate_endpoints(self) -> None:
         """create_app produces both /healthz and /readyz."""
         import os
+
         env_overrides = {
-            "SYNDICATECLAW_DATABASE_URL": "postgresql+asyncpg://test:test@localhost/test",
+            "SYNDICATECLAW_DATABASE_URL": "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
             "SYNDICATECLAW_SECRET_KEY": "test-secret-key-for-testing",
         }
         with patch.dict(os.environ, env_overrides):
             from importlib import reload
 
             import syndicateclaw.api.main as main_mod
+
             reload(main_mod)
             app = main_mod.create_app()
 
@@ -383,7 +393,7 @@ class TestNoEscapeHatches:
     """Verify there are no remaining permissive fallbacks."""
 
     @pytest.mark.asyncio
-    async def test_no_policy_engine_and_no_ledger_both_fail(self):
+    async def test_no_policy_engine_and_no_ledger_both_fail(self) -> None:
         """With neither policy nor ledger, execution is denied twice over."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -399,7 +409,7 @@ class TestNoEscapeHatches:
             await executor.execute("test_tool", {}, ctx)
 
     @pytest.mark.asyncio
-    async def test_policy_deny_then_ledger_record(self):
+    async def test_policy_deny_then_ledger_record(self) -> None:
         """A DENY from policy still records the decision before raising."""
         registry = ToolRegistry()
         tool = _make_tool()
@@ -429,9 +439,10 @@ class TestNoEscapeHatches:
 
         mock_ledger.record_tool_decision.assert_called_once()
 
-    def test_memory_unknown_access_policy_fails_closed(self):
+    def test_memory_unknown_access_policy_fails_closed(self) -> None:
         """Any policy string not in the known set is denied."""
         for unknown_policy in ["admin", "public", "private", "open", "", "ALL"]:
             record = _make_memory_record(access_policy=unknown_policy, actor="user:alice")
-            assert MemoryService._check_access_policy(record, "user:alice") is False, \
+            assert MemoryService._check_access_policy(record, "user:alice") is False, (
                 f"Policy '{unknown_policy}' should be denied but was allowed"
+            )

@@ -140,9 +140,7 @@ async def execute_tool(
             status_code=status.HTTP_404_NOT_FOUND, detail="Tool not found"
         ) from None
     except ToolDeniedError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)
-        ) from exc
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc)) from exc
     except ToolTimeoutError as exc:
         duration_ms = int((time.monotonic() - t0) * 1000)
         return ExecuteToolResponse(

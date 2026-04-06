@@ -44,6 +44,8 @@ class ExecutionContext:
     memory_service: Any = None
     audit_service: Any = None
     checkpoint_store: Any = None
+    provider_service: Any = None
+    message_service: Any = None
 
 
 @dataclasses.dataclass
@@ -57,9 +59,7 @@ class NodeResult:
 
 @runtime_checkable
 class NodeHandler(Protocol):
-    async def __call__(
-        self, state: dict[str, Any], context: ExecutionContext
-    ) -> NodeResult: ...
+    async def __call__(self, state: dict[str, Any], context: ExecutionContext) -> NodeResult: ...
 
 
 # ---------------------------------------------------------------------------
@@ -126,11 +126,10 @@ class _ConditionParser:
                 continue
             m = _TOKEN_RE.match(expression, pos)
             if not m:
-                raise ValueError(
-                    f"Unexpected character at position {pos}: {expression[pos:]}"
-                )
+                raise ValueError(f"Unexpected character at position {pos}: {expression[pos:]}")
             kind = m.lastgroup
-            assert kind is not None
+            if kind is None:
+                raise ValueError(f"Regex match missing group name at position {pos}")
             value = m.group(kind)
             self._tokens.append((kind, value))
             pos = m.end()
@@ -265,12 +264,22 @@ class WorkflowEngine:
         checkpoint_store: Any = None,
         audit_service: Any = None,
         signing_key: bytes | None = None,
+        state_cache: Any = None,
+        plugin_executor: Any = None,
     ) -> None:
         self._handlers = handler_registry
         self._checkpoint_store = checkpoint_store
         self._audit_service = audit_service
         self._signing_key = signing_key
+        self._state_cache = state_cache
+        self._plugin_executor = plugin_executor
         self._runs: dict[str, WorkflowRunResult] = {}
+
+    async def _maybe_cache_state(self, run: WorkflowRun) -> None:
+        if self._state_cache is None:
+            return
+        st = run.status.value if isinstance(run.status, WorkflowRunStatus) else str(run.status)
+        await self._state_cache.set(run.id, dict(run.state), st)
 
     # -- public API ---------------------------------------------------------
 
@@ -283,6 +292,7 @@ class WorkflowEngine:
 
         run.status = WorkflowRunStatus.RUNNING
         run.started_at = _utcnow()
+        await self._maybe_cache_state(run)
 
         await self._emit_audit(
             AuditEventType.WORKFLOW_STARTED,
@@ -295,13 +305,29 @@ class WorkflowEngine:
 
         nodes_by_id = {n.id: n for n in workflow.nodes}
         start_node = self._find_start_node(workflow)
-        current_node_id: str | None = start_node.id
+        current_node_id: str | None = run_result.current_node_id or start_node.id
+
+        _step_count = 0
+        _visited_nodes = set()
 
         while current_node_id is not None:
+            if current_node_id in _visited_nodes:
+                run.status = WorkflowRunStatus.FAILED
+                run.error = f"Cycle detected at node {current_node_id}"
+                break
+            _visited_nodes.add(current_node_id)
+
+            _step_count += 1
+            if _step_count > 1000:
+                run.status = WorkflowRunStatus.FAILED
+                run.error = "Workflow execution exceeded max_steps=1000"
+                break
+
             if run.status in (
                 WorkflowRunStatus.PAUSED,
                 WorkflowRunStatus.CANCELLED,
                 WorkflowRunStatus.WAITING_APPROVAL,
+                WorkflowRunStatus.WAITING_AGENT_RESPONSE,
             ):
                 break
 
@@ -314,12 +340,14 @@ class WorkflowEngine:
             run_result.current_node_id = current_node_id
             context.node_id = current_node_id
 
-            result = await self._execute_node(node, run, run_result, context)
+            result = await self._execute_node(node, run, run_result, context, workflow)
+            await self._maybe_cache_state(run)
 
             if run.status in (
                 WorkflowRunStatus.FAILED,
                 WorkflowRunStatus.PAUSED,
                 WorkflowRunStatus.WAITING_APPROVAL,
+                WorkflowRunStatus.WAITING_AGENT_RESPONSE,
             ):
                 break
 
@@ -329,6 +357,7 @@ class WorkflowEngine:
             if node.node_type == NodeType.END:
                 run.status = WorkflowRunStatus.COMPLETED
                 run.completed_at = _utcnow()
+                await self._maybe_cache_state(run)
                 await self._emit_audit(
                     AuditEventType.WORKFLOW_COMPLETED,
                     actor=run.initiated_by,
@@ -348,9 +377,7 @@ class WorkflowEngine:
 
         return run_result
 
-    async def resume(
-        self, run_id: str, from_node: str | None = None
-    ) -> WorkflowRunResult:
+    async def resume(self, run_id: str, from_node: str | None = None) -> WorkflowRunResult:
         """Resume a paused workflow run.
 
         Caller must supply the :class:`WorkflowDefinition` via a second call
@@ -360,7 +387,11 @@ class WorkflowEngine:
         if run_result is None:
             raise ValueError(f"Run not found: {run_id}")
         run = run_result.run
-        if run.status not in (WorkflowRunStatus.PAUSED, WorkflowRunStatus.WAITING_APPROVAL):
+        if run.status not in (
+            WorkflowRunStatus.PAUSED,
+            WorkflowRunStatus.WAITING_APPROVAL,
+            WorkflowRunStatus.WAITING_AGENT_RESPONSE,
+        ):
             raise ValueError(f"Run {run_id} is not paused (status={run.status})")
 
         run.status = WorkflowRunStatus.RUNNING
@@ -417,6 +448,7 @@ class WorkflowEngine:
 
         import hashlib as _hashlib
         import hmac as _hmac
+
         expected = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
         if not _hmac.compare_digest(expected, stored_sig):
             raise ValueError(
@@ -430,6 +462,7 @@ class WorkflowEngine:
         if run_result is None:
             raise ValueError(f"Run not found: {run_id}")
         run_result.run.status = WorkflowRunStatus.PAUSED
+        await self._maybe_cache_state(run_result.run)
         await self._emit_audit(
             AuditEventType.WORKFLOW_PAUSED,
             actor=run_result.run.initiated_by,
@@ -445,6 +478,7 @@ class WorkflowEngine:
             raise ValueError(f"Run not found: {run_id}")
         run_result.run.status = WorkflowRunStatus.CANCELLED
         run_result.run.completed_at = _utcnow()
+        await self._maybe_cache_state(run_result.run)
         await self._emit_audit(
             AuditEventType.WORKFLOW_CANCELLED,
             actor=run_result.run.initiated_by,
@@ -461,6 +495,7 @@ class WorkflowEngine:
         run: WorkflowRun,
         run_result: WorkflowRunResult,
         context: ExecutionContext,
+        workflow: WorkflowDefinition,
     ) -> NodeResult:
         handler = self._handlers.get(node.handler)
         if handler is None:
@@ -531,6 +566,12 @@ class WorkflowEngine:
                 execution.completed_at = _utcnow()
                 result = NodeResult(output_state=run.state)
                 break
+            except WaitForAgentResponseError:
+                run.status = WorkflowRunStatus.WAITING_AGENT_RESPONSE
+                execution.status = NodeExecutionStatus.COMPLETED
+                execution.completed_at = _utcnow()
+                result = NodeResult(output_state=run.state)
+                break
             except Exception as exc:
                 logger.warning(
                     "node.failed",
@@ -553,7 +594,20 @@ class WorkflowEngine:
                     delay *= multiplier
 
         run_result.node_executions.append(execution)
-        assert result is not None
+        if result is None:
+            raise RuntimeError(f"Handler for node {node.id} returned None")
+
+        if self._plugin_executor is not None and execution.status == NodeExecutionStatus.COMPLETED:
+            ns = run.state.get("_namespace", "default")
+            await self._plugin_executor.invoke_on_node_execute(
+                run_id=run.id,
+                workflow_id=workflow.id,
+                actor=run.initiated_by or "system",
+                namespace=ns,
+                state=dict(run.state),
+                node_id=node.id,
+                output_state=dict(result.output_state),
+            )
         return result
 
     @staticmethod
@@ -593,11 +647,15 @@ class WorkflowEngine:
         if self._signing_key:
             import hashlib as _hashlib
             import hmac as _hmac
+
             sig = _hmac.new(self._signing_key, serialized, _hashlib.sha256).hexdigest()
-            envelope = json.dumps({
-                "data": json.loads(serialized),
-                "checkpoint_hmac": sig,
-            }, default=str).encode()
+            envelope = json.dumps(
+                {
+                    "data": json.loads(serialized),
+                    "checkpoint_hmac": sig,
+                },
+                default=str,
+            ).encode()
             run.checkpoint_data = envelope
         else:
             run.checkpoint_data = serialized
@@ -643,3 +701,7 @@ class PauseExecutionError(Exception):
 
 class WaitForApprovalError(Exception):
     """Raised by handlers that need approval before proceeding."""
+
+
+class WaitForAgentResponseError(Exception):
+    """Raised by handlers waiting for agent message responses."""

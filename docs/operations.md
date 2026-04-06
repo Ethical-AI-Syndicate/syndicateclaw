@@ -60,7 +60,7 @@ docker compose down -v
 
 The multi-stage `Dockerfile` produces a minimal runtime image:
 
-- **Base**: `python:3.12-slim`
+- **Base**: `python:3.14.3-slim`
 - **Builder stage**: Installs dependencies with pip into `/install`
 - **Runtime stage**: Copies installed packages, application source, migrations, and alembic config
 - **Security**: Runs as non-root user `app` (UID 1000)

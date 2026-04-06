@@ -3,11 +3,21 @@ from __future__ import annotations
 from typing import Any
 
 import structlog
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.audit.dead_letter import DeadLetterQueue
-from syndicateclaw.db.models import AuditEvent as AuditEventRow
+from syndicateclaw.db.models import (
+    ApprovalRequest,
+    MemoryRecord,
+    PolicyRule,
+    Principal,
+    WorkflowDefinition,
+    WorkflowRun,
+)
+from syndicateclaw.db.models import (
+    AuditEvent as AuditEventRow,
+)
 from syndicateclaw.db.repository import AuditEventRepository
 from syndicateclaw.models import AuditEvent, AuditEventType
 
@@ -16,46 +26,52 @@ logger = structlog.get_logger(__name__)
 
 async def _resolve_principal_id(session: AsyncSession, actor: str) -> str | None:
     """Look up principal ID from actor name. Returns None if not found."""
-    from syndicateclaw.db.models import Principal
     try:
-        result = await session.execute(
-            select(Principal.id).where(Principal.name == actor).limit(1)
-        )
+        result = await session.execute(select(Principal.id).where(Principal.name == actor).limit(1))
         row = result.first()
-        return row[0] if row else None
+        return str(row[0]) if row else None
     except Exception:
         return None
 
 
 async def _resolve_resource_scope(
-    session: AsyncSession, resource_type: str, resource_id: str,
+    session: AsyncSession,
+    resource_type: str,
+    resource_id: str,
 ) -> tuple[str | None, str | None]:
     """Look up owning scope from the resource. Returns (scope_type, scope_id)."""
-    table_map = {
-        "workflow": "workflow_definitions",
-        "workflow_definition": "workflow_definitions",
-        "workflow_run": "workflow_runs",
-        "run": "workflow_runs",
-        "memory": "memory_records",
-        "memory_record": "memory_records",
-        "approval": "approval_requests",
-        "approval_request": "approval_requests",
-        "policy": "policy_rules",
-        "policy_rule": "policy_rules",
+    model_map = {
+        "workflow": WorkflowDefinition,
+        "workflow_definition": WorkflowDefinition,
+        "workflow_run": WorkflowRun,
+        "run": WorkflowRun,
+        "memory": MemoryRecord,
+        "memory_record": MemoryRecord,
+        "approval": ApprovalRequest,
+        "approval_request": ApprovalRequest,
+        "policy": PolicyRule,
+        "policy_rule": PolicyRule,
     }
-    table = table_map.get(resource_type)
-    if table is None:
+    model: Any = model_map.get(resource_type)
+    if model is None:
         return None, None
+
     try:
-        result = await session.execute(
-            text(f"SELECT owning_scope_type, owning_scope_id FROM {table} WHERE id = :rid LIMIT 1"),
-            {"rid": resource_id},
+        stmt = (
+            select(model.owning_scope_type, model.owning_scope_id)
+            .where(model.id == resource_id)
+            .limit(1)
         )
+        result = await session.execute(stmt)
         row = result.first()
         if row:
-            return row[0], row[1]
+            return str(row[0]) if row[0] else None, str(row[1]) if row[1] else None
     except Exception:
-        pass
+        logger.warning(
+            "failed_to_resolve_resource_scope",
+            resource_type=resource_type,
+            resource_id=resource_id,
+        )
     return None, None
 
 
@@ -81,6 +97,7 @@ class AuditService:
         details = event.details
         if self._signing_key:
             from syndicateclaw.security.signing import sign_record
+
             details = sign_record(details, self._signing_key)
 
         try:
@@ -93,7 +110,9 @@ class AuditService:
                 scope_id = event.resource_scope_id
                 if scope_type is None:
                     scope_type, scope_id = await _resolve_resource_scope(
-                        session, event.resource_type, event.resource_id,
+                        session,
+                        event.resource_type,
+                        event.resource_id,
                     )
 
                 repo = AuditEventRepository(session)

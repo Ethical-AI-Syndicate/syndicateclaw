@@ -47,6 +47,14 @@ class EmbeddingApiRequest(BaseModel):
     scope_id: str = "default"
 
 
+@router.get("/", response_model=None)
+async def inference_root() -> dict[str, Any]:
+    return {
+        "capabilities": ["chat", "embedding", "chat_stream"],
+        "status": "ok",
+    }
+
+
 @router.post("/chat")
 async def inference_chat(
     body: ChatApiRequest,
