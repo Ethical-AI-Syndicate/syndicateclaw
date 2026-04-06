@@ -34,9 +34,9 @@ variables:
   POSTGRES_USER: syndicateclaw
   POSTGRES_PASSWORD: syndicateclaw
 
-  SYNDICATECLAW_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
-  SYNDICATECLAW_TEST_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
-  SYNDICATECLAW_REDIS_URL: "redis://redis:6379/0"
+  SYNDICATECLAW_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+  SYNDICATECLAW_TEST_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
+  SYNDICATECLAW_REDIS_URL: "redis://localhost:6379/0"
 
 cache:
   key:
@@ -49,39 +49,18 @@ cache:
 
 .python_job: &python_job
   image: python:3.14.3-slim
-  services:
-    - name: postgres:16.4
-      alias: postgres
-    - name: redis:7.2.5
-      alias: redis
   before_script:
     - set -euo pipefail
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev curl
+    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev python3-dev postgresql redis-server curl
     - rm -rf /var/lib/apt/lists/*
+    - service postgresql start
+    - service redis-server start
+    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
+    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
     - python -V
     - python -m pip install --upgrade pip wheel setuptools
     - pip install -e ".[dev]"
-    - |
-      python - <<'PY'
-      import socket
-      import sys
-      import time
-
-      def wait_for(host: str, port: int, attempts: int = 60, delay: float = 1.0) -> None:
-          for _ in range(attempts):
-              try:
-                  with socket.create_connection((host, port), timeout=1):
-                      print(f"{host}:{port} ready")
-                      return
-              except OSError:
-                  time.sleep(delay)
-          print(f"{host}:{port} not reachable after {attempts} attempts", file=sys.stderr)
-          sys.exit(1)
-
-      wait_for("postgres", 5432)
-      wait_for("redis", 6379)
-      PY
 
 .rules_mr_or_main: &rules_mr_or_main
   rules:
@@ -324,32 +303,16 @@ pentest:
   before_script:
     - set -euo pipefail
     - apt-get update
-    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev curl
+    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev python3-dev postgresql redis-server curl
     - rm -rf /var/lib/apt/lists/*
+    - service postgresql start
+    - service redis-server start
+    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
+    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
     - python -V
     - python -m pip install --upgrade pip wheel setuptools
     - pip install -e ".[dev]"
     - pip install -e ./sdk
-    - |
-      python - <<'PY'
-      import socket
-      import sys
-      import time
-
-      def wait_for(host: str, port: int, attempts: int = 60, delay: float = 1.0) -> None:
-          for _ in range(attempts):
-              try:
-                  with socket.create_connection((host, port), timeout=1):
-                      print(f"{host}:{port} ready")
-                      return
-              except OSError:
-                  time.sleep(delay)
-          print(f"{host}:{port} not reachable after {attempts} attempts", file=sys.stderr)
-          sys.exit(1)
-
-      wait_for("postgres", 5432)
-      wait_for("redis", 6379)
-      PY
   script:
     - pytest tests/security/ -m pentest -v --tb=short
   <<: *rules_schedule_only
