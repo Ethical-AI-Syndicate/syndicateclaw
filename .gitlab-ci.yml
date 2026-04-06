@@ -1,394 +1,435 @@
 stages:
+  - validate
   - test
-  - integration
   - security
   - build
-  - migrate
   - deploy
-lint_and_test:
-  stage: test
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-    POSTGRES_USER: syndicateclaw
-    POSTGRES_PASSWORD: syndicateclaw
-    POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
-    FF_NETWORK_PER_BUILD: "1"
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-  script:
-    - ruff check src
-    - mypy src
-    - pytest tests/ -v -rs --tb=short -m "not perf" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing
+
+workflow:
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-quality_gate:
-  stage: test
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - when: never
+
+default:
+  interruptible: true
+  timeout: 30m
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+      - api_failure
+
+variables:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+  FF_NETWORK_PER_BUILD: "1"
+
+  POSTGRES_DB: syndicateclaw_test
+  POSTGRES_USER: syndicateclaw
+  POSTGRES_PASSWORD: syndicateclaw
+
+  SYNDICATECLAW_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
+  SYNDICATECLAW_TEST_DATABASE_URL: "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test"
+  SYNDICATECLAW_REDIS_URL: "redis://redis:6379/0"
+
+cache:
+  key:
+    files:
+      - pyproject.toml
+      - requirements.txt
+  paths:
+    - .cache/pip
+  policy: pull-push
+
+.python_job: &python_job
   image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
+  services:
+    - name: postgres:16.4
+      alias: postgres
+    - name: redis:7.2.5
+      alias: redis
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
+    - set -euo pipefail
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev curl
+    - rm -rf /var/lib/apt/lists/*
+    - python -V
+    - python -m pip install --upgrade pip wheel setuptools
     - pip install -e ".[dev]"
+    - |
+      python - <<'PY'
+      import socket
+      import sys
+      import time
+
+      def wait_for(host: str, port: int, attempts: int = 60, delay: float = 1.0) -> None:
+          for _ in range(attempts):
+              try:
+                  with socket.create_connection((host, port), timeout=1):
+                      print(f"{host}:{port} ready")
+                      return
+              except OSError:
+                  time.sleep(delay)
+          print(f"{host}:{port} not reachable after {attempts} attempts", file=sys.stderr)
+          sys.exit(1)
+
+      wait_for("postgres", 5432)
+      wait_for("redis", 6379)
+      PY
+
+.rules_mr_or_main: &rules_mr_or_main
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+.rules_main_or_tag: &rules_main_or_tag
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
+
+.rules_schedule_only: &rules_schedule_only
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+validate:
+  stage: validate
+  extends: .python_job
   script:
     - ruff check src tests
     - ruff format --check src tests
     - mypy src
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-security_scan:
-  stage: security
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-    - pip install bandit pip-audit
+  artifacts:
+    when: always
+    expire_in: 7 days
+  <<: *rules_mr_or_main
+
+unit_tests:
+  stage: test
+  extends: .python_job
+  needs: ["validate"]
   script:
-    - bandit -r src/ -ll -x tests --format json -o bandit_report.json
+    - pytest tests/ -v -rs --tb=short -m "not perf and not integration and not chaos and not pentest and not requires_api_keys" --cov=src/syndicateclaw --cov-branch --cov-report=term-missing --cov-report=xml:coverage.xml --junitxml=junit.xml
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+    paths:
+      - coverage.xml
+    expire_in: 14 days
+  <<: *rules_mr_or_main
+
+integration_tests:
+  stage: test
+  extends: .python_job
+  needs: ["validate"]
+  variables:
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+  script:
+    - pytest tests/ -m integration -q --tb=line --junitxml=integration-junit.xml
+  artifacts:
+    when: always
+    reports:
+      junit: integration-junit.xml
+    expire_in: 14 days
+  <<: *rules_mr_or_main
+
+runtime_contract_schemas:
+  stage: test
+  image: python:3.14.3-slim
+  needs: ["validate"]
+  before_script:
+    - set -euo pipefail
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev
+    - rm -rf /var/lib/apt/lists/*
+    - python -m pip install --upgrade pip wheel setuptools
+    - pip install -e ".[dev]"
+  script:
+    - ruff check src/syndicateclaw/runtime tests/runtime
+    - mypy src/syndicateclaw/runtime
+    - python -m syndicateclaw.runtime.contracts.export_schemas
+    - pytest tests/runtime/ -q --tb=line --junitxml=runtime-junit.xml
+    - git diff --exit-code -- src/syndicateclaw/runtime/contracts/jsonschema/
+  artifacts:
+    when: always
+    reports:
+      junit: runtime-junit.xml
+    expire_in: 14 days
+  <<: *rules_mr_or_main
+
+migration_check:
+  stage: test
+  extends: .python_job
+  needs: ["validate"]
+  script:
+    - python -m alembic check
+  <<: *rules_mr_or_main
+
+bandit_and_audit:
+  stage: security
+  extends: .python_job
+  needs: ["validate"]
+  script:
+    - pip install bandit pip-audit
+    - bandit -r src/ -ll -x tests -f json -o bandit_report.json
     - pip-audit -f json -o audit_report.json
     - python scripts/check_audit_gates.py audit_report.json bandit_report.json
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-container_scan:
-  stage: security
-  image:
-    name: aquasec/trivy:latest
-    entrypoint:
-      - ''
-  variables:
-    DOCKER_TLS_CERTDIR: ''
-    DOCKER_HOST: tcp://docker:2375
-  services:
-    - docker:24-dind
-  script:
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
+  artifacts:
+    when: always
+    paths:
+      - bandit_report.json
+      - audit_report.json
+    expire_in: 30 days
+  <<: *rules_mr_or_main
+
 semgrep_scan:
   stage: security
-  image: semgrep/semgrep:latest
+  image: semgrep/semgrep:1.91.0
+  needs: ["validate"]
+  before_script:
+    - set -euo pipefail
   script:
     - semgrep scan --config auto --json --output semgrep_report.json src/
     - |
-      HIGH_COUNT=$(python3 - <<'PY'
+      python - <<'PY'
       import json
+      import sys
 
       with open("semgrep_report.json", encoding="utf-8") as f:
           report = json.load(f)
 
-      high = [
-          r
-          for r in report.get("results", [])
-          if r.get("extra", {}).get("severity") in {"ERROR", "WARNING"}
+      results = report.get("results", [])
+      blocking = [
+          r for r in results
+          if r.get("extra", {}).get("severity") == "ERROR"
       ]
-      print(len(high))
+      count = len(blocking)
+      print(f"Blocking semgrep findings: {count}")
+      sys.exit(1 if count > 0 else 0)
       PY
-      )
-      echo "High/critical findings: ${HIGH_COUNT}"
-      test "${HIGH_COUNT}" -le 5 || exit 1
   artifacts:
+    when: always
     paths:
       - semgrep_report.json
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH == "main"
-pentest:
-  stage: integration
-  image: python:3.14.3-slim
-  variables:
-    POSTGRES_USER: syndicateclaw
-    POSTGRES_PASSWORD: syndicateclaw
-    POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
-    FF_NETWORK_PER_BUILD: "1"
-    
-    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-    - pip install -e ./sdk
-  script:
-    - pytest tests/security/ -m pentest -v --tb=short
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
-chaos_tests:
-  stage: integration
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-  script:
-    - pytest tests/chaos/ -m chaos -v --tb=short
-  rules:
-    - if: $CI_COMMIT_BRANCH == "release/v2.0.0"
-benchmark:
-  stage: test
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-    - pip install pytest-benchmark
-  script:
-    - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json
-      -q
-    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    expire_in: 30 days
+  <<: *rules_mr_or_main
+
 docker_build:
   stage: build
-  image: docker:24
+  image: docker:24.0.9
   services:
-    - docker:24-dind
+    - name: docker:24.0.9-dind
+      alias: docker
+  needs:
+    - unit_tests
+    - integration_tests
+    - migration_check
+    - runtime_contract_schemas
+    - bandit_and_audit
+    - semgrep_scan
   variables:
-    DOCKER_TLS_CERTDIR: ''
+    DOCKER_TLS_CERTDIR: ""
     DOCKER_HOST: tcp://docker:2375
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+    IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - set -euo pipefail
+    - docker info
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
   script:
-    - docker build -t $IMAGE_TAG -t $IMAGE_LATEST .
-    - docker push $IMAGE_TAG
-    - docker push $IMAGE_LATEST
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-    - if: $CI_COMMIT_TAG
-migration_check:
-  stage: migrate
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
+    - docker build --pull -t "$IMAGE_TAG" .
+    - docker save "$IMAGE_TAG" -o image.tar
+    - docker push "$IMAGE_TAG"
+    - |
+      if [ "${CI_COMMIT_BRANCH:-}" = "main" ]; then
+        docker tag "$IMAGE_TAG" "$CI_REGISTRY_IMAGE:latest"
+        docker push "$CI_REGISTRY_IMAGE:latest"
+      fi
+  artifacts:
+    paths:
+      - image.tar
+    expire_in: 2 days
+  <<: *rules_main_or_tag
+
+container_scan:
+  stage: build
+  image:
+    name: aquasec/trivy:0.56.2
+    entrypoint: [""]
+  needs:
+    - job: docker_build
+      artifacts: true
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
+    - set -euo pipefail
   script:
-    - "if [ -z \"${SYNDICATECLAW_DATABASE_URL:-}\" ]; then\n  echo \"SYNDICATECLAW_DATABASE_URL\
-      \ not set \u2014 skipping alembic check\"\n  exit 0\nfi\npython -m alembic check\n"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-runtime_contract_schemas:
-  stage: test
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-  script:
-    - python -V
-    - pip install -U pip
-    - pip install -e ".[dev]"
-    - ruff check src/syndicateclaw/runtime tests/runtime
-    - mypy src/syndicateclaw/runtime
-    - python -m syndicateclaw.runtime.contracts.export_schemas
-    - pytest tests/runtime/ -q --tb=line
-    - git diff --exit-code -- "src/syndicateclaw/runtime/contracts/jsonschema/"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-integration_tests:
-  stage: test
-  image: python:3.14.3-slim
-  variables:
-    POSTGRES_USER: syndicateclaw
-    POSTGRES_PASSWORD: syndicateclaw
-    POSTGRES_DB: syndicateclaw_test
-    SYNDICATECLAW_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_TEST_DATABASE_URL: postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test
-    SYNDICATECLAW_REDIS_URL: redis://localhost:6379/0
-    FF_NETWORK_PER_BUILD: "1"
-    
-    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: 'false'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-  script:
-    - pytest tests/ -m integration -q --tb=line
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
-nightly_quality_debt:
-  stage: test
-  image: python:3.14.3-slim
-  allow_failure: true
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-  script:
-    - pip install -U pip
-    - pip install -e ".[dev]"
-    - export RUFF_EXIT=0
-    - export MYPY_EXIT=0
-    - ruff check src tests || export RUFF_EXIT=1
-    - mypy src || export MYPY_EXIT=1
-    - test "${RUFF_EXIT}" = "0" && test "${MYPY_EXIT}" = "0"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - when: never
+    - trivy image --input image.tar --exit-code 1 --severity HIGH,CRITICAL --no-progress
+  <<: *rules_main_or_tag
+
 provider_integration_tests:
-  stage: integration
-  image: python:3.14.3-slim
+  stage: security
+  extends: .python_job
+  needs:
+    - unit_tests
+    - integration_tests
   variables:
-    SYNDICATECLAW_CI_PROVIDER_TESTS: 'true'
-    OPENAI_API_KEY: 'sk-test-dummy-key-for-ci-gate'
-    ANTHROPIC_API_KEY: 'sk-ant-dummy-key-for-ci-gate'
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
+    SYNDICATECLAW_CI_PROVIDER_TESTS: "true"
   secrets:
     OPENAI_API_KEY:
       vault: ci/syndicateclaw/openai_api_key@secret
     ANTHROPIC_API_KEY:
       vault: ci/syndicateclaw/anthropic_api_key@secret
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
   script:
-    - pytest tests/ -m requires_api_keys -q --tb=short
+    - test -n "${OPENAI_API_KEY:-}"
+    - test -n "${ANTHROPIC_API_KEY:-}"
+    - pytest tests/ -m requires_api_keys -q --tb=short --junitxml=provider-junit.xml
+  artifacts:
+    when: always
+    reports:
+      junit: provider-junit.xml
+    expire_in: 14 days
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_BRANCH
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+benchmark:
+  stage: test
+  extends: .python_job
+  script:
+    - pip install pytest-benchmark
+    - pytest tests/perf/test_smoke_benchmark.py --benchmark-only --benchmark-json=benchmark.json -q
+    - python scripts/check_benchmark_regression.py benchmark.json tests/perf/baseline_v2.0.0.json
+  artifacts:
+    when: always
+    paths:
+      - benchmark.json
+    expire_in: 30 days
+  <<: *rules_schedule_only
+
+chaos_tests:
+  stage: test
+  extends: .python_job
+  script:
+    - pytest tests/chaos/ -m chaos -v --tb=short
+  <<: *rules_schedule_only
+
+pentest:
+  stage: test
+  extends: .python_job
+  variables:
+    SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
+  before_script:
+    - set -euo pipefail
+    - apt-get update
+    - apt-get install -y --no-install-recommends build-essential gcc git libpq-dev curl
+    - rm -rf /var/lib/apt/lists/*
+    - python -V
+    - python -m pip install --upgrade pip wheel setuptools
+    - pip install -e ".[dev]"
+    - pip install -e ./sdk
+    - |
+      python - <<'PY'
+      import socket
+      import sys
+      import time
+
+      def wait_for(host: str, port: int, attempts: int = 60, delay: float = 1.0) -> None:
+          for _ in range(attempts):
+              try:
+                  with socket.create_connection((host, port), timeout=1):
+                      print(f"{host}:{port} ready")
+                      return
+              except OSError:
+                  time.sleep(delay)
+          print(f"{host}:{port} not reachable after {attempts} attempts", file=sys.stderr)
+          sys.exit(1)
+
+      wait_for("postgres", 5432)
+      wait_for("redis", 6379)
+      PY
+  script:
+    - pytest tests/security/ -m pentest -v --tb=short
+  <<: *rules_schedule_only
+
+mutation_test:
+  stage: test
+  extends: .python_job
+  script:
+    - mutmut run || true
+    - mutmut results | tee mutation_results.txt
+    - |
+      python - <<'PY'
+      import pathlib
+      import sys
+
+      text = pathlib.Path("mutation_results.txt").read_text(encoding="utf-8")
+      survived = text.count("Survived")
+      print(f"Survived mutations: {survived}")
+      sys.exit(1 if survived > 10 else 0)
+      PY
+  artifacts:
+    when: always
+    paths:
+      - mutation_results.txt
+    expire_in: 30 days
+  <<: *rules_schedule_only
+
 deploy_staging:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image: bitnami/kubectl:1.31.1
+  needs:
+    - docker_build
+    - container_scan
+  resource_group: syndicateclaw-staging
   variables:
     KUBE_NAMESPACE: syndicateclaw-staging
+  before_script:
+    - set -euo pipefail
   script:
-    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-      -n $KUBE_NAMESPACE
+    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
     - bash scripts/smoke_test.sh https://staging.syndicateclaw.dev
   environment:
     name: staging
     url: https://staging.syndicateclaw.dev
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
+
 deploy_production:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image: bitnami/kubectl:1.31.1
+  needs:
+    - docker_build
+    - container_scan
+  resource_group: syndicateclaw-production
   variables:
     KUBE_NAMESPACE: syndicateclaw-production
+  before_script:
+    - set -euo pipefail
   script:
-    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-      -n $KUBE_NAMESPACE
+    - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
   environment:
     name: production
     url: https://api.syndicateclaw.dev
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
       when: manual
+
 release:
   stage: deploy
-  image: node:20-slim
+  image: node:20.18.0-slim
+  needs:
+    - docker_build
+    - container_scan
+  before_script:
+    - set -euo pipefail
   script:
     - npx semantic-release
   rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
-mutation_test:
-  stage: test
-  image: python:3.14.3-slim
-  variables:
-    PIP_DISABLE_PIP_VERSION_CHECK: '1'
-    PIP_NO_CACHE_DIR: '1'
-    
-  before_script:
-    - apt-get update && apt-get install -y --no-install-recommends git postgresql redis-server gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
-    - service postgresql start
-    - service redis-server start
-    - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
-    - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
-    - pip install -U pip
-    - pip install -e ".[dev]"
-  script:
-    - mutmut run || true
-    - mutmut results | tee mutation_results.txt
-    - SCORE=$(mutmut results | grep -c "Survived" || true)
-    - 'echo "Survived mutations: $SCORE"'
-    - test "$SCORE" -le 10 || (echo "Too many survived mutations" && exit 1)
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
