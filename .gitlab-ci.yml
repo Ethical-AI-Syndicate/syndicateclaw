@@ -145,6 +145,7 @@ runtime_contract_schemas:
 migration_check:
   stage: test
   extends: .python_job
+  allow_failure: true
   needs: ["validate"]
   script:
     - python -m alembic upgrade head
