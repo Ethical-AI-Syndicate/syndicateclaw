@@ -147,6 +147,7 @@ migration_check:
   extends: .python_job
   needs: ["validate"]
   script:
+    - python -m alembic upgrade head
     - python -m alembic check
   <<: *rules_mr_or_main
 
