@@ -101,24 +101,23 @@ semgrep_scan:
   image: semgrep/semgrep:latest
   script:
     - semgrep scan --config auto --json --output semgrep_report.json src/
-    - 'HIGH_COUNT=$(python3 -c "
+    - |
+      HIGH_COUNT=$(python3 - <<'PY'
+      import json
 
-      import json, sys
+      with open("semgrep_report.json", encoding="utf-8") as f:
+          report = json.load(f)
 
-      report = json.load(open(''semgrep_report.json''))
-
-      high = [r for r in report.get(''results'', []) if r.get(''extra'', {}).get(''severity'')
-      in (''ERROR'', ''WARNING'')]
-
+      high = [
+          r
+          for r in report.get("results", [])
+          if r.get("extra", {}).get("severity") in {"ERROR", "WARNING"}
+      ]
       print(len(high))
-
-      ")
-
-      echo "High/critical findings: $HIGH_COUNT"
-
-      test \"$HIGH_COUNT\" -le 5 || exit 1
-
-      '
+      PY
+      )
+      echo "High/critical findings: ${HIGH_COUNT}"
+      test "${HIGH_COUNT}" -le 5 || exit 1
   artifacts:
     paths:
       - semgrep_report.json
