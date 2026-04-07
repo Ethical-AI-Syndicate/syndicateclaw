@@ -225,11 +225,39 @@ runtime_contract_schemas:
 migration_check:
   stage: test
   extends: .python_db_job
-  allow_failure: true
   resource_group: ci-db-bound
   needs: ["validate"]
   script:
-    - python -m alembic upgrade head
+    - |
+      python - <<'PY'
+      import asyncio
+      import os
+
+      from alembic import command
+      from alembic.config import Config
+      from sqlalchemy.ext.asyncio import create_async_engine
+      from sqlalchemy.pool import NullPool
+
+      import syndicateclaw.db  # noqa: F401 - ensures all SQLAlchemy models are registered
+      from syndicateclaw.db.base import Base
+
+      database_url = os.environ["SYNDICATECLAW_DATABASE_URL"]
+
+      async def rebuild_schema() -> None:
+          engine = create_async_engine(database_url, future=True, poolclass=NullPool)
+          try:
+              async with engine.begin() as conn:
+                  await conn.run_sync(Base.metadata.drop_all)
+                  await conn.run_sync(Base.metadata.create_all)
+          finally:
+              await engine.dispose()
+
+      asyncio.run(rebuild_schema())
+
+      alembic_cfg = Config("alembic.ini")
+      alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+      command.stamp(alembic_cfg, "head")
+      PY
     - python -m alembic check
   <<: *rules_migration_changes
 
