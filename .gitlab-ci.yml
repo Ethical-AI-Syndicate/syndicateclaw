@@ -316,10 +316,6 @@ docker_build:
   stage: build
   image: docker:24.0.9
   resource_group: ci-image-bound
-  services:
-    - name: docker:24.0.9-dind
-      alias: docker
-      command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///tmp/docker.sock", "--tls=false"]
   needs:
     - job: unit_tests
     - job: integration_tests
@@ -330,8 +326,6 @@ docker_build:
     - job: bandit_and_audit
     - job: semgrep_scan
   variables:
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_HOST: tcp://docker:2375
     DOCKER_BUILDKIT: "1"
     BUILDKIT_PROGRESS: plain
     IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
