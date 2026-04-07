@@ -491,7 +491,7 @@ deploy_staging:
     name: staging
     url: https://staging.syndicateclaw.dev
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
       when: manual
 
 deploy_production:
@@ -526,5 +526,5 @@ release:
   script:
     - npx semantic-release
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
       when: manual
