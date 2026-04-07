@@ -354,9 +354,8 @@ container_scan:
     - docker_build
   before_script:
     - set -euo pipefail
-    - trivy registry login --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
   script:
-    - trivy image --exit-code 1 --severity HIGH,CRITICAL --no-progress "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
+    - trivy image --username "$CI_REGISTRY_USER" --password "$CI_REGISTRY_PASSWORD" --exit-code 1 --severity HIGH,CRITICAL --no-progress "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   <<: *rules_container_build_changes
 
 provider_integration_tests:
