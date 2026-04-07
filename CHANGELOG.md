@@ -37,6 +37,6 @@
 
 ### Known limitations (v1.0)
 
-- RBAC remains in **shadow mode** by default; enable enforcement only after operator review of shadow logs (`docs/adr/0001-rbac-enforcement-promotion.md`).
+- RBAC enforcement defaults to **enabled** (`SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED=true`); set it to `false` for shadow-only rollout and disagreement review (`docs/adr/0001-rbac-enforcement-promotion.md`).
 - **Per-API-key OAuth-style scopes** are not enforced: a valid key resolves to an actor; use RBAC on that principal. Narrow per-key scopes are planned for v1.1 (see `docs/operations/RUNBOOK.md`).
 - **Coverage targets** for governance modules (policy, audit, approval, authz, tools) require running the full suite against a migrated Postgres database so integration tests execute; see release checklist.

@@ -34,6 +34,27 @@ We will acknowledge your report within 48 hours and provide a detailed response 
 - Bandit SAST + pip-audit in CI
 - Trivy container image scanning
 
+## Recent Audit Outcomes (2026)
+
+The repository includes two audit artifacts:
+
+- `AUDIT_FINDINGS.md` (completeness + coverage + governance audit)
+- `FINAL_AUDIT_REPORT.md` (CI/pipeline hardening and remediation record)
+
+Key outcomes and implemented remediations:
+
+- Route registry coverage gaps were closed so FastAPI path templates (for agents, messages, and organizations) now map correctly to RBAC route specs.
+- Security-critical code paths identified by SAST were hardened (raw SQL path removal, assert misuse replaced with structured exceptions, safer host binding defaults).
+- CI security and reliability gates were tightened (`bandit`, `pip-audit`, semgrep/Trivy flows, migration checks, runtime schema gate).
+- Database/test orchestration race conditions in CI were remediated (schema readiness synchronization, fixture lifecycle hardening, deterministic startup sequencing).
+- Coverage targets called out in the audit were brought to passing thresholds for audit, policy, approval, authz, tools, memory, and inference modules.
+
+See the source artifacts for full evidence trails, per-finding IDs, and session-level closure notes.
+
+## Current Security Limitations
+
+- API keys are validated, hashed, revocable, and can carry scope metadata, but OAuth-style per-key scopes are not yet an independent request-time authorization gate. RBAC authorization on the resolved actor remains authoritative.
+
 ## Disclosure Timeline
 
 - 0-48 hours: Acknowledgment

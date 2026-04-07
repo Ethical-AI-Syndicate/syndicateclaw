@@ -24,6 +24,14 @@ SyndicateClaw executes agent workflows as directed graphs where every tool invoc
 
 See [docs/architecture.md](docs/architecture.md) for the full architecture document.
 
+## Deployment Reality Checks
+
+- **RBAC mode**: `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED` defaults to `true` (enforcement on). Set it to `false` to run shadow-only during a rollout window.
+- **API key scope model**: OAuth-style per-key scopes are stored and validated at key creation, but request authorization is still decided by the resolved actor's RBAC permissions (not by key scope alone).
+- **Python runtime**: SyndicateClaw requires Python 3.14.3+. If your target environment does not provide 3.14.3 packages yet, deploy via the project Docker image (`python:3.14.3-slim`) or stage a host runtime upgrade first.
+
+See [docs/operations.md](docs/operations.md) for runtime preflight checks and an upgrade path.
+
 ## Quick Start
 
 ### Docker Compose
