@@ -172,7 +172,7 @@ The `PolicyEngine` (`syndicateclaw.policy.engine`) implements a **fail-closed** 
 - **Audit integration**: All rule CRUD and evaluations emit audit events.
 - **RBAC on management**: Policy rule creation, update, and deletion require actors with `admin:`, `policy:`, or `system:` prefix. Unauthorized actors receive HTTP 403. Read, list, and evaluate operations remain open to any authenticated actor.
 
-**RBAC rollout status**: The RBAC data model (principals, roles, assignments, namespace bindings) is deployed as of Phase 0. The RBAC evaluator runs in **shadow mode** — it evaluates every request and logs its decision but does not enforce. Legacy prefix-based and ownership-based checks remain authoritative until Phase 4 cutover. See `docs/rbac-design.md` and `docs/rbac-implementation-plan.md` for the full design and rollout plan.
+**RBAC rollout status**: The RBAC data model (principals, roles, assignments, namespace bindings) is deployed. Route-level enforcement is controlled by `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED` (default: `true`). When enforcement is disabled (`false`), RBAC still runs in shadow mode and emits disagreement telemetry for rollout validation. See `docs/rbac-design.md` and `docs/rbac-implementation-plan.md` for the full design and rollout plan.
 
 ### Approval Service
 

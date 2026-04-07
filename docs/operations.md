@@ -80,6 +80,31 @@ docker build -t syndicateclaw:latest .
 - Use a managed Redis service (e.g., ElastiCache, Upstash) with persistence enabled.
 - Mount secrets via environment variables or a secret manager — never bake credentials into images.
 
+### Python Runtime Availability and Upgrade Path
+
+SyndicateClaw targets **Python 3.14.3+**. Validate runtime availability in each target environment before cutover.
+
+**Preflight checks (host deployments):**
+
+```bash
+python3 --version
+python3 -c "import sys; print(sys.version_info >= (3, 14, 3))"
+```
+
+If `3.14.3+` is not available through your OS package repositories yet:
+
+- Prefer container deployment using the project image (`python:3.14.3-slim` base).
+- Or install a parallel runtime with `pyenv`/`asdf`, then deploy with a dedicated virtual environment.
+
+**Upgrade path from older Python runtimes (3.12/3.13):**
+
+1. Back up the database and test restore.
+2. Provision Python 3.14.3 in staging.
+3. Recreate the virtual environment and reinstall dependencies (`pip install -e ".[dev]"`).
+4. Run `alembic upgrade head` and full CI-equivalent checks (`ruff`, `mypy`, `pytest`).
+5. Deploy to production using the same artifact/runtime combination validated in staging.
+6. Keep rollback artifacts for both app image and DB backup until post-deploy validation completes.
+
 ---
 
 ## Configuration Reference
@@ -104,6 +129,8 @@ All configuration is loaded from environment variables by `syndicateclaw.config.
 | `SYNDICATECLAW_CORS_ORIGINS` | list[str] | `[]` | Allowed CORS origins (JSON array) |
 | `SYNDICATECLAW_SECRET_KEY` | str | **required** | Secret key for signing tokens, sessions, and HMAC integrity |
 | `SYNDICATECLAW_ENVIRONMENT` | str | `production` | Deployment environment. Anonymous auth only in `development`/`test`. |
+| `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED` | bool | `true` | Enforce RBAC denies before route handlers. Set to `false` for shadow-only rollout mode. |
+| `SYNDICATECLAW_ALLOW_UNSCOPED_KEYS` | bool | `true` | Allow legacy API keys with empty scope lists. Set to `false` to reject unscoped keys with 401. |
 | `SYNDICATECLAW_RATE_LIMIT_STRICT` | bool | `false` | If true, `/readyz` fails when rate limiting is unavailable (Redis down) |
 | `SYNDICATECLAW_REQUIRE_ASYMMETRIC_SIGNING` | bool | `false` | If true, system refuses to start without Ed25519 private key |
 | `SYNDICATECLAW_ED25519_PRIVATE_KEY_PATH` | str | `None` | Path to Ed25519 private key PEM file for asymmetric evidence signing |
@@ -128,6 +155,12 @@ All configuration is loaded from environment variables by `syndicateclaw.config.
 | `JWT_SECRET_KEY` | — | Secret for JWT signing |
 | `JWT_ALGORITHM` | `HS256` | JWT signing algorithm |
 | `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | `30` | Token lifetime |
+
+### Authorization Behavior Notes
+
+- RBAC is the authoritative authorization layer for route access when enforcement is enabled.
+- API keys map to actors, and authorization is evaluated against the actor's RBAC permissions.
+- Per-key OAuth-style scopes are currently metadata/validation inputs and are **not** an independent request-time authorization gate.
 
 ---
 
