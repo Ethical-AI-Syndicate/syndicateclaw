@@ -1,19 +1,26 @@
 # ---------- base ----------
-FROM python:3.14.3-slim AS base
+FROM python:3.14.3-alpine3.22 AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src
 
-RUN groupadd --gid 1000 app && \
-    useradd --uid 1000 --gid app --create-home app
+RUN addgroup -g 1000 app && \
+    adduser -D -u 1000 -G app app
 
 WORKDIR /app
 
 # ---------- builder ----------
 FROM base AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends gcc python3-dev libpq-dev && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    build-base \
+    cargo \
+    libffi-dev \
+    openssl-dev \
+    postgresql-dev \
+    python3-dev \
+    rust
 
 RUN pip install --no-cache-dir --upgrade pip
 
@@ -22,6 +29,10 @@ RUN pip install --no-cache-dir --prefix=/install .
 
 # ---------- runtime ----------
 FROM base AS runtime
+
+RUN apk add --no-cache \
+    libpq \
+    libstdc++
 
 COPY --from=builder /install /usr/local
 
