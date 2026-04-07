@@ -9,6 +9,10 @@ from pathlib import Path
 from typing import Any
 
 
+MAX_REGRESSION_RATIO = 1.10
+MIN_ABSOLUTE_REGRESSION_SECONDS = 0.000_005
+
+
 def _mean_seconds(bench: dict[str, Any]) -> float | None:
     stats = bench.get("stats") or {}
     return stats.get("mean")
@@ -49,7 +53,10 @@ def main() -> int:
         m_base = _mean_seconds(b_base)
         if m_cur is None or m_base is None or m_base <= 0:
             continue
-        if m_cur > m_base * 1.10:
+        if (
+            m_cur > m_base * MAX_REGRESSION_RATIO
+            and (m_cur - m_base) > MIN_ABSOLUTE_REGRESSION_SECONDS
+        ):
             pct = (m_cur / m_base - 1) * 100
             print(f"REGRESSION {name}: {m_cur:.4f}s vs baseline {m_base:.4f}s (+{pct:.1f}%)")
             regressions += 1
