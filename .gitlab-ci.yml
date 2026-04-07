@@ -319,7 +319,7 @@ docker_build:
   services:
     - name: docker:24.0.9-dind
       alias: docker
-      command: ["--host=tcp://0.0.0.0:2375", "--tls=false"]
+      command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///tmp/docker.sock", "--tls=false"]
   needs:
     - job: unit_tests
     - job: integration_tests
@@ -383,14 +383,14 @@ provider_integration_tests:
     - |
       if [ -z "${OPENAI_API_KEY:-}" ] || [ -z "${ANTHROPIC_API_KEY:-}" ]; then
         printf '%s\n' "Provider API keys not available; skipping provider integration tests on this runner."
-        cat > provider-junit.xml <<'XML'
-        <?xml version="1.0" encoding="UTF-8"?>
-        <testsuite name="provider_integration_tests" tests="1" failures="0" errors="0" skipped="1" time="0">
-          <testcase classname="provider_integration_tests" name="requires_api_keys" time="0">
-            <skipped message="OPENAI_API_KEY and/or ANTHROPIC_API_KEY unavailable"/>
-          </testcase>
-        </testsuite>
-        XML
+        printf '%s\n' \
+          '<?xml version="1.0" encoding="UTF-8"?>' \
+          '<testsuite name="provider_integration_tests" tests="1" failures="0" errors="0" skipped="1" time="0">' \
+          '  <testcase classname="provider_integration_tests" name="requires_api_keys" time="0">' \
+          '    <skipped message="OPENAI_API_KEY and/or ANTHROPIC_API_KEY unavailable"/>' \
+          '  </testcase>' \
+          '</testsuite>' \
+          > provider-junit.xml
         exit 0
       fi
     - pytest tests/ -m requires_api_keys -q --tb=short --junitxml=provider-junit.xml
