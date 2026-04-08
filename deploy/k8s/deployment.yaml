@@ -27,6 +27,14 @@ spec:
                 name: syndicateclaw-config
             - secretRef:
                 name: syndicateclaw-secrets
+        - name: seed-rbac
+          image: REGISTRY_IMAGE:TAG
+          command: ["python", "scripts/seed_rbac_phase0.py"]
+          envFrom:
+            - configMapRef:
+                name: syndicateclaw-config
+            - secretRef:
+                name: syndicateclaw-secrets
       containers:
         - name: app
           image: REGISTRY_IMAGE:TAG

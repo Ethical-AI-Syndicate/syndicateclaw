@@ -79,7 +79,7 @@ Three system endpoints sit outside the versioned prefix:
 
 **Authentication** is handled via the `get_current_actor` dependency which supports:
 
-- **JWT Bearer tokens** — decoded with PyJWT, supporting both HS256 (symmetric) and EdDSA/Ed25519 (asymmetric). When an Ed25519 public key is available, EdDSA is tried first. Must contain a `sub` claim.
+- **JWT Bearer tokens** — decoded with PyJWT, supporting RS256 via OIDC JWKS, HS256 (symmetric), and EdDSA/Ed25519 (asymmetric). When an Ed25519 public key is available, EdDSA is tried first, then configured OIDC JWKS validation, then HS256 fallback. Must contain a `sub` claim.
 - **API key header** (`X-API-Key`) — looked up against a key-actor mapping
 - Falls back to `"anonymous"` only when `SYNDICATECLAW_ENVIRONMENT` is set to `development`/`dev`/`test`/`testing`. Production environments return HTTP 401 if no credentials are provided.
 

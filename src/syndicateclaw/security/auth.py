@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from threading import Lock
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -10,10 +11,21 @@ import structlog
 from syndicateclaw.config import Settings
 
 logger = structlog.get_logger(__name__)
+_JWKS_CLIENTS: dict[str, jwt.PyJWKClient] = {}
+_JWKS_CLIENTS_LOCK = Lock()
 
 
 class JWTError(Exception):
     """Unified JWT error for callers that previously depended on jose.JWTError."""
+
+
+def _get_jwks_client(url: str) -> jwt.PyJWKClient:
+    with _JWKS_CLIENTS_LOCK:
+        client = _JWKS_CLIENTS.get(url)
+        if client is None:
+            client = jwt.PyJWKClient(url)
+            _JWKS_CLIENTS[url] = client
+        return client
 
 
 def _get_secret_key() -> str:
@@ -63,11 +75,14 @@ def decode_access_token(
     algorithm: str | None = None,
     public_key: Any = None,
     audience: str | None = None,
+    oidc_jwks_url: str | None = None,
+    issuer: str | None = None,
 ) -> dict[str, Any]:
     """Decode and verify a JWT, returning its claims.
 
-    Supports HS256 (symmetric) and EdDSA (asymmetric). When both keys are
-    provided, tries EdDSA first (preferred), then falls back to HS256.
+    Supports RS256 via OIDC JWKS, HS256 (symmetric), and EdDSA (asymmetric).
+    When multiple verification sources are configured, tries EdDSA first
+    (preferred local asymmetric), then OIDC/JWKS, then falls back to HS256.
     Algorithms are fixed allowlists per attempt — never taken from the token header.
 
     Raises ``JWTError`` on invalid / expired tokens.
@@ -80,16 +95,22 @@ def decode_access_token(
     }
     alg = algorithm or "HS256"
     algorithms_to_try: list[tuple[str, Any]] = []
+    last_error: Exception | None = None
 
     if public_key is not None:
         algorithms_to_try.append(("EdDSA", public_key))
+    if oidc_jwks_url:
+        try:
+            signing_key = _get_jwks_client(oidc_jwks_url).get_signing_key_from_jwt(token)
+            algorithms_to_try.append(("RS256", signing_key.key))
+        except Exception as exc:  # pragma: no cover - exercised via decode failure path
+            last_error = exc
     if alg != "EdDSA" or public_key is None:
         key = secret_key or _get_secret_key()
         algorithms_to_try.append(("HS256", key))
         if secondary_secret_key:
             algorithms_to_try.append(("HS256", secondary_secret_key))
 
-    last_error: Exception | None = None
     for try_alg, try_key in algorithms_to_try:
         try:
             kw: dict[str, Any] = {
@@ -98,6 +119,8 @@ def decode_access_token(
             }
             if audience:
                 kw["audience"] = audience
+            if try_alg == "RS256" and issuer:
+                kw["issuer"] = issuer
             return jwt.decode(token, try_key, **kw)
         except jwt.exceptions.PyJWTError as exc:
             last_error = exc

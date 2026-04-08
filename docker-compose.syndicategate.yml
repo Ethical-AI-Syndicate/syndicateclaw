@@ -1,0 +1,42 @@
+services:
+  app:
+    environment:
+      SYNDICATECLAW_PROVIDERS_YAML_PATH: /app/providers.syndicategate.yaml
+      SYNDICATEGATE_API_KEY: ${SYNDICATEGATE_API_KEY}
+    volumes:
+      - ./providers.syndicategate.yaml.example:/app/providers.syndicategate.yaml:ro
+    depends_on:
+      syndicategate:
+        condition: service_started
+
+  syndicategate-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: syndicategate
+      POSTGRES_PASSWORD: syndicategate
+      POSTGRES_DB: syndicategate
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U syndicategate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - syndicateclaw-net
+
+  syndicategate:
+    build:
+      context: ../syndicategate
+    environment:
+      SYNDICATEGATE_ADDR: :8080
+      SYNDICATEGATE_DATABASE_URL: postgres://syndicategate:syndicategate@syndicategate-postgres:5432/syndicategate?sslmode=disable
+      SYNDICATEGATE_JWT_SECRET: dev-only-change-in-production
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      syndicategate-postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - syndicateclaw-net

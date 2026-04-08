@@ -1,6 +1,7 @@
 services:
   app:
     build: .
+    command: ["sh", "-c", "python -m alembic upgrade head && python scripts/seed_rbac_phase0.py && exec uvicorn syndicateclaw.api.main:app --host 0.0.0.0 --port 8000"]
     ports:
       - "8000:8000"
     environment:

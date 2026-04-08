@@ -136,6 +136,8 @@ async def get_current_actor(request: Request) -> str:
                     secondary_secret_key=getattr(settings, "jwt_secondary_secret_key", None),
                     public_key=public_key,
                     audience=getattr(settings, "jwt_audience", None),
+                    oidc_jwks_url=getattr(settings, "oidc_jwks_url", None),
+                    issuer=getattr(settings, "oidc_issuer", None),
                 )
                 jti = claims.get("jti")
                 if jti:

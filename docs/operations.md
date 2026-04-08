@@ -44,6 +44,39 @@ docker compose exec redis redis-cli ping
 docker compose logs -f app
 ```
 
+### Syndicate Gate As The Preferred Provider
+
+SyndicateClaw can route chat and embedding traffic through Syndicate Gate using the same contract Syndicate Code uses for its preferred provider path:
+
+- OpenAI-compatible base URL
+- Gate-issued API key in `SYNDICATEGATE_API_KEY`
+- Model discovery contract anchored to `GET /v1/models`
+
+The repository includes `providers.syndicategate.yaml.example` for this topology.
+
+**Run Claw with the integrated Gate stack:**
+
+```bash
+export SYNDICATEGATE_API_KEY=sk-sg-...
+export OPENAI_API_KEY=...
+
+docker compose -f docker-compose.yml -f docker-compose.syndicategate.yml up -d --build
+```
+
+This starts:
+
+- `app` — SyndicateClaw
+- `postgres` / `redis` — Claw dependencies
+- `syndicategate` / `syndicategate-postgres` — Gate and its database
+
+In this mode, Claw loads `/app/providers.syndicategate.yaml` and uses Gate at `http://syndicategate:8080` as the OpenAI-compatible provider endpoint.
+
+**Important:**
+
+- `SYNDICATEGATE_API_KEY` must be a real Gate-issued `sk-sg-*` key.
+- Upstream provider credentials for Gate (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, etc.) remain Gate-side concerns.
+- The static catalog entries in `providers.syndicategate.yaml.example` must match models Gate exposes from `/v1/models` in your environment.
+
 **Tear down (preserving data):**
 
 ```bash
@@ -138,6 +171,9 @@ All configuration is loaded from environment variables by `syndicateclaw.config.
 | `SYNDICATECLAW_MEMORY_MAX_KEY_LENGTH` | int | `256` | Maximum length of a memory key string |
 | `SYNDICATECLAW_MEMORY_MAX_NAMESPACE_LENGTH` | int | `128` | Maximum length of a memory namespace string |
 | `SYNDICATECLAW_JWT_ALGORITHM` | str | `HS256` | JWT signing algorithm. `HS256` (symmetric) or `EdDSA` (Ed25519 asymmetric, requires `ED25519_PRIVATE_KEY_PATH`) |
+| `SYNDICATECLAW_JWT_AUDIENCE` | str | `None` | Optional `aud` claim required for inbound bearer tokens |
+| `SYNDICATECLAW_OIDC_JWKS_URL` | str | `None` | Optional JWKS endpoint for inbound RS256/OIDC bearer token validation |
+| `SYNDICATECLAW_OIDC_ISSUER` | str | `None` | Optional `iss` claim required for inbound OIDC bearer tokens |
 
 **Additional variables used by the Docker Compose stack** (not prefixed, read directly):
 

@@ -213,6 +213,14 @@ class Settings(BaseSettings):
         default=None,
         description="Optional second HS256 secret for key rotation (tried after primary).",
     )
+    oidc_jwks_url: str | None = Field(
+        default=None,
+        description="Optional JWKS URL for inbound RS256/OIDC bearer token validation.",
+    )
+    oidc_issuer: str | None = Field(
+        default=None,
+        description="Optional issuer claim required for inbound OIDC bearer tokens.",
+    )
 
     builder_enabled: bool = Field(
         default=True,

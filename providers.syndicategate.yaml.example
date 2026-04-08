@@ -1,0 +1,83 @@
+# Syndicate Gate integration topology.
+#
+# Mirrors the contract used by Syndicate Code for Gate as the preferred provider:
+# - OpenAI-compatible base URL
+# - Gate-issued API key via SYNDICATEGATE_API_KEY
+# - Model ids must match what Gate exposes from GET /v1/models
+#
+# Usage:
+#   export SYNDICATECLAW_PROVIDERS_YAML_PATH=/app/providers.syndicategate.yaml
+#   export SYNDICATEGATE_API_KEY=sk-sg-...
+
+inference_enabled: true
+
+routing:
+  weights:
+    cost: 1.0
+    latency_proxy: 0.001
+    sensitivity_match_bonus: 2.0
+    degraded_penalty: 100.0
+    trust_tier_trusted_bonus: 0.0
+    trust_tier_untrusted_penalty: 50.0
+  cost_weight_cap: 1000000.0
+  policy_cache_ttl_seconds: 60.0
+  policy_max_candidates_per_request: 64
+
+catalog_coexistence:
+  yaml_wins_on_key_collision: true
+
+models_dev:
+  enabled: false
+
+providers:
+  - id: syndicategate
+    name: Syndicate Gate
+    provider_type: remote
+    adapter_protocol: openai_compatible
+    base_url: http://syndicategate:8080
+    auth:
+      env_var: SYNDICATEGATE_API_KEY
+      header_name: Authorization
+      header_prefix: "Bearer "
+    capabilities:
+      - chat
+      - embedding
+    health_strategy: models_list
+    enabled: true
+    max_allowed_sensitivity: internal
+    trust_tier: restricted
+
+static_catalog:
+  - provider_id: syndicategate
+    model_id: gpt-4o-mini
+    capability: chat
+    descriptor:
+      model_id: gpt-4o-mini
+      name: GPT-4o mini via Syndicate Gate
+      provider_id: syndicategate
+      capabilities:
+        reasoning: true
+        tool_call: true
+        structured_output: true
+        temperature: true
+      modalities_input:
+        - text
+      modalities_output:
+        - text
+      limits:
+        context_window: 128000
+        max_output: 16384
+      is_embedding_model: false
+  - provider_id: syndicategate
+    model_id: text-embedding-3-small
+    capability: embedding
+    descriptor:
+      model_id: text-embedding-3-small
+      name: text-embedding-3-small via Syndicate Gate
+      provider_id: syndicategate
+      modalities_input:
+        - text
+      modalities_output:
+        - embedding
+      is_embedding_model: true
+      embedding_dimensions: 1536

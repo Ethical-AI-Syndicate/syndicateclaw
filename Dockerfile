@@ -38,6 +38,7 @@ COPY --from=builder /install /usr/local
 
 COPY src/ ./src/
 COPY migrations/ ./migrations/
+COPY scripts/ ./scripts/
 COPY alembic.ini ./
 
 RUN chown -R app:app /app

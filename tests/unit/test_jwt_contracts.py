@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from datetime import timedelta
+from unittest.mock import MagicMock, patch
 
 import jwt
 import pytest
+from cryptography.hazmat.primitives.asymmetric import rsa
 
 from syndicateclaw.security.auth import JWTError, create_access_token, decode_access_token
 
@@ -42,3 +45,66 @@ def test_decode_rejects_token_signed_with_non_allowlisted_algorithm() -> None:
     bogus = jwt.encode({"sub": "evil", "exp": 9999999999}, "", algorithm="none")
     with pytest.raises(JWTError):
         decode_access_token(bogus, secret_key=secret)
+
+
+def test_decode_accepts_rs256_token_via_oidc_jwks() -> None:
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key()
+    now = datetime.now(UTC)
+    token = jwt.encode(
+        {
+            "sub": "oidc-user",
+            "iss": "https://accounts.google.com",
+            "aud": "syndicateclaw-api",
+            "iat": now,
+            "exp": now + timedelta(minutes=5),
+        },
+        private_key,
+        algorithm="RS256",
+        headers={"kid": "google-kid-1"},
+    )
+    mock_signing_key = MagicMock()
+    mock_signing_key.key = public_key
+    mock_client = MagicMock()
+    mock_client.get_signing_key_from_jwt.return_value = mock_signing_key
+
+    with patch("syndicateclaw.security.auth._get_jwks_client", return_value=mock_client):
+        claims = decode_access_token(
+            token,
+            audience="syndicateclaw-api",
+            oidc_jwks_url="https://www.googleapis.com/oauth2/v3/certs",
+            issuer="https://accounts.google.com",
+        )
+
+    assert claims["sub"] == "oidc-user"
+
+
+def test_decode_rejects_rs256_token_with_wrong_oidc_issuer() -> None:
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    public_key = private_key.public_key()
+    now = datetime.now(UTC)
+    token = jwt.encode(
+        {
+            "sub": "oidc-user",
+            "iss": "https://accounts.google.com",
+            "aud": "syndicateclaw-api",
+            "iat": now,
+            "exp": now + timedelta(minutes=5),
+        },
+        private_key,
+        algorithm="RS256",
+        headers={"kid": "google-kid-1"},
+    )
+    mock_signing_key = MagicMock()
+    mock_signing_key.key = public_key
+    mock_client = MagicMock()
+    mock_client.get_signing_key_from_jwt.return_value = mock_signing_key
+
+    with patch("syndicateclaw.security.auth._get_jwks_client", return_value=mock_client):
+        with pytest.raises(JWTError):
+            decode_access_token(
+                token,
+                audience="syndicateclaw-api",
+                oidc_jwks_url="https://www.googleapis.com/oauth2/v3/certs",
+                issuer="https://issuer.example.com",
+            )
