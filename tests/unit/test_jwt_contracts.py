@@ -100,11 +100,13 @@ def test_decode_rejects_rs256_token_with_wrong_oidc_issuer() -> None:
     mock_client = MagicMock()
     mock_client.get_signing_key_from_jwt.return_value = mock_signing_key
 
-    with patch("syndicateclaw.security.auth._get_jwks_client", return_value=mock_client):
-        with pytest.raises(JWTError):
-            decode_access_token(
-                token,
-                audience="syndicateclaw-api",
-                oidc_jwks_url="https://www.googleapis.com/oauth2/v3/certs",
-                issuer="https://issuer.example.com",
-            )
+    with (
+        patch("syndicateclaw.security.auth._get_jwks_client", return_value=mock_client),
+        pytest.raises(JWTError),
+    ):
+        decode_access_token(
+            token,
+            audience="syndicateclaw-api",
+            oidc_jwks_url="https://www.googleapis.com/oauth2/v3/certs",
+            issuer="https://issuer.example.com",
+        )

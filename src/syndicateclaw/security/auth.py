@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import uuid
-from threading import Lock
 from datetime import UTC, datetime, timedelta
+from threading import Lock
+import uuid
 from typing import Any
 
 import jwt
