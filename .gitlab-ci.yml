@@ -516,6 +516,9 @@ release:
     - container_scan
   before_script:
     - set -euo pipefail
+    - apt-get update -o Acquire::Retries=3
+    - apt-get install -y --no-install-recommends git
+    - rm -rf /var/lib/apt/lists/*
   script:
     - npx semantic-release
   rules:
