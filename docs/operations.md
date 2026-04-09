@@ -446,7 +446,7 @@ docker compose cp redis:/data/dump.rdb ./redis_backup.rdb
 
 - [ ] Set strong, random values for `SYNDICATECLAW_SECRET_KEY` and `JWT_SECRET_KEY`
 - [ ] Disable anonymous authentication fallback in production
-- [ ] Replace the static API key store with a database-backed solution
+- [ ] Review API key issuance, scopes, and revocation policy for your deployment
 - [ ] Enable TLS on the reverse proxy
 - [ ] Restrict CORS origins to known frontends (`SYNDICATECLAW_CORS_ORIGINS`)
 - [ ] Set `ENVIRONMENT=production` to enable production-mode behaviors
