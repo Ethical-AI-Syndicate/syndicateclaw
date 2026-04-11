@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 import structlog
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from syndicateclaw.db.models import AuditEvent as DBAuditEvent
@@ -360,6 +361,70 @@ class MemoryService:
             await self._walk_lineage(repo, record_id, chain, visited)
 
         return chain
+
+    async def list_namespaces(self, prefix: str | None = None) -> list[dict[str, Any]]:
+        """Return grouped namespace summaries for active records."""
+        stmt = (
+            select(
+                DBMemoryRecord.namespace,
+                func.count(DBMemoryRecord.id),
+                func.max(DBMemoryRecord.updated_at),
+            )
+            .where(DBMemoryRecord.deletion_status == MemoryDeletionStatus.ACTIVE.value)
+            .group_by(DBMemoryRecord.namespace)
+            .order_by(DBMemoryRecord.namespace.asc())
+        )
+        if prefix:
+            stmt = stmt.where(DBMemoryRecord.namespace.like(f"{prefix}%"))
+
+        async with self._session_factory() as session:
+            rows = (await session.execute(stmt)).all()
+
+        return [
+            {
+                "namespace": namespace,
+                "prefix": namespace.split(":", 1)[0],
+                "records": records,
+                "last_updated_at": last_updated_at,
+            }
+            for namespace, records, last_updated_at in rows
+        ]
+
+    async def purge_namespace(self, namespace: str, actor: str) -> int:
+        """Hard-delete all records in a namespace and emit a single audit event."""
+        purged_records: list[tuple[str, str]] = []
+
+        async with self._session_factory() as session, session.begin():
+            repo = MemoryRecordRepository(session)
+            rows = await repo.get_by_namespace(namespace, include_expired=True)
+            for row in rows:
+                purged_records.append((row.namespace, row.key))
+                await repo.delete(row.id)
+
+            if purged_records:
+                audit_repo = AuditEventRepository(session)
+                await self._emit_audit(
+                    audit_repo,
+                    AuditEventType.MEMORY_DELETED,
+                    actor,
+                    None,
+                    {
+                        "action": "purge_namespace",
+                        "namespace": namespace,
+                        "purged_count": len(purged_records),
+                    },
+                )
+
+        for record_namespace, key in purged_records:
+            await self._invalidate_cache(record_namespace, key)
+
+        logger.warning(
+            "memory.namespace_purged",
+            namespace=namespace,
+            purged_count=len(purged_records),
+            actor=actor,
+        )
+        return len(purged_records)
 
     # ------------------------------------------------------------------
     # Private helpers

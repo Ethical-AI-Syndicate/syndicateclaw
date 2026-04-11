@@ -210,7 +210,7 @@ as `X-API-Key` on every request.
 
 | Page | Route | Description |
 |---|---|---|
-| Dashboard | `/console` | Live metrics: inference throughput, active runs, pending approvals, connector status |
+| Dashboard | `/console` | Connector status plus persisted admin aggregates for active runs, pending approvals, and memory namespaces |
 | Connectors | `/console/connectors` | Per-platform connection status, event/error counters |
 | Approvals | `/console/approvals` | Review and approve/deny pending workflow steps |
 | Workflows | `/console/workflows` | Run history with status badges |
