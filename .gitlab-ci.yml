@@ -14,8 +14,6 @@ workflow:
     - when: never
 
 default:
-  tags:
-    - syndicateclaw-dedicated
   interruptible: true
   timeout: 30m
   retry:
