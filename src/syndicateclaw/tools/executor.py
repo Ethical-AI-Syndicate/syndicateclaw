@@ -11,6 +11,7 @@ import structlog
 from opentelemetry import trace
 from ulid import ULID
 
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, protected_execution, ExecutionAction
 from syndicateclaw.models import (
     ApprovalRequest,
     ApprovalScope,
@@ -197,13 +198,16 @@ class ToolExecutor:
         audit_service: Any = None,
         decision_ledger: Any = None,
         snapshot_store: Any = None,
+        protected_execution_provider: ProtectedExecutionProvider = None,
     ) -> None:
         self._registry = registry
         self._policy_engine = policy_engine
         self._audit_service = audit_service
         self._decision_ledger = decision_ledger
         self._snapshot_store = snapshot_store
+        self.protected_execution_provider = protected_execution_provider
 
+    @protected_execution(ExecutionAction.TOOL_EXECUTE)
     async def execute(
         self,
         tool_name: str,

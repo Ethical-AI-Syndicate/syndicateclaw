@@ -1,0 +1,46 @@
+{{- if .Values.initContainers -}}
+{{- range .Values.initContainers }}
+- name: {{ .name }}
+  image: {{ .image }}
+  command:
+    {{- range .command }}
+    - {{ . }}
+    {{- end }}
+  args:
+    {{- range .args }}
+    - {{ . }}
+    {{- end }}
+  env:
+    {{- range .env }}
+    - name: {{ .name }}
+      {{- if .value }}
+      value: {{ .value }}
+      {{- else if .valueFrom }}
+      valueFrom:
+        {{- toYaml .valueFrom | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  envFrom:
+    {{- range .envFrom }}
+    {{- if .configMapRef }}
+    - configMapRef:
+        name: {{ .configMapRef.name }}
+    {{- else if .secretRef }}
+    - secretRef:
+        name: {{ .secretRef.name }}
+    {{- end }}
+    {{- end }}
+  {{- if .resources }}
+  resources:
+    {{- toYaml .resources | nindent 4 }}
+  {{- end }}
+  {{- if .securityContext }}
+  securityContext:
+    {{- toYaml .securityContext | nindent 4 }}
+  {{- end }}
+  {{- if .volumeMounts }}
+  volumeMounts:
+    {{- toYaml .volumeMounts | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

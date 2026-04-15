@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from syndicateclaw.db.models import AuditEvent as DBAuditEvent
 from syndicateclaw.db.models import MemoryRecord as DBMemoryRecord
 from syndicateclaw.db.repository import AuditEventRepository, MemoryRecordRepository
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, protected_execution, ExecutionAction
 from syndicateclaw.models import (
     AuditEventType,
     MemoryDeletionStatus,
@@ -52,6 +53,7 @@ class MemoryService:
         max_namespace_length: int = 128,
         max_nesting_depth: int = 20,
         schema_registry: NamespaceSchemaRegistry | None = None,
+        protected_execution_provider: ProtectedExecutionProvider = None,
     ) -> None:
         self._session_factory = session_factory
         self._redis = redis_client
@@ -60,12 +62,14 @@ class MemoryService:
         self._max_namespace_length = max_namespace_length
         self._max_nesting_depth = max_nesting_depth
         self._schema_registry = schema_registry
+        self.protected_execution_provider = protected_execution_provider
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
 
-    async def write(self, record: MemoryRecord, actor: str) -> MemoryRecord:
+    @protected_execution(ExecutionAction.MEMORY_WRITE)
+    async def write(self, record: MemoryRecord, actor: str, **kwargs: Any) -> MemoryRecord:
         """Validate, persist, and audit a new memory record."""
         self._validate_provenance(record)
         self._validate_confidence(record.confidence)
@@ -101,7 +105,8 @@ class MemoryService:
         )
         return persisted
 
-    async def read(self, namespace: str, key: str, actor: str) -> MemoryRecord | None:
+    @protected_execution(ExecutionAction.MEMORY_READ)
+    async def read(self, namespace: str, key: str, actor: str, **kwargs: Any) -> MemoryRecord | None:
         """Read a memory record by namespace/key, checking cache first."""
         cached = await self._get_cached(namespace, key)
         if cached is not None:
@@ -165,6 +170,7 @@ class MemoryService:
         )
         return record
 
+    @protected_execution(ExecutionAction.MEMORY_READ)
     async def search(
         self,
         namespace: str,
@@ -172,6 +178,7 @@ class MemoryService:
         actor: str,
         *,
         include_expired: bool = False,
+        **kwargs: Any,
     ) -> list[MemoryRecord]:
         """Query records by namespace with optional filters."""
         async with self._session_factory() as session, session.begin():
@@ -218,7 +225,8 @@ class MemoryService:
         )
         return results
 
-    async def update(self, record_id: str, updates: dict[str, Any], actor: str) -> MemoryRecord:
+    @protected_execution(ExecutionAction.MEMORY_WRITE)
+    async def update(self, record_id: str, updates: dict[str, Any], actor: str, **kwargs: Any) -> MemoryRecord:
         """Update a record, appending provenance lineage."""
         async with self._session_factory() as session, session.begin():
             repo = MemoryRecordRepository(session)
@@ -282,7 +290,8 @@ class MemoryService:
         )
         return updated
 
-    async def delete(self, record_id: str, actor: str, *, hard: bool = False) -> None:
+    @protected_execution(ExecutionAction.MEMORY_DELETE)
+    async def delete(self, record_id: str, actor: str, *, hard: bool = False, **kwargs: Any) -> None:
         """Soft-delete (mark) or hard-delete (purge) a memory record."""
         async with self._session_factory() as session, session.begin():
             repo = MemoryRecordRepository(session)

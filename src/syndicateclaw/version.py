@@ -1,0 +1,12 @@
+"""SyndicateClaw version contracts."""
+
+API_CONTRACT_VERSION = "claw-api-v1"
+POLICY_CONTRACT_VERSION = "policy-v1"
+AUDIT_CONTRACT_VERSION = "audit-chain-v1"
+MEMORY_CONTRACT_VERSION = "memory-v1"
+APPROVAL_CONTRACT_VERSION = "approval-v1"
+TOOL_CONTRACT_VERSION = "tool-v1"
+WORKFLOW_CONTRACT_VERSION = "workflow-v1"
+EVIDENCE_CONTRACT_VERSION = "signed-chain-v1"
+DB_SCHEMA_VERSION = "claw-db-v1"
+HELM_CHART_VERSION = "0.2.0"

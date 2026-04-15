@@ -609,6 +609,14 @@ class PolicyDecision(BaseEntity):
     )
     timestamp: datetime = Field(default_factory=_utcnow, description="When the decision was made")
 
+    @property
+    def is_denied(self) -> bool:
+        return self.effect == PolicyEffect.DENY
+
+    @property
+    def requires_approval(self) -> bool:
+        return self.effect == PolicyEffect.REQUIRE_APPROVAL
+
 
 # ---------------------------------------------------------------------------
 # Approval domain
@@ -656,6 +664,15 @@ class AuditEvent(BaseEntity):
     details: dict[str, Any] = Field(
         default_factory=dict, description="Arbitrary event-specific payload"
     )
+    
+    # Canonical Audit Chain Fields (Phase 3 Convergence)
+    sequence_number: int | None = Field(default=None, description="Monotonic position in the chain")
+    previous_hash: str | None = Field(default=None, description="Hash of the preceding event")
+    event_hash: str | None = Field(default=None, description="Canonical SHA-256 hash of this event")
+    key_id: str | None = Field(default=None, description="Identifies the signing key")
+    signature: str | None = Field(default=None, description="Ed25519 signature of event_hash")
+    integrity_chain: str = Field(default="auth", description="'auth' or 'obs' chain")
+
     parent_event_id: str | None = Field(
         default=None, description="Parent event for causal chaining"
     )
@@ -677,6 +694,28 @@ class AuditEvent(BaseEntity):
         default=None, description="Denormalized owning scope ID of the target resource"
     )
 
+
+class PermitStateEnum(enum.StrEnum):
+    ISSUED = "ISSUED"
+    VALIDATED = "VALIDATED"
+    CONSUMED = "CONSUMED"
+
+class ExecutionPermit(BaseModel):
+    """Explicit, signed, non-replayable authorization primitive (Phase 4)."""
+    permit_id: str
+    key_id: str
+    issued_at: datetime
+    expires_at: datetime
+    tenant_id: str
+    actor_id: str
+    target_type: str
+    target_id: str
+    action: str
+    payload_hash: str
+    state: PermitStateEnum = PermitStateEnum.ISSUED
+    signature: str
+
+    model_config = {"from_attributes": True}
 
 # ---------------------------------------------------------------------------
 # Decision ledger

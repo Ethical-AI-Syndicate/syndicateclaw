@@ -1,0 +1,147 @@
+image:
+  repository: ghcr.io/syndicate/syndicateclaw
+  pullPolicy: Always
+  tag: "v2.0.0"
+
+replicaCount: 3
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+app:
+  environment: production
+  productionMode: true
+  requireMtls: true
+  rateLimitStrict: true
+  rbacEnforcementEnabled: true
+  requireAsymmetricSigning: true
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+networkPolicy:
+  enabled: true
+  allowExternalEgress: false
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 8000
+    - from:
+        - podSelector: {}
+      ports:
+        - port: 8000
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 53
+        - port: 443
+
+initContainers:
+  - name: integrity-check
+    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+    command:
+      - python
+      - -m
+      - syndicateclaw.bootstrap.cli
+      - integrity-check
+    env:
+      - name: SYNDICATECLAW_DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: syndicateclaw-secrets
+            key: database-url
+      - name: SYNDICATECLAW_REDIS_URL
+        valueFrom:
+          secretKeyRef:
+            name: syndicateclaw-secrets
+            key: redis-url
+    resources:
+      limits:
+        cpu: 100m
+        memory: 64Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+externalSecrets:
+  enabled: true
+  secrets:
+    - name: syndicateclaw-secrets
+      keys:
+        - database-url
+        - redis-url
+        - secret-key
+        - ed25519-private-key

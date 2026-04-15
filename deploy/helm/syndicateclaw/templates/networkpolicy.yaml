@@ -1,0 +1,121 @@
+{{- if .Values.networkPolicy.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "syndicateclaw.fullname" . }}-network-policy
+  labels:
+    app.kubernetes.io/name: {{ include "syndicateclaw.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "syndicateclaw.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  {{- if not .Values.networkPolicy.allowExternalEgress }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    {{- range .Values.networkPolicy.ingress }}
+    - from:
+        {{- range .from }}
+        {{- if .namespaceSelector }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $key, $value := .namespaceSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- if .podSelector }}
+        - podSelector:
+            matchLabels:
+              {{- range $key, $value := .podSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- if .ipBlock }}
+        - ipBlock:
+            cidr: {{ .ipBlock.cidr }}
+            {{- if .ipBlock.except }}
+            except:
+              {{- range .ipBlock.except }}
+              - {{ . }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+      ports:
+        {{- range .ports }}
+        - port: {{ .port }}
+          {{- if .protocol }}
+          protocol: {{ .protocol }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+  egress:
+    {{- range .Values.networkPolicy.egress }}
+    - to:
+        {{- range .to }}
+        {{- if .podSelector }}
+        - podSelector:
+            matchLabels:
+              {{- range $key, $value := .podSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- if .namespaceSelector }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $key, $value := .namespaceSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- if .ipBlock }}
+        - ipBlock:
+            cidr: {{ .ipBlock.cidr }}
+            {{- if .ipBlock.except }}
+            except:
+              {{- range .ipBlock.except }}
+              - {{ . }}
+              {{- end }}
+            {{- end }}
+        {{- end }}
+        {{- end }}
+      ports:
+        {{- range .ports }}
+        - port: {{ .port }}
+          {{- if .protocol }}
+          protocol: {{ .protocol }}
+          {{- end }}
+        {{- end }}
+    {{- end }}
+  {{- else }}
+  policyTypes:
+    - Ingress
+  ingress:
+    {{- range .Values.networkPolicy.ingress }}
+    - from:
+        {{- range .from }}
+        {{- if .namespaceSelector }}
+        - namespaceSelector:
+            matchLabels:
+              {{- range $key, $value := .namespaceSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- if .podSelector }}
+        - podSelector:
+            matchLabels:
+              {{- range $key, $value := .podSelector.matchLabels }}
+              {{ $key }}: {{ $value }}
+              {{- end }}
+        {{- end }}
+        {{- end }}
+      ports:
+        {{- range .ports }}
+        - port: {{ .port }}
+        {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

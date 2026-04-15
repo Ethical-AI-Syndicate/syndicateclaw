@@ -132,6 +132,13 @@ class AuditService:
                     impersonation_session_id=event.impersonation_session_id,
                     resource_scope_type=scope_type,
                     resource_scope_id=scope_id,
+                    # Phase 3 Convergence Fields
+                    sequence_number=event.sequence_number,
+                    previous_hash=event.previous_hash,
+                    event_hash=event.event_hash,
+                    key_id=event.key_id,
+                    signature=event.signature,
+                    integrity_chain=event.integrity_chain,
                 )
                 await repo.append(row)
                 logger.info(

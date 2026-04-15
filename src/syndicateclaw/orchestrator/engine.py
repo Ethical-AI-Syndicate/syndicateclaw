@@ -10,6 +10,7 @@ from typing import Any, Protocol, runtime_checkable
 import structlog
 from opentelemetry import trace
 
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, protected_execution, ExecutionAction
 from syndicateclaw.models import (
     AuditEvent,
     AuditEventType,
@@ -266,6 +267,7 @@ class WorkflowEngine:
         signing_key: bytes | None = None,
         state_cache: Any = None,
         plugin_executor: Any = None,
+        protected_execution_provider: ProtectedExecutionProvider = None,
     ) -> None:
         self._handlers = handler_registry
         self._checkpoint_store = checkpoint_store
@@ -273,6 +275,7 @@ class WorkflowEngine:
         self._signing_key = signing_key
         self._state_cache = state_cache
         self._plugin_executor = plugin_executor
+        self.protected_execution_provider = protected_execution_provider
         self._runs: dict[str, WorkflowRunResult] = {}
 
     async def _maybe_cache_state(self, run: WorkflowRun) -> None:
@@ -283,6 +286,7 @@ class WorkflowEngine:
 
     # -- public API ---------------------------------------------------------
 
+    @protected_execution(ExecutionAction.WORKFLOW_NODE_EXECUTE)
     async def execute(
         self, run: WorkflowRun, context: ExecutionContext, *, workflow: WorkflowDefinition
     ) -> WorkflowRunResult:
@@ -377,6 +381,7 @@ class WorkflowEngine:
 
         return run_result
 
+    @protected_execution(ExecutionAction.WORKFLOW_NODE_EXECUTE)
     async def resume(self, run_id: str, from_node: str | None = None) -> WorkflowRunResult:
         """Resume a paused workflow run.
 
@@ -408,6 +413,7 @@ class WorkflowEngine:
         )
         return run_result
 
+    @protected_execution(ExecutionAction.WORKFLOW_NODE_EXECUTE)
     async def replay(self, run_id: str) -> WorkflowRunResult:
         """Reset a run to its last checkpoint for re-execution.
 
@@ -489,6 +495,7 @@ class WorkflowEngine:
 
     # -- internals ----------------------------------------------------------
 
+    @protected_execution(ExecutionAction.WORKFLOW_NODE_EXECUTE)
     async def _execute_node(
         self,
         node: NodeDefinition,

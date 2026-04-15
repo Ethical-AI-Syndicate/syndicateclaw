@@ -8,6 +8,7 @@ from typing import Any, ClassVar
 
 import structlog
 
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, protected_execution, ExecutionAction
 from syndicateclaw.inference.errors import InferenceApprovalRequiredError, InferenceDeniedError
 from syndicateclaw.inference.types import ChatInferenceRequest, ChatMessage
 
@@ -62,8 +63,13 @@ class ConnectorStatus:
 class ConnectorBase(ABC):
     platform: ClassVar[Platform]
 
-    def __init__(self, provider_service: Any) -> None:
+    def __init__(
+        self, 
+        provider_service: Any,
+        protected_execution_provider: ProtectedExecutionProvider = None,
+    ) -> None:
         self.provider_service = provider_service
+        self.protected_execution_provider = protected_execution_provider
         self._status = ConnectorStatus(platform=self.platform)
 
     @property
@@ -79,6 +85,7 @@ class ConnectorBase(ABC):
         """Tear down connector integration."""
 
     @abstractmethod
+    @protected_execution(ExecutionAction.CONNECTOR_REPLY_SEND)
     async def send_reply(
         self,
         message: ConnectorMessage,
@@ -88,6 +95,7 @@ class ConnectorBase(ABC):
     ) -> None:
         """Send a connector response back to platform."""
 
+    @protected_execution(ExecutionAction.CONNECTOR_MESSAGE_HANDLE)
     async def handle_message(self, message: ConnectorMessage) -> None:
         self._status.events_received += 1
         self._status.last_event_at = _utcnow()

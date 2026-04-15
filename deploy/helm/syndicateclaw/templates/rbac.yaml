@@ -1,0 +1,56 @@
+{{- if .Values.rbac.create -}}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "syndicateclaw.serviceAccountName" . }}
+  labels:
+    {{- include "syndicateclaw.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- if .Values.rbac.clusterPermissions }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "syndicateclaw.fullname" . }}
+  labels:
+    {{- include "syndicateclaw.labels" . | nindent 4 }}
+rules:
+  {{- range .Values.rbac.clusterPermissions }}
+  - apiGroups:
+      {{- if .apiGroups }}
+      {{- range .apiGroups }}
+      - {{ . }}
+      {{- end }}
+      {{- else }}
+      - ""  # core API group
+      {{- end }}
+    resources:
+      {{- range .resources }}
+      - {{ . }}
+      {{- end }}
+    verbs:
+      {{- range .verbs }}
+      - {{ . }}
+      {{- end }}
+  {{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "syndicateclaw.fullname" . }}
+  labels:
+    {{- include "syndicateclaw.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "syndicateclaw.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "syndicateclaw.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}
+{{- end }}

@@ -419,6 +419,19 @@ class ApprovalRequest(Base):
 
 # Append-only audit log. Consider range-partitioning on created_at for
 # high-volume deployments (e.g. PARTITION BY RANGE (created_at)).
+class PermitState(Base):
+    """Tracks permit consumption state for replay protection."""
+
+    __tablename__ = "permit_state"
+
+    permit_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
+    state: Mapped[str] = mapped_column(Text, nullable=False, default="ISSUED")
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
+
 class AuditEvent(Base):
     __tablename__ = "audit_events"
     __table_args__ = (
@@ -447,6 +460,14 @@ class AuditEvent(Base):
     impersonation_session_id: Mapped[str | None] = mapped_column(Text)
     resource_scope_type: Mapped[str | None] = mapped_column(Text)
     resource_scope_id: Mapped[str | None] = mapped_column(Text)
+
+    # Canonical Audit Chain Columns (Phase 3 Convergence)
+    sequence_number: Mapped[int | None] = mapped_column(Integer)
+    previous_hash: Mapped[str | None] = mapped_column(Text)
+    event_hash: Mapped[str | None] = mapped_column(Text)
+    key_id: Mapped[str | None] = mapped_column(Text)
+    signature: Mapped[str | None] = mapped_column(Text)
+    integrity_chain: Mapped[str] = mapped_column(Text, nullable=False, default="auth")
 
 
 class DecisionRecord(Base):

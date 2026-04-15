@@ -1,0 +1,16 @@
+apiVersion: v2
+name: syndicateclaw
+description: Production-oriented agent orchestration platform
+type: application
+version: 0.2.0
+appVersion: "2.0.0"
+keywords:
+  - agent-orchestration
+  - workflow
+  - policy-gated
+  - audit
+maintainers:
+  - name: Syndicate Team
+    email: team@syndicate.io
+sources:
+  - https://github.com/syndicate/syndicateclaw

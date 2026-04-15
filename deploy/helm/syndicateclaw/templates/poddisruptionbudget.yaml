@@ -1,0 +1,29 @@
+{{- if .Values.podDisruptionBudget.enabled -}}
+{{- if .Values.podDisruptionBudget.minAvailable }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "syndicateclaw.fullname" . }}-pdb
+  labels:
+    {{- include "syndicateclaw.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "syndicateclaw.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- else if .Values.podDisruptionBudget.maxUnavailable }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "syndicateclaw.fullname" . }}-pdb
+  labels:
+    {{- include "syndicateclaw.labels" . | nindent 4 }}
+spec:
+  maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "syndicateclaw.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+{{- end }}

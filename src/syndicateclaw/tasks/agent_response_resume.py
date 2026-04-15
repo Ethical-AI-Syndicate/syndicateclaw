@@ -69,6 +69,11 @@ async def resume_waiting_runs_once(
                 run.state.pop("_waiting_agent_response", None)
 
     return resumed
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, ExecutionAction
+from syndicateclaw.auth.permit_service import PermitIssuer
+from syndicateclaw.models import ExecutionPermit
+
+logger = structlog.get_logger(__name__)
 
 
 async def run_agent_response_resume_loop(
@@ -76,12 +81,40 @@ async def run_agent_response_resume_loop(
     message_service: MessageService,
     *,
     poll_interval_seconds: int = 5,
+    protected_execution_provider: ProtectedExecutionProvider = None,
+    permit_issuer: PermitIssuer = None,
 ) -> None:
+    if protected_execution_provider is None:
+        raise RuntimeError("Structural Violation: run_agent_response_resume_loop lacks a protected_execution_provider")
+
     while True:
         try:
-            resumed = await resume_waiting_runs_once(session_factory, message_service)
+            # Phase 6: We must acquire a fresh permit for the background task
+            # If no issuer is provided, we can simulate an internal "system" permit for now
+            # but structurally it expects one.
+            permit: ExecutionPermit | None = None
+            if permit_issuer:
+                permit = await permit_issuer.issue_permit(
+                    target_type="workflow",
+                    target_id="*",
+                    action="task.resume",
+                    payload_hash="*"
+                )
+            
+            resumed = await protected_execution_provider.execute(
+                ExecutionAction.TASK_RESUME,
+                "system",
+                {},
+                resume_waiting_runs_once,
+                session_factory,
+                message_service,
+                permit=permit,
+                target_type="workflow",
+                target_id="*"
+            )
             if resumed:
                 logger.info("agent_response_resume.resumed", resumed=resumed)
         except Exception:
             logger.warning("agent_response_resume.failed", exc_info=True)
         await asyncio.sleep(poll_interval_seconds)
+

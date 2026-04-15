@@ -1,0 +1,129 @@
+image:
+  repository: ghcr.io/syndicate/syndicateclaw
+  pullPolicy: IfNotPresent
+  tag: ""
+
+replicaCount: 2
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+service:
+  type: ClusterIP
+  port: 8000
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: "1"
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+app:
+  environment: production
+  host: 0.0.0.0
+  port: 8000
+  corsOrigins: []
+  productionMode: true
+  requireMtls: true
+  databaseUrl: ""
+  redisUrl: ""
+  secretKey: ""
+  rateLimitEnabled: true
+  rateLimitRequests: 100
+  rateLimitWindowSeconds: 60
+  rateLimitStrict: true
+  policyEnabled: true
+  requireAsymmetricSigning: false
+  ed25519PrivateKeyPath: ""
+  rbacEnforcementEnabled: true
+  otlpEndpoint: ""
+
+externalSecrets:
+  enabled: true
+
+postgresql:
+  internal:
+    enabled: false
+  external:
+    host: ""
+    port: 5432
+    database: syndicateclaw
+    username: ""
+
+redis:
+  internal:
+    enabled: false
+  external:
+    host: ""
+    port: 6379
+    database: 0
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  allowExternalEgress: false
+
+rbac:
+  create: true
+  clusterPermissions:
+    - apiGroups: [""]
+      resources: ["secrets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["configmaps"]
+      verbs: ["get", "list", "watch"]

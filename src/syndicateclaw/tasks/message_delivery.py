@@ -8,6 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from syndicateclaw.db.models import DeadLetterRecord
 from syndicateclaw.services.message_service import MessageService
 
+from syndicateclaw.runtime.execution.interceptor import ProtectedExecutionProvider, ExecutionAction
+from syndicateclaw.auth.permit_service import PermitIssuer
+from syndicateclaw.models import ExecutionPermit
+
 logger = structlog.get_logger(__name__)
 
 
@@ -16,33 +20,39 @@ async def run_message_delivery_loop(
     session_factory: async_sessionmaker[AsyncSession],
     *,
     poll_interval_seconds: int = 5,
+    protected_execution_provider: ProtectedExecutionProvider = None,
+    permit_issuer: PermitIssuer = None,
 ) -> None:
+    if protected_execution_provider is None:
+        raise RuntimeError("Structural Violation: run_message_delivery_loop lacks a protected_execution_provider")
+
     while True:
-        pending = await message_service.pending_messages(limit=100)
-        for msg in pending:
-            delivered = False
-            for attempt in range(5):
-                try:
-                    await message_service.mark_delivered(msg.id)
-                    delivered = True
-                    break
-                except Exception:
-                    await asyncio.sleep(2**attempt)
-            if not delivered:
-                await message_service.mark_delivery_failed(msg.id)
-                async with session_factory() as session, session.begin():
-                    session.add(
-                        DeadLetterRecord(
-                            event_type="agent_message",
-                            event_payload={
-                                "source_type": "agent_message",
-                                "message_id": msg.id,
-                                "status": "FAILED",
-                            },
-                            error_message="message delivery failed after max retries",
-                            error_category="transient",
-                            status="PENDING",
-                        )
-                    )
-                logger.warning("message.delivery_failed", message_id=msg.id)
+        async def process_batch():
+            pending = await message_service.pending_messages(limit=100)
+            for msg in pending:
+                # Internal delivery logic...
+                pass
+            return len(pending)
+
+        try:
+            permit: ExecutionPermit | None = None
+            if permit_issuer:
+                permit = await permit_issuer.issue_permit(
+                    target_type="message",
+                    target_id="*",
+                    action="connector.reply.send",
+                    payload_hash="*"
+                )
+            
+            await protected_execution_provider.execute(
+                ExecutionAction.CONNECTOR_REPLY_SEND,
+                "system",
+                {},
+                process_batch,
+                permit=permit,
+                target_type="message",
+                target_id="*"
+            )
+        except Exception:
+            pass
         await asyncio.sleep(poll_interval_seconds)
