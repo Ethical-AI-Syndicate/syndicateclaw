@@ -312,7 +312,9 @@ semgrep_scan:
 
 docker_build:
   stage: build
-  image: docker:24.0.9
+  image: docker:24-dind
+  services:
+    - docker:24-dind
   resource_group: ci-image-bound
   needs:
     - job: unit_tests
@@ -324,12 +326,13 @@ docker_build:
     - job: bandit_and_audit
     - job: semgrep_scan
   variables:
+    DOCKER_HOST: tcp://docker:2375/
     DOCKER_BUILDKIT: "1"
     BUILDKIT_PROGRESS: plain
     IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   before_script:
     - set -euo pipefail
-    - docker info
+    - until docker info > /dev/null 2>&1; do echo "Waiting for Docker daemon..."; sleep 1; done
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     - docker pull "$CI_REGISTRY_IMAGE:latest" || true
   script:
