@@ -268,7 +268,7 @@ bandit_and_audit:
   script:
     - pip install bandit pip-audit
     - bandit -r src/ -ll -x tests -f json -o bandit_report.json
-    - pip-audit -f json -o audit_report.json
+    - pip-audit -f json -o audit_report.json || true
     - python scripts/check_audit_gates.py audit_report.json bandit_report.json
   artifacts:
     when: always
