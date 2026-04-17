@@ -61,3 +61,4 @@ mutants/
 console/node_modules/
 .remember/
 patch.py
+.worktrees/
