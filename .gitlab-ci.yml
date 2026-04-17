@@ -470,8 +470,10 @@ deploy_staging:
   stage: deploy
   image: bitnami/kubectl:1.31.1
   needs:
-    - docker_build
-    - container_scan
+    - job: docker_build
+      optional: true
+    - job: container_scan
+      optional: true
   resource_group: syndicateclaw-staging
   variables:
     KUBE_NAMESPACE: syndicateclaw-staging
@@ -492,8 +494,10 @@ deploy_production:
   stage: deploy
   image: bitnami/kubectl:1.31.1
   needs:
-    - docker_build
-    - container_scan
+    - job: docker_build
+      optional: true
+    - job: container_scan
+      optional: true
   resource_group: syndicateclaw-production
   variables:
     KUBE_NAMESPACE: syndicateclaw-production
@@ -513,8 +517,10 @@ release:
   stage: deploy
   image: node:20.18.0-slim
   needs:
-    - docker_build
-    - container_scan
+    - job: docker_build
+      optional: true
+    - job: container_scan
+      optional: true
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
