@@ -139,14 +139,6 @@ cache:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/'
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
-      changes:
-        - Dockerfile
-        - docker/**/*
-        - src/**/*
-        - pyproject.toml
-        - requirements.txt
-        - requirements-dev.txt
-        - .gitlab-ci.yml
 
 .rules_schedule_only: &rules_schedule_only
   rules:
@@ -470,10 +462,8 @@ deploy_staging:
   stage: deploy
   image: bitnami/kubectl:1.31.1
   needs:
-    - job: docker_build
-      optional: true
-    - job: container_scan
-      optional: true
+    - docker_build
+    - container_scan
   resource_group: syndicateclaw-staging
   variables:
     KUBE_NAMESPACE: syndicateclaw-staging
@@ -494,10 +484,8 @@ deploy_production:
   stage: deploy
   image: bitnami/kubectl:1.31.1
   needs:
-    - job: docker_build
-      optional: true
-    - job: container_scan
-      optional: true
+    - docker_build
+    - container_scan
   resource_group: syndicateclaw-production
   variables:
     KUBE_NAMESPACE: syndicateclaw-production
@@ -517,10 +505,8 @@ release:
   stage: deploy
   image: node:20.18.0-slim
   needs:
-    - job: docker_build
-      optional: true
-    - job: container_scan
-      optional: true
+    - docker_build
+    - container_scan
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
