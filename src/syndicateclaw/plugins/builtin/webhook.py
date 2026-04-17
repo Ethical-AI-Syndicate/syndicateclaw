@@ -33,4 +33,5 @@ class WebhookPlugin(Plugin):
             raise
         payload = {"run_id": ctx.run_id, "workflow_id": ctx.workflow_id, "status": status}
         async with httpx.AsyncClient(follow_redirects=False, timeout=10.0) as client:
-            await client.post(self._url, json=payload)
+            response = await client.post(self._url, json=payload)
+            response.raise_for_status()

@@ -22,20 +22,6 @@ class SSRFError(ValueError):
             super().__init__(message_or_url)
 
 
-_BLOCKED_NETWORKS = (
-    ipaddress.ip_network("127.0.0.0/8"),
-    ipaddress.ip_network("10.0.0.0/8"),
-    ipaddress.ip_network("172.16.0.0/12"),
-    ipaddress.ip_network("192.168.0.0/16"),
-    ipaddress.ip_network("169.254.0.0/16"),
-    ipaddress.ip_network("0.0.0.0/8"),
-    ipaddress.ip_network("::1/128"),
-    ipaddress.ip_network("fc00::/7"),
-    ipaddress.ip_network("fd00::/8"),
-    ipaddress.ip_network("fe80::/10"),
-)
-
-
 @dataclass(frozen=True)
 class ResolvedSafeURL:
     original_url: str
@@ -48,7 +34,10 @@ class ResolvedSafeURL:
 
 def _is_blocked_ip(ip_str: str) -> bool:
     ip_obj = ipaddress.ip_address(ip_str)
-    return any(ip_obj in network for network in _BLOCKED_NETWORKS)
+    # Allow only globally routable addresses to reduce maintenance burden and
+    # cover reserved ranges (CGNAT, benchmark/test nets, mapped loopback, etc.)
+    # without relying on a static blocklist.
+    return not ip_obj.is_global
 
 
 def _iter_resolved_ips(hostname: str, port: int) -> Iterable[str]:

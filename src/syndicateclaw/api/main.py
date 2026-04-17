@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager, suppress
@@ -32,6 +33,7 @@ from syndicateclaw.connectors.slack.bot import router as slack_router
 from syndicateclaw.connectors.telegram.bot import router as telegram_router
 from syndicateclaw.middleware import RBACMiddleware
 from syndicateclaw.middleware.csrf import BuilderCSRFMiddleware
+from syndicateclaw.security.auth import validate_hs256_secret_strength
 
 logger = structlog.get_logger(__name__)
 
@@ -182,22 +184,36 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     settings = Settings()
     _configure_structlog()
+    running_under_pytest = "PYTEST_CURRENT_TEST" in os.environ
+
+    env_name = (getattr(settings, "environment", "production") or "production").lower()
+    if env_name not in {"development", "dev", "test", "testing"} and (
+        (getattr(settings, "jwt_algorithm", "HS256") or "HS256").upper() == "HS256"
+    ):
+        validate_hs256_secret_strength(settings.secret_key, key_name="SYNDICATECLAW_SECRET_KEY")
+        secondary = getattr(settings, "jwt_secondary_secret_key", None)
+        if secondary:
+            validate_hs256_secret_strength(
+                secondary,
+                key_name="SYNDICATECLAW_JWT_SECONDARY_SECRET_KEY",
+            )
 
     engine = get_engine(settings.database_url)
-    try:
-        from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+    if not running_under_pytest:
+        try:
+            from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-        SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
-        logger.info("otel.sqlalchemy_instrumented")
-    except Exception:
-        logger.debug("otel.sqlalchemy_instrument_skipped", exc_info=True)
-    try:
-        from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+            SQLAlchemyInstrumentor().instrument(engine=engine.sync_engine)
+            logger.info("otel.sqlalchemy_instrumented")
+        except Exception:
+            logger.debug("otel.sqlalchemy_instrument_skipped", exc_info=True)
+        try:
+            from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 
-        HTTPXClientInstrumentor().instrument()
-        logger.info("otel.httpx_instrumented")
-    except Exception:
-        logger.debug("otel.httpx_instrument_skipped", exc_info=True)
+            HTTPXClientInstrumentor().instrument()
+            logger.info("otel.httpx_instrumented")
+        except Exception:
+            logger.debug("otel.httpx_instrument_skipped", exc_info=True)
     session_factory = get_session_factory(engine)
     await configure_system_engine(session_factory)
     redis_client = cast(

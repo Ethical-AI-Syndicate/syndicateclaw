@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
 
 from syndicateclaw.channels import ChannelMessage
@@ -124,7 +125,9 @@ async def test_webhook_plugin_allows_https_in_production(monkeypatch: pytest.Mon
     mock_client = AsyncMock()
     mock_client.__aenter__ = AsyncMock(return_value=mock_client)
     mock_client.__aexit__ = AsyncMock(return_value=False)
-    mock_client.post = AsyncMock()
+    mock_response = MagicMock()
+    mock_response.raise_for_status = MagicMock()
+    mock_client.post = AsyncMock(return_value=mock_response)
 
     plugin = WebhookPlugin(url="https://hooks.example.com/notify")
     ctx = _make_ctx()
@@ -136,6 +139,35 @@ async def test_webhook_plugin_allows_https_in_production(monkeypatch: pytest.Mon
         await plugin.on_workflow_end(ctx, status="failed")
 
     mock_client.post.assert_awaited_once()
+
+
+async def test_webhook_plugin_raises_on_http_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SYNDICATECLAW_ENVIRONMENT", "production")
+
+    request = httpx.Request("POST", "https://hooks.example.com/notify")
+    response = httpx.Response(503, request=request)
+
+    mock_response = MagicMock()
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "service unavailable",
+        request=request,
+        response=response,
+    )
+
+    mock_client = AsyncMock()
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+    mock_client.post = AsyncMock(return_value=mock_response)
+
+    plugin = WebhookPlugin(url="https://hooks.example.com/notify")
+    ctx = _make_ctx()
+
+    with (
+        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value=True),
+        patch("syndicateclaw.plugins.builtin.webhook.httpx.AsyncClient", return_value=mock_client),
+        pytest.raises(httpx.HTTPStatusError),
+    ):
+        await plugin.on_workflow_end(ctx, status="failed")
 
 
 async def test_webhook_plugin_propagates_ssrf_error(monkeypatch: pytest.MonkeyPatch) -> None:

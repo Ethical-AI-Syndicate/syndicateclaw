@@ -24,6 +24,9 @@ os.environ.setdefault(
 )
 os.environ.setdefault("SYNDICATECLAW_SECRET_KEY", "test-secret-key-for-tests")
 
+_HS256_TEST_SECRET = "h" * 32
+_HS256_ALT_SECRET = "a" * 32
+
 
 # ======================================================================
 # 1. GET-by-ID ownership enforcement
@@ -170,9 +173,9 @@ class TestEdDSAJWT:
         token = create_access_token(
             "bob",
             timedelta(hours=1),
-            secret_key="my-secret",
+            secret_key=_HS256_TEST_SECRET,
         )
-        claims = decode_access_token(token, secret_key="my-secret")
+        claims = decode_access_token(token, secret_key=_HS256_TEST_SECRET)
         assert claims["sub"] == "bob"
 
     def test_eddsa_preferred_over_hs256(self) -> None:
@@ -189,7 +192,7 @@ class TestEdDSAJWT:
         )
         claims = decode_access_token(
             token,
-            secret_key="wrong-secret",
+            secret_key=_HS256_ALT_SECRET,
             public_key=pub,
         )
         assert claims["sub"] == "charlie"
@@ -198,7 +201,7 @@ class TestEdDSAJWT:
         from syndicateclaw.security.auth import JWTError, decode_access_token
 
         with pytest.raises(JWTError):
-            decode_access_token("garbage.token.here", secret_key="any")
+            decode_access_token("garbage.token.here", secret_key=_HS256_TEST_SECRET)
 
     def test_expired_token_raises_jwt_error(self) -> None:
         from syndicateclaw.security.auth import JWTError, create_access_token, decode_access_token
@@ -206,10 +209,10 @@ class TestEdDSAJWT:
         token = create_access_token(
             "expired",
             timedelta(seconds=-1),
-            secret_key="test",
+            secret_key=_HS256_TEST_SECRET,
         )
         with pytest.raises(JWTError):
-            decode_access_token(token, secret_key="test")
+            decode_access_token(token, secret_key=_HS256_TEST_SECRET)
 
     def test_jwt_error_is_standalone(self) -> None:
         """JWTError no longer depends on python-jose."""

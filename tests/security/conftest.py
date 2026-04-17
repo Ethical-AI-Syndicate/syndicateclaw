@@ -15,6 +15,21 @@ _DEFAULT_DB_URL = (
 )
 
 
+def _is_infrastructure_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(
+        marker in msg
+        for marker in (
+            "connect call failed",
+            "connection refused",
+            "password authentication failed",
+            "could not connect to server",
+            "name or service not known",
+            "temporary failure in name resolution",
+        )
+    )
+
+
 @pytest.fixture
 async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     """App with SYNDICATECLAW_ENVIRONMENT=production — no anonymous fallback on missing auth."""
@@ -48,7 +63,7 @@ async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -
     except ArgumentError as exc:
         pytest.skip(f"Pentest database URL invalid: {exc}")
     except Exception as exc:
-        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+        if _is_infrastructure_error(exc):
             pytest.skip(f"Pentest infrastructure unavailable: {exc}")
         raise
 
@@ -86,6 +101,6 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     except ArgumentError as exc:
         pytest.skip(f"Pentest database URL invalid: {exc}")
     except Exception as exc:
-        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+        if _is_infrastructure_error(exc):
             pytest.skip(f"Pentest infrastructure unavailable: {exc}")
         raise

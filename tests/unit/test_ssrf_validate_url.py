@@ -15,6 +15,9 @@ from syndicateclaw.security.ssrf import SSRFError, validate_url
         "http://192.168.0.1/",
         "http://172.16.0.1/",
         "http://169.254.169.254/latest/meta-data/",
+        "http://100.64.0.1/",
+        "http://198.18.0.1/",
+        "http://[::ffff:127.0.0.1]/",
         "http://[::1]/",
     ],
 )

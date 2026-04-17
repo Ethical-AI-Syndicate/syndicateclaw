@@ -13,10 +13,17 @@ from syndicateclaw.config import Settings
 logger = structlog.get_logger(__name__)
 _JWKS_CLIENTS: dict[str, jwt.PyJWKClient] = {}
 _JWKS_CLIENTS_LOCK = Lock()
+_MIN_HS256_SECRET_BYTES = 32
 
 
 class JWTError(Exception):
     """Unified JWT error for callers that previously depended on jose.JWTError."""
+
+
+def validate_hs256_secret_strength(secret_key: str, *, key_name: str = "secret_key") -> None:
+    """Enforce minimum key size for HS256 in production-like environments."""
+    if len(secret_key.encode("utf-8")) < _MIN_HS256_SECRET_BYTES:
+        raise ValueError(f"{key_name} must be at least {_MIN_HS256_SECRET_BYTES} bytes for HS256")
 
 
 def _get_jwks_client(url: str) -> jwt.PyJWKClient:

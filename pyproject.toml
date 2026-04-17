@@ -43,7 +43,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest==8.3.5",
-    "pytest-asyncio==0.25.3",
+    "pytest-asyncio==1.2.0",
     "pytest-cov==6.1.1",
     "httpx==0.28.1",
     "asgi-lifespan==2.1.0",
@@ -70,6 +70,7 @@ select = ["E", "F", "W", "I", "N", "UP", "B", "A", "SIM"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 markers = [
     "integration: marks tests as integration tests (require DB/services)",
