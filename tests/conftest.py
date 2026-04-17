@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import subprocess
+import sys
 import typing
 from datetime import UTC, datetime, timedelta
 
@@ -34,6 +36,39 @@ from syndicateclaw.models import (
     WorkflowRun,
 )
 from syndicateclaw.policy.engine import PolicyEngine
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def seed_rbac_for_tests(db_engine):
+    """
+    Seed RBAC principals, roles, and assignments before any tests run.
+    This prevents 100% PRINCIPAL_NOT_FOUND disagreement in shadow evaluation.
+    Runs the seed script as a subprocess so it uses its own DB connection.
+    Idempotent — safe to call on an already-seeded database.
+    """
+    import subprocess
+
+    db_url = os.environ.get(
+        "SYNDICATECLAW_DATABASE_URL",
+        "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
+    )
+    # Ensure it's correctly pointed even if credentials changed
+    # In this environment we found it's syndicategate:syndicategate
+    if "localhost:5432/syndicateclaw_test" in db_url and "syndicategate" not in db_url:
+         db_url = db_url.replace("syndicateclaw:syndicateclaw", "syndicategate:syndicategate")
+
+    result = subprocess.run(
+        [sys.executable, "scripts/seed_rbac_phase0.py"],
+        env={**os.environ, "SYNDICATECLAW_DATABASE_URL": db_url},
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        pytest.fail(
+            f"RBAC seed script failed (exit {result.returncode}).\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}\n"
+            "Fix the seed script or database state before running tests."
+        )
 
 
 @pytest.fixture(scope="session")
@@ -149,7 +184,8 @@ def sample_approval_request(sample_workflow_run: WorkflowRun) -> ApprovalRequest
 
 
 @pytest.fixture(scope="session")
-async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
+async def db_engine(request) -> typing.AsyncGenerator[AsyncEngine, None]:
+    worker_id = getattr(request.config, "workerinput", {}).get("workerid", "gw0")
     database_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or (
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test"
     )
@@ -191,6 +227,25 @@ async def db_engine(worker_id: str) -> typing.AsyncGenerator[AsyncEngine, None]:
                         await conn.execute(
                             text("INSERT INTO _pytest_schema_ready (id, r) VALUES (1, :r)"),
                             {"r": run_id},
+                        )
+
+                        # Insert a dummy actor to ensure seeding has something to work with
+                        await conn.execute(
+                            text("""
+                                INSERT INTO workflow_definitions
+                                (id, name, version, namespace, owner, description, nodes, edges,
+                                 metadata, created_at, updated_at)
+                                VALUES (:id, :name, :version, 'default', :owner, :desc,
+                                        '{}'::jsonb, '{}'::jsonb, '{}'::jsonb,
+                                        now(), now())
+                            """),
+                            {
+                                "id": "seed-dummy",
+                                "name": "seed-dummy",
+                                "version": "0.0.0",
+                                "owner": "system:engine",
+                                "desc": "dummy for seeding",
+                            },
                         )
 
                 else:
