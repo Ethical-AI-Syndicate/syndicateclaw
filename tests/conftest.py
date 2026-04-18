@@ -46,8 +46,6 @@ async def seed_rbac_for_tests(db_engine):
     Runs the seed script as a subprocess so it uses its own DB connection.
     Idempotent — safe to call on an already-seeded database.
     """
-    import subprocess
-
     db_url = os.environ.get(
         "SYNDICATECLAW_DATABASE_URL",
         "postgresql+asyncpg://syndicateclaw:syndicateclaw@localhost:5432/syndicateclaw_test",
@@ -55,7 +53,7 @@ async def seed_rbac_for_tests(db_engine):
     # Ensure it's correctly pointed even if credentials changed
     # In this environment we found it's syndicategate:syndicategate
     if "localhost:5432/syndicateclaw_test" in db_url and "syndicategate" not in db_url:
-         db_url = db_url.replace("syndicateclaw:syndicateclaw", "syndicategate:syndicategate")
+        db_url = db_url.replace("syndicateclaw:syndicateclaw", "syndicategate:syndicategate")
 
     result = subprocess.run(
         [sys.executable, "scripts/seed_rbac_phase0.py"],
