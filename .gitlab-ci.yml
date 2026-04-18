@@ -72,6 +72,9 @@ cache:
     - service postgresql start
     - service redis-server start
     - until su - postgres -c "pg_isready -h localhost -p 5432 >/dev/null 2>&1"; do sleep 1; done
+    - su - postgres -c "psql -c \"ALTER SYSTEM SET max_connections = 200;\""
+    - service postgresql restart
+    - until su - postgres -c "pg_isready -h localhost -p 5432 >/dev/null 2>&1"; do sleep 1; done
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
     - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
     - python -V
@@ -424,6 +427,9 @@ pentest:
     - rm -rf /var/lib/apt/lists/*
     - service postgresql start
     - service redis-server start
+    - until su - postgres -c "pg_isready -h localhost -p 5432 >/dev/null 2>&1"; do sleep 1; done
+    - su - postgres -c "psql -c \"ALTER SYSTEM SET max_connections = 200;\""
+    - service postgresql restart
     - until su - postgres -c "pg_isready -h localhost -p 5432 >/dev/null 2>&1"; do sleep 1; done
     - su - postgres -c "psql -c \"CREATE USER syndicateclaw WITH PASSWORD 'syndicateclaw';\""
     - su - postgres -c "psql -c \"CREATE DATABASE syndicateclaw_test OWNER syndicateclaw;\""
