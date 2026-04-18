@@ -60,6 +60,7 @@ cache:
     - rm -rf /var/lib/apt/lists/*
     - python -V
     - python -m pip install --upgrade pip wheel setuptools
+    - pip cache purge
     - pip install --prefer-binary -e ".[dev]"
 
 .python_db_job: &python_db_job
