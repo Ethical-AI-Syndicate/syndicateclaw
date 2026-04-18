@@ -63,6 +63,26 @@ async def _wait_for_services() -> None:
     await client.aclose()
 
 
+@pytest.fixture(scope="session")
+def _session_env() -> None:
+    """Set required env vars once for the entire session; restore on teardown."""
+    env_overrides = {
+        "SYNDICATECLAW_DATABASE_URL": os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL,
+        "SYNDICATECLAW_SECRET_KEY": os.environ.get("SYNDICATECLAW_SECRET_KEY") or "test-secret-key-not-for-production",
+        "SYNDICATECLAW_REDIS_URL": os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
+        "SYNDICATECLAW_ENVIRONMENT": "test",
+        "SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED": "false",
+    }
+    old_values = {k: os.environ.get(k) for k in env_overrides}
+    os.environ.update(env_overrides)
+    yield
+    for k, v in old_values.items():
+        if v is None:
+            os.environ.pop(k, None)
+        else:
+            os.environ[k] = v
+
+
 @pytest.fixture(autouse=True)
 def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) -> None:
     """Ensure required env vars are set for Settings() construction."""
@@ -82,8 +102,8 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) ->
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 
 
-@pytest.fixture()
-async def session_factory(_integration_env: None) -> async_sessionmaker[AsyncSession]:
+@pytest.fixture(scope="session")
+async def session_factory(_session_env: None) -> async_sessionmaker[AsyncSession]:
     """Real ``session_factory`` from the app (Postgres). Skips if DB unavailable."""
     import syndicateclaw.api.main as main_mod
 
@@ -134,8 +154,8 @@ async def integration_app_client(_integration_env: None) -> AsyncClient:
         raise
 
 
-@pytest.fixture()
-async def client(_integration_env: None) -> AsyncClient:
+@pytest.fixture(scope="session")
+async def client(_session_env: None) -> AsyncClient:
     """Test client with full app lifespan; skips if Postgres/Redis are not healthy."""
     import importlib
 
