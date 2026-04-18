@@ -7,6 +7,7 @@ must be 0%. This test fails loudly if principals are missing.
 This is not a coverage test — it is a deployment readiness gate.
 If this test fails, run: python scripts/seed_rbac_phase0.py
 """
+
 from __future__ import annotations
 
 import pytest
@@ -30,9 +31,7 @@ async def test_principal_not_found_rate_is_zero(db_engine):
         )
         pnf_count = result.scalar() or 0
 
-        result = await db_session.execute(
-            text("SELECT COUNT(*) FROM shadow_evaluations")
-        )
+        result = await db_session.execute(text("SELECT COUNT(*) FROM shadow_evaluations"))
         total = result.scalar() or 0
 
     if total > 0 and pnf_count > 0:
@@ -55,10 +54,7 @@ async def test_principals_table_not_empty(db_engine):
     async with session_factory() as db_session:
         result = await db_session.execute(text("SELECT COUNT(*) FROM principals"))
         count = result.scalar() or 0
-    assert count > 0, (
-        "principals table is empty. "
-        "Run: python scripts/seed_rbac_phase0.py"
-    )
+    assert count > 0, "principals table is empty. Run: python scripts/seed_rbac_phase0.py"
 
 
 @pytest.mark.asyncio
