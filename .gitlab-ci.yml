@@ -52,7 +52,7 @@ cache:
   policy: pull-push
 
 .python_base_job: &python_base_job
-  image: python:3.14.3-slim
+  image: python:3.13-slim
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
@@ -63,7 +63,7 @@ cache:
     - pip install --prefer-binary -e ".[dev]"
 
 .python_db_job: &python_db_job
-  image: python:3.14.3-slim
+  image: python:3.13-slim
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
@@ -190,7 +190,7 @@ integration_tests:
 
 runtime_contract_schemas:
   stage: test
-  image: python:3.14.3-slim
+  image: python:3.13-slim
   resource_group: ci-cpu-bound
   needs: ["validate"]
   before_script:
