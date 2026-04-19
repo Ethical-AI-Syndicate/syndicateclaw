@@ -24,9 +24,14 @@ def main() -> int:
     audit_path = Path(sys.argv[1])
     bandit_path = Path(sys.argv[2])
 
-    if not audit_path.exists() or not bandit_path.exists():
-        print("Missing report file(s); skipping gates (exit 0).", file=sys.stderr)
-        return 0
+    missing = [p for p in (audit_path, bandit_path) if not p.exists()]
+    if missing:
+        print(
+            f"Missing report file(s): {', '.join(str(p) for p in missing)} — "
+            "audit tool likely crashed; failing CI.",
+            file=sys.stderr,
+        )
+        return 1
 
     audit = json.loads(audit_path.read_text(encoding="utf-8"))
     bandit = json.loads(bandit_path.read_text(encoding="utf-8"))

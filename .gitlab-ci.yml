@@ -52,7 +52,7 @@ cache:
   policy: pull-push
 
 .python_base_job: &python_base_job
-  image: python:3.13-slim
+  image: python:3.12-slim
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
@@ -63,7 +63,7 @@ cache:
     - pip install --prefer-binary -e ".[dev]"
 
 .python_db_job: &python_db_job
-  image: python:3.13-slim
+  image: python:3.12-slim
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
@@ -446,16 +446,20 @@ mutation_test:
   stage: test
   extends: .python_base_job
   script:
-    - mutmut run || true
+    - mutmut run; export MUTMUT_RC=$?
     - mutmut results | tee mutation_results.txt
     - |
       python - <<'PY'
-      import pathlib
-      import sys
+      import os, pathlib, sys
+
+      mutmut_rc = int(os.environ.get("MUTMUT_RC", "0"))
+      if mutmut_rc > 1:
+          print(f"mutmut crashed (exit {mutmut_rc}); failing CI.", file=sys.stderr)
+          sys.exit(1)
 
       text = pathlib.Path("mutation_results.txt").read_text(encoding="utf-8")
       survived = text.count("Survived")
-      print(f"Survived mutations: {survived}")
+      print(f"Survived mutations: {survived} (mutmut exit {mutmut_rc})")
       sys.exit(1 if survived > 10 else 0)
       PY
   artifacts:
