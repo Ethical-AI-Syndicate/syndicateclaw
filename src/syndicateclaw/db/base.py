@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import DateTime, MetaData, Text, func
+from sqlalchemy import NullPool
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -47,6 +48,19 @@ class Base(DeclarativeBase):
 
 
 def get_engine(url: str, **kwargs: Any) -> AsyncEngine:
+    import os
+
+    if os.environ.get("SYNDICATECLAW_ENVIRONMENT") == "test":
+        # NullPool avoids the "Future attached to a different loop" error that
+        # arises in pytest-asyncio tests when SQLAlchemy's pool tries to close
+        # asyncpg connections whose Futures were bound to the test's event loop.
+        # With NullPool every acquire/release creates and closes a connection
+        # immediately, so there is nothing to terminate on engine disposal.
+        return create_async_engine(
+            url,
+            echo=kwargs.pop("echo", False),
+            poolclass=NullPool,
+        )
     return create_async_engine(
         url,
         echo=kwargs.pop("echo", False),
