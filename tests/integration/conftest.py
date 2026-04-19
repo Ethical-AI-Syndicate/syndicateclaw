@@ -11,6 +11,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text
 from sqlalchemy.exc import ArgumentError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.pool import NullPool
 
 pytestmark = pytest.mark.integration
 
@@ -197,7 +198,7 @@ async def _cancel_stale_runs(_integration_env: None) -> None:
     if not url:
         return
     try:
-        engine = create_async_engine(url)
+        engine = create_async_engine(url, poolclass=NullPool)
         async with engine.begin() as conn:
             await conn.execute(
                 text(
