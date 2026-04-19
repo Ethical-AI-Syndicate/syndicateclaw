@@ -39,6 +39,15 @@ async def _safe_lifespan_exit(manager: LifespanManager) -> None:
             raise
 
 
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    """Force asyncio security tests to use the session event loop (see integration/conftest.py)."""
+    for item in items:
+        asyncio_marker = item.get_closest_marker("asyncio")
+        if asyncio_marker is not None and asyncio_marker.kwargs.get("loop_scope") is None:
+            item.own_markers = [m for m in item.own_markers if m.name != "asyncio"]
+            item.add_marker(pytest.mark.asyncio(loop_scope="session"), append=False)
+
+
 @pytest.fixture
 async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     """App with SYNDICATECLAW_ENVIRONMENT=production — no anonymous fallback on missing auth."""
