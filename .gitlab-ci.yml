@@ -527,4 +527,4 @@ release:
     - npx semantic-release
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
-      when: manual
+      when: on_success
