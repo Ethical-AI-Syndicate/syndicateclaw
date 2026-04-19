@@ -5,7 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app/src
 
-RUN addgroup -g 1000 app && \
+RUN apk upgrade --no-cache && \
+    addgroup -g 1000 app && \
     adduser -D -u 1000 -G app app
 
 WORKDIR /app
