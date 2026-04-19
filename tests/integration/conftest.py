@@ -66,10 +66,15 @@ async def _wait_for_services() -> None:
 @pytest.fixture(scope="session")
 def _session_env() -> None:
     """Set required env vars once for the entire session; restore on teardown."""
+    _default_secret = "test-secret-key-not-for-production"
+    _default_redis = "redis://localhost:6379/0"
+    _db_url = os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL
+    _secret = os.environ.get("SYNDICATECLAW_SECRET_KEY") or _default_secret
+    _redis = os.environ.get("SYNDICATECLAW_REDIS_URL") or _default_redis
     env_overrides = {
-        "SYNDICATECLAW_DATABASE_URL": os.environ.get("SYNDICATECLAW_DATABASE_URL") or _DEFAULT_DB_URL,
-        "SYNDICATECLAW_SECRET_KEY": os.environ.get("SYNDICATECLAW_SECRET_KEY") or "test-secret-key-not-for-production",
-        "SYNDICATECLAW_REDIS_URL": os.environ.get("SYNDICATECLAW_REDIS_URL") or "redis://localhost:6379/0",
+        "SYNDICATECLAW_DATABASE_URL": _db_url,
+        "SYNDICATECLAW_SECRET_KEY": _secret,
+        "SYNDICATECLAW_REDIS_URL": _redis,
         "SYNDICATECLAW_ENVIRONMENT": "test",
         "SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED": "false",
     }
