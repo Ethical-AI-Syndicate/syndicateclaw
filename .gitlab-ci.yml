@@ -518,6 +518,8 @@ release:
   needs:
     - docker_build
     - container_scan
+  variables:
+    GIT_SSL_NO_VERIFY: "true"
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
