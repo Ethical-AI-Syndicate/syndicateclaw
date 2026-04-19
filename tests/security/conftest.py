@@ -30,6 +30,15 @@ def _is_infrastructure_error(exc: Exception) -> bool:
     )
 
 
+async def _safe_lifespan_exit(manager: LifespanManager) -> None:
+    """Exit a LifespanManager, ignoring 'Event loop is closed' on session teardown."""
+    try:
+        await manager.__aexit__(None, None, None)
+    except RuntimeError as exc:
+        if "Event loop is closed" not in str(exc):
+            raise
+
+
 @pytest.fixture
 async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
     """App with SYNDICATECLAW_ENVIRONMENT=production — no anonymous fallback on missing auth."""
@@ -49,15 +58,9 @@ async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -
 
     importlib.reload(main_mod)
     app = main_mod.create_app()
+    manager = LifespanManager(app)
     try:
-        async with (
-            LifespanManager(app) as manager,
-            AsyncClient(
-                transport=ASGITransport(app=manager.app),
-                base_url="http://test",
-            ) as ac,
-        ):
-            yield ac
+        await manager.__aenter__()
     except OSError as exc:
         pytest.skip(f"Pentest infrastructure unavailable: {exc}")
     except ArgumentError as exc:
@@ -66,6 +69,21 @@ async def asgi_client_production_no_anonymous(monkeypatch: pytest.MonkeyPatch) -
         if _is_infrastructure_error(exc):
             pytest.skip(f"Pentest infrastructure unavailable: {exc}")
         raise
+
+    ac = AsyncClient(
+        transport=ASGITransport(app=manager.app),
+        base_url="http://test",
+    )
+    await ac.__aenter__()
+    try:
+        yield ac
+    finally:
+        try:
+            await ac.__aexit__(None, None, None)
+        except RuntimeError as exc:
+            if "Event loop is closed" not in str(exc):
+                raise
+        await _safe_lifespan_exit(manager)
 
 
 @pytest.fixture()
@@ -87,15 +105,9 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
 
     importlib.reload(main_mod)
     app = main_mod.create_app()
+    manager = LifespanManager(app)
     try:
-        async with (
-            LifespanManager(app) as manager,
-            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
-        ):
-            resp = await ac.get("/readyz")
-            if resp.status_code != 200:
-                pytest.skip(f"Integration dependencies not ready: {resp.json()}")
-            yield ac
+        await manager.__aenter__()
     except OSError as exc:
         pytest.skip(f"Pentest infrastructure unavailable: {exc}")
     except ArgumentError as exc:
@@ -104,3 +116,20 @@ async def client(monkeypatch: pytest.MonkeyPatch) -> AsyncClient:
         if _is_infrastructure_error(exc):
             pytest.skip(f"Pentest infrastructure unavailable: {exc}")
         raise
+
+    ac = AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test")
+    await ac.__aenter__()
+    try:
+        resp = await ac.get("/readyz")
+        if resp.status_code != 200:
+            await ac.__aexit__(None, None, None)
+            await _safe_lifespan_exit(manager)
+            pytest.skip(f"Integration dependencies not ready: {resp.json()}")
+        yield ac
+    finally:
+        try:
+            await ac.__aexit__(None, None, None)
+        except RuntimeError as exc:
+            if "Event loop is closed" not in str(exc):
+                raise
+        await _safe_lifespan_exit(manager)
