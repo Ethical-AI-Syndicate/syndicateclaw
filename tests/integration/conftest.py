@@ -108,6 +108,25 @@ def _integration_env(monkeypatch: pytest.MonkeyPatch, db_engine: AsyncEngine) ->
     monkeypatch.setenv("SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED", "false")
 
 
+def _is_infrastructure_error(exc: Exception) -> bool:
+    msg = str(exc)
+    return (
+        "Connect call failed" in msg
+        or "Connection refused" in msg
+        or "password authentication failed" in msg.lower()
+        or ("does not exist" in msg.lower() and "database" in msg.lower())
+    )
+
+
+async def _safe_lifespan_exit(manager: LifespanManager) -> None:
+    """Exit a LifespanManager, ignoring 'Event loop is closed' on session teardown."""
+    try:
+        await manager.__aexit__(None, None, None)
+    except RuntimeError as exc:
+        if "Event loop is closed" not in str(exc):
+            raise
+
+
 @pytest.fixture(scope="session")
 async def session_factory(_session_env: None) -> async_sessionmaker[AsyncSession]:
     """Real ``session_factory`` from the app (Postgres). Skips if DB unavailable."""
@@ -115,25 +134,32 @@ async def session_factory(_session_env: None) -> async_sessionmaker[AsyncSession
 
     importlib.reload(main_mod)
     app = main_mod.create_app()
+    manager = LifespanManager(app)
     try:
-        async with LifespanManager(app):
-            # LifespanManager wraps the ASGI app; session_factory lives on the real app.
-            sf = app.state.session_factory
-            async with sf() as session:
-                await session.execute(text("SELECT 1"))
-            yield sf
+        await manager.__aenter__()
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
     except ArgumentError as exc:
         pytest.skip(f"Integration test database URL invalid: {exc}")
     except Exception as exc:
-        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+        if _is_infrastructure_error(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
-        if "password authentication failed" in str(exc).lower():
-            pytest.skip(f"Integration test database auth failed: {exc}")
-        if "does not exist" in str(exc).lower() and "database" in str(exc).lower():
-            pytest.skip(f"Integration test database missing: {exc}")
         raise
+
+    sf = app.state.session_factory
+    try:
+        async with sf() as session:
+            await session.execute(text("SELECT 1"))
+    except Exception as exc:
+        await _safe_lifespan_exit(manager)
+        if _is_infrastructure_error(exc):
+            pytest.skip(f"Integration test infrastructure unavailable: {exc}")
+        raise
+
+    try:
+        yield sf
+    finally:
+        await _safe_lifespan_exit(manager)
 
 
 @pytest.fixture()
@@ -146,18 +172,27 @@ async def integration_app_client(_integration_env: None) -> AsyncClient:
     importlib.reload(main_mod)
 
     app = main_mod.create_app()
+    manager = LifespanManager(app)
     try:
-        async with (
-            LifespanManager(app) as manager,
-            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
-        ):
-            yield ac
+        await manager.__aenter__()
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
     except Exception as exc:
-        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+        if _is_infrastructure_error(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
         raise
+
+    ac = AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test")
+    await ac.__aenter__()
+    try:
+        yield ac
+    finally:
+        try:
+            await ac.__aexit__(None, None, None)
+        except RuntimeError as exc:
+            if "Event loop is closed" not in str(exc):
+                raise
+        await _safe_lifespan_exit(manager)
 
 
 @pytest.fixture(scope="session")
@@ -170,21 +205,32 @@ async def client(_session_env: None) -> AsyncClient:
     importlib.reload(main_mod)
 
     app = main_mod.create_app()
+    manager = LifespanManager(app)
     try:
-        async with (
-            LifespanManager(app) as manager,
-            AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test") as ac,
-        ):
-            resp = await ac.get("/readyz")
-            if resp.status_code != 200:
-                pytest.skip(f"Integration dependencies not ready: {resp.json()}")
-            yield ac
+        await manager.__aenter__()
     except OSError as exc:
         pytest.skip(f"Integration test infrastructure unavailable: {exc}")
     except Exception as exc:
-        if "Connect call failed" in str(exc) or "Connection refused" in str(exc):
+        if _is_infrastructure_error(exc):
             pytest.skip(f"Integration test infrastructure unavailable: {exc}")
         raise
+
+    ac = AsyncClient(transport=ASGITransport(app=manager.app), base_url="http://test")
+    await ac.__aenter__()
+    try:
+        resp = await ac.get("/readyz")
+        if resp.status_code != 200:
+            await ac.__aexit__(None, None, None)
+            await _safe_lifespan_exit(manager)
+            pytest.skip(f"Integration dependencies not ready: {resp.json()}")
+        yield ac
+    finally:
+        try:
+            await ac.__aexit__(None, None, None)
+        except RuntimeError as exc:
+            if "Event loop is closed" not in str(exc):
+                raise
+        await _safe_lifespan_exit(manager)
 
 
 @pytest.fixture(autouse=True)

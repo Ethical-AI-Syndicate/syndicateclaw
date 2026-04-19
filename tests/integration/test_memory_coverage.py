@@ -36,7 +36,11 @@ async def redis_async() -> Any:
         await client.aclose()
         pytest.skip(f"Redis unavailable: {exc}")
     yield client
-    await client.aclose()
+    try:
+        await client.aclose()
+    except RuntimeError as exc:
+        if "Event loop is closed" not in str(exc):
+            raise
 
 
 class _FailingRedis:
