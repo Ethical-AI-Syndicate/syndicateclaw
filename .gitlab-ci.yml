@@ -322,6 +322,7 @@ docker_build:
     - job: semgrep_scan
   variables:
     DOCKER_HOST: tcp://docker:2375/
+    DOCKER_TLS_CERTDIR: ""
     DOCKER_BUILDKIT: "1"
     BUILDKIT_PROGRESS: plain
     IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
