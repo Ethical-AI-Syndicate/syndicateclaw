@@ -524,7 +524,14 @@ release:
     - apt-get install -y --no-install-recommends git
     - rm -rf /var/lib/apt/lists/*
   script:
-    - npx semantic-release
+    - npm install --no-save
+        semantic-release@24
+        @semantic-release/commit-analyzer
+        @semantic-release/release-notes-generator
+        @semantic-release/exec
+        @semantic-release/changelog
+        @semantic-release/git
+    - npx --no-install semantic-release
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
       when: on_success
