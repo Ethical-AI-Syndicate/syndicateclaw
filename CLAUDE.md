@@ -87,3 +87,9 @@ Run perf explicitly: `pytest -m perf`
 **Coverage targets:** memory ≥75% (currently 75.7%), inference ≥80% (currently 80.8%), overall ≥80%. Do not regress below these baselines. See `COVERAGE_DELTA.md` for current per-module numbers.
 
 **Redis in tests vs production:** Tests pass without Redis (graceful degradation). In production/staging, Redis failure causes the `/readyz` probe to return 503 — treat a Redis outage as a real incident.
+
+## gstack
+
+Use the `/browse` skill from gstack for all web browsing. **Never use `mcp__claude-in-chrome__*` tools.**
+
+Available gstack skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/plan-design-review`, `/design-consultation`, `/design-shotgun`, `/design-html`, `/review`, `/ship`, `/land-and-deploy`, `/canary`, `/benchmark`, `/browse`, `/connect-chrome`, `/qa`, `/qa-only`, `/design-review`, `/setup-browser-cookies`, `/setup-deploy`, `/retro`, `/investigate`, `/document-release`, `/codex`, `/cso`, `/autoplan`, `/plan-devex-review`, `/devex-review`, `/careful`, `/freeze`, `/guard`, `/unfreeze`, `/gstack-upgrade`, `/learn`
