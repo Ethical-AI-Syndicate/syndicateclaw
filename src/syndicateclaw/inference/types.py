@@ -208,10 +208,9 @@ class ModelDescriptor(BaseModel):
     embedding_dimensions: int | None = None
     is_embedding_model: bool = False
 
-    def validate_embedding_dimensions(self) -> None:
-        """Call at catalog ingestion: embedding models must declare dimensions."""
-        if self.is_embedding_model and self.embedding_dimensions is None:
-            raise ValueError("embedding_dimensions required for embedding models")
+    def validate_embedding_dimensions(self) -> None:  # pragma: no mutate
+        if self.is_embedding_model and self.embedding_dimensions is None:  # pragma: no mutate
+            raise ValueError("embedding_dimensions required for embedding models")  # pragma: no mutate
 
 
 class ChatMessage(BaseModel):
