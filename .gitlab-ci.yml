@@ -444,7 +444,7 @@ pentest:
 
 mutation_test:
   stage: test
-  extends: .python_base_job
+  extends: .python_db_job
   script:
     - mutmut run; export MUTMUT_RC=$?
     - mutmut results | tee mutation_results.txt

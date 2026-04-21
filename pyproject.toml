@@ -97,3 +97,7 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.",
 ]
+
+[tool.mutmut]
+paths_to_mutate = "src/syndicateclaw/"
+runner = "python -m pytest tests/unit/ -x -q -m 'not integration and not perf and not chaos and not pentest and not requires_api_keys'"
