@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import structlog
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -60,7 +60,7 @@ class CreateWorkflowRequest(BaseModel):
 
 
 class WorkflowResponse(BaseModel):
-    model_config = {"from_attributes": True, "populate_by_name": True}
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True, ignored_types=(dict,))
 
     id: str
     name: str
@@ -90,7 +90,7 @@ class UpdateWorkflowRequest(BaseModel):
 
 
 class WorkflowRunResponse(BaseModel):
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True, ignored_types=(dict,))
 
     id: str
     workflow_id: str
@@ -120,7 +120,7 @@ class WorkflowRunResponse(BaseModel):
 
 
 class NodeExecutionResponse(BaseModel):
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True, ignored_types=(dict,))
 
     id: str
     run_id: str
@@ -139,7 +139,7 @@ class NodeExecutionResponse(BaseModel):
 
 
 class AuditTimelineEntry(BaseModel):
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True, ignored_types=(dict,))
 
     id: str
     event_type: str

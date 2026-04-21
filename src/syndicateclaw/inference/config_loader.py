@@ -16,7 +16,7 @@ from syndicateclaw.inference.hashing import canonical_json_hash
 class ProviderConfigDiff(BaseModel):
     """Structured diff between two provider sets (identity = provider id)."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     added_provider_ids: tuple[str, ...] = ()
     removed_provider_ids: tuple[str, ...] = ()
@@ -24,7 +24,7 @@ class ProviderConfigDiff(BaseModel):
 
 
 class ConfigReloadResult(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     system_config_version: str
     diff: ProviderConfigDiff

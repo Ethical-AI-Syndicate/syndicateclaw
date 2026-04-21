@@ -9,7 +9,7 @@ import enum
 from datetime import UTC, datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from ulid import ULID
 
 from syndicateclaw.models import PolicyEffect
@@ -195,6 +195,7 @@ class ModelLimits(BaseModel):
 
 
 class ModelDescriptor(BaseModel):
+    model_config = ConfigDict(ignored_types=(dict,))
     model_id: str
     name: str
     family: str = ""
@@ -210,7 +211,8 @@ class ModelDescriptor(BaseModel):
 
     def validate_embedding_dimensions(self) -> None:  # pragma: no mutate
         if self.is_embedding_model and self.embedding_dimensions is None:  # pragma: no mutate
-            raise ValueError("embedding_dimensions required for embedding models")  # pragma: no mutate
+            msg = "embedding_dimensions required for embedding models"
+            raise ValueError(msg)  # pragma: no mutate
 
 
 class ChatMessage(BaseModel):

@@ -6,7 +6,7 @@ import re
 from typing import Any
 
 from packaging.version import InvalidVersion, Version
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from syndicateclaw.runtime.contracts.common import (
     DeterminismTarget,
@@ -19,14 +19,14 @@ _SKILL_ID_RE = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
 class IntentTrigger(BaseModel):
-    model_config = {"extra": "forbid"}
+    model_config = ConfigDict(extra="forbid", ignored_types=(dict,))
 
     type: TriggerType
     match: list[str] = Field(min_length=1)
 
 
 class MemoryAccess(BaseModel):
-    model_config = {"extra": "forbid"}
+    model_config = ConfigDict(extra="forbid", ignored_types=(dict,))
 
     read: list[str] = Field(default_factory=list)
     write: list[str] = Field(default_factory=list)
@@ -34,14 +34,14 @@ class MemoryAccess(BaseModel):
 
 
 class ApprovalRequirements(BaseModel):
-    model_config = {"extra": "forbid"}
+    model_config = ConfigDict(extra="forbid", ignored_types=(dict,))
 
     tool_actions: list[str] = Field(default_factory=list)
     state_mutations: list[str] = Field(default_factory=list)
 
 
 class SkillProvenance(BaseModel):
-    model_config = {"extra": "forbid"}
+    model_config = ConfigDict(extra="forbid", ignored_types=(dict,))
 
     author: str | None = None
     source: str | None = None
@@ -51,7 +51,7 @@ class SkillProvenance(BaseModel):
 class SkillManifest(BaseModel):
     """Authoritative skill definition loaded from disk."""
 
-    model_config = {"extra": "forbid"}
+    model_config = ConfigDict(extra="forbid", ignored_types=(dict,))
 
     skill_id: str = Field(min_length=1)
     version: str = Field(min_length=1)

@@ -14,7 +14,7 @@ from syndicateclaw.inference.types import (
 class RoutingWeights(BaseModel):
     """Explicit scoring weights (lower total score ranks higher)."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     cost: float = 1.0
     latency_proxy: float = 0.001
@@ -25,7 +25,7 @@ class RoutingWeights(BaseModel):
 
 
 class RoutingPolicyConfig(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     weights: RoutingWeights = Field(default_factory=RoutingWeights)
     cost_weight_cap: float = 1_000_000.0
@@ -37,7 +37,7 @@ class RoutingPolicyConfig(BaseModel):
 class YamlCatalogCoexistence(BaseModel):
     """When static YAML and models.dev-derived rows share a snapshot, resolution is explicit."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     yaml_wins_on_key_collision: bool = Field(
         True,
@@ -50,7 +50,7 @@ class YamlCatalogCoexistence(BaseModel):
 class ModelsDevSyncConfigStub(BaseModel):
     """Placeholder for models.dev sync (CP4). Disabled in Phase 1 wiring until sync exists."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     enabled: bool = False
 
@@ -58,7 +58,7 @@ class ModelsDevSyncConfigStub(BaseModel):
 class StaticCatalogEntry(BaseModel):
     """YAML-seeded catalog row (does not activate providers; references ProviderConfig.id)."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     provider_id: str
     model_id: str
@@ -77,7 +77,7 @@ class StaticCatalogEntry(BaseModel):
 class ProviderSystemConfig(BaseModel):
     """Full validated graph loaded before activation (see ProviderConfigLoader)."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     inference_enabled: bool = True
     providers: tuple[ProviderConfig, ...] = ()

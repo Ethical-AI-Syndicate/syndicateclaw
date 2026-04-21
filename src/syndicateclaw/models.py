@@ -4,7 +4,7 @@ import enum
 from datetime import UTC, datetime
 from typing import Any, Self
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from ulid import ULID
 
 # ---------------------------------------------------------------------------
@@ -220,7 +220,7 @@ class BaseEntity(BaseModel):
         default_factory=_utcnow, description="Last-updated timestamp (UTC)"
     )
 
-    model_config = {"from_attributes": True}
+    model_config = ConfigDict(from_attributes=True, ignored_types=(dict,))
 
     @classmethod
     def new(cls, **kwargs: Any) -> Self:

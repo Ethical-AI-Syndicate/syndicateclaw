@@ -28,7 +28,7 @@ from syndicateclaw.inference.types import (
 class CatalogEntryRecord(BaseModel):
     """Single canonical row per (provider_id, model_id)."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     provider_id: str
     model_id: str

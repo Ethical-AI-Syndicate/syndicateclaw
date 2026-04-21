@@ -18,7 +18,7 @@ from syndicateclaw.inference.types import (
 
 
 class ModelsDevSyncResult(BaseModel):
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, ignored_types=(dict,))
 
     applied: bool
     snapshot_version: str
