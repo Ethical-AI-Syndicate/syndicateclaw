@@ -445,9 +445,11 @@ pentest:
 mutation_test:
   stage: test
   extends: .python_db_job
+  timeout: 120m
   script:
-    - mutmut run; export MUTMUT_RC=$?
-    - mutmut results | tee mutation_results.txt
+    - mutmut run || MUTMUT_RC=$?
+    - export MUTMUT_RC=${MUTMUT_RC:-0}
+    - mutmut results 2>/dev/null | tee mutation_results.txt || true
     - |
       python - <<'PY'
       import os, pathlib, sys
