@@ -1,3 +1,14 @@
+## [2.1.1](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.1.0...v2.1.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **ci:** fix mutation_test job — add mutmut config and use db job ([fe2aeea](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/fe2aeea0d9480123a57852c97f4a799edff6502e))
+* **ci:** fix mutation_test set -e exit-code capture and add 120m timeout ([2c99911](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/2c9991192f0d82a25781bbffbd6df1093294d6f1))
+* **ci:** pin mutmut to 3.2.0 to avoid copy_src_dir broken-symlink crash ([b7263f6](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/b7263f605bd690266ede4306a4f669389462efa5))
+* **mutmut:** prevent Pydantic v2 rejection of injected mutant class attrs ([dd7e409](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/dd7e409a6dd02e9b0dabe9c026227dd6eb3c0eea))
+* **testing:** ignore mutmut-injected attributes in Pydantic models ([f69adb5](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/f69adb5fd91384ebcc518c25b16cc4d5bfbf56a2))
+
 # [2.1.0](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.0.0...v2.1.0) (2026-04-19)
 
 
