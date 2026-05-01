@@ -293,6 +293,34 @@ async def _create_assignments(
     return created_count
 
 
+async def _repair_system_principal_types(session: AsyncSession, dry_run: bool = False) -> int:
+    """Ensure existing system:* principals use the SERVICE_ACCOUNT type.
+
+    Early seed runs could create system actors before the service-account
+    invariant existed. Repairing this keeps the script idempotent across local
+    restarts and upgrades.
+    """
+    if dry_run:
+        result = await session.execute(
+            text("""
+                SELECT COUNT(*) FROM principals
+                WHERE name LIKE 'system:%%' AND principal_type != 'SERVICE_ACCOUNT'
+            """)
+        )
+        return result.scalar() or 0
+    result = await session.execute(
+        text("""
+            UPDATE principals
+               SET principal_type = 'SERVICE_ACCOUNT',
+                   updated_at = :now
+             WHERE name LIKE 'system:%%'
+               AND principal_type != 'SERVICE_ACCOUNT'
+        """),
+        {"now": _now()},
+    )
+    return result.rowcount
+
+
 async def _populate_principal_ids(
     session: AsyncSession,
     principal_map: dict[str, str],
@@ -386,17 +414,27 @@ async def _verify(session: AsyncSession) -> list[str]:
     if count != 0:
         failures.append(f"S1 FAILED: {count} actors without principals")
 
-    # S2: Exactly 6 roles
-    result = await session.execute(text("SELECT COUNT(*) FROM roles"))
-    count = result.scalar()
-    if count != 6:
-        failures.append(f"S2 FAILED: expected 6 roles, found {count}")
-
-    # S3: 5 built-in roles
-    result = await session.execute(text("SELECT COUNT(*) FROM roles WHERE built_in = true"))
-    count = result.scalar()
-    if count != 5:
-        failures.append(f"S3 FAILED: expected 5 built-in roles, found {count}")
+    # S2/S3: Required built-in/custom roles exist. Do not require exact counts;
+    # additional customer or migration-provided roles are valid.
+    required_roles = {role["name"]: bool(role.get("inherits_from") is not None or role["name"] in {
+        "viewer",
+        "operator",
+        "admin",
+        "tenant_admin",
+        "platform_admin",
+    }) for role in BUILT_IN_ROLES}
+    custom_roles = {role["name"] for role in CUSTOM_ROLES}
+    result = await session.execute(text("SELECT name, built_in FROM roles"))
+    rows = {row[0]: bool(row[1]) for row in result.fetchall()}
+    missing_built_ins = sorted(name for name in required_roles if name not in rows)
+    if missing_built_ins:
+        failures.append(f"S2 FAILED: missing built-in roles: {missing_built_ins}")
+    wrong_built_in_flag = sorted(name for name in required_roles if rows.get(name) is False)
+    if wrong_built_in_flag:
+        failures.append(f"S3 FAILED: roles not marked built-in: {wrong_built_in_flag}")
+    missing_custom = sorted(name for name in custom_roles if name not in rows)
+    if missing_custom:
+        failures.append(f"S3 FAILED: missing custom roles: {missing_custom}")
 
     # S4: Every principal has at least one assignment
     result = await session.execute(
@@ -494,6 +532,10 @@ async def main(dry_run: bool = False, verify_only: bool = False) -> None:
             print(f"Step 4: {'Planning' if dry_run else 'Creating'} role assignments...")
             ra_count = await _create_assignments(session, actors, principal_map, role_map, dry_run)
             print(f"  {ra_count} assignments {'planned' if dry_run else 'created'}")
+
+            print(f"Step 4b: {'Planning' if dry_run else 'Repairing'} system principal types...")
+            repair_count = await _repair_system_principal_types(session, dry_run)
+            print(f"  {repair_count} principals {'to be repaired' if dry_run else 'repaired'}")
 
             print(f"Step 5: {'Planning' if dry_run else 'Populating'} principal ID columns...")
             pid_count = await _populate_principal_ids(session, principal_map, dry_run)

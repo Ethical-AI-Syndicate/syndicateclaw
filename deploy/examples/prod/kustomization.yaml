@@ -1,0 +1,5 @@
+resources:
+  - ../../k8s
+  - ingress.yaml
+patches:
+  - path: patch.yaml

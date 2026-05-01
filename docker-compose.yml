@@ -10,6 +10,8 @@ services:
       SYNDICATECLAW_ENVIRONMENT: development
       SYNDICATECLAW_SECRET_KEY: dev-only-change-in-production
       SYNDICATECLAW_LOG_LEVEL: debug
+      # Local first-value mode only. Production must leave RBAC enforcement enabled.
+      SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
     depends_on:
       postgres:
         condition: service_healthy

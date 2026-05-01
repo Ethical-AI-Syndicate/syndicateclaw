@@ -5,7 +5,13 @@ import importlib
 import pytest
 from asgi_lifespan import LifespanManager
 
-from syndicateclaw.security.auth import validate_hs256_secret_strength
+from syndicateclaw.config import Settings
+from syndicateclaw.security.auth import (
+    _JWKS_CLIENTS,
+    _get_jwks_client,
+    validate_auth_settings,
+    validate_hs256_secret_strength,
+)
 
 
 def test_validate_hs256_secret_strength_rejects_short_key() -> None:
@@ -15,6 +21,48 @@ def test_validate_hs256_secret_strength_rejects_short_key() -> None:
 
 def test_validate_hs256_secret_strength_accepts_32_bytes() -> None:
     validate_hs256_secret_strength("k" * 32)
+
+
+def _settings(**overrides: object) -> Settings:
+    data: dict[str, object] = {
+        "database_url": "postgresql+asyncpg://user:pass@db.example.test:5432/syndicateclaw",
+        "redis_url": "redis://redis.example.test:6379/0",
+        "secret_key": "k" * 32,
+        "environment": "production",
+    }
+    data.update(overrides)
+    return Settings(**data)
+
+
+def test_validate_auth_settings_rejects_oidc_without_issuer_and_audience() -> None:
+    with pytest.raises(ValueError, match="OIDC bearer validation"):
+        validate_auth_settings(
+            _settings(oidc_jwks_url="https://idp.example.test/.well-known/jwks.json")
+        )
+
+
+def test_validate_auth_settings_accepts_complete_oidc_config() -> None:
+    validate_auth_settings(
+        _settings(
+            oidc_jwks_url="https://idp.example.test/.well-known/jwks.json",
+            oidc_issuer="https://idp.example.test/",
+            jwt_audience="syndicateclaw-api",
+        )
+    )
+
+
+def test_validate_auth_settings_rejects_long_streaming_token_ttl_in_production() -> None:
+    with pytest.raises(ValueError, match="STREAMING_TOKEN_TTL"):
+        validate_auth_settings(_settings(streaming_token_ttl_seconds=7200))
+
+
+def test_jwks_client_is_cached_per_url() -> None:
+    _JWKS_CLIENTS.clear()
+    first = _get_jwks_client("https://idp.example.test/jwks.json")
+    second = _get_jwks_client("https://idp.example.test/jwks.json")
+    other = _get_jwks_client("https://other-idp.example.test/jwks.json")
+    assert first is second
+    assert first is not other
 
 
 @pytest.mark.asyncio

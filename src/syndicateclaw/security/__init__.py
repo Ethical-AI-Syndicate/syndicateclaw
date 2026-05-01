@@ -3,9 +3,10 @@ from syndicateclaw.security.auth import (
     decode_access_token,
     verify_api_key,
 )
-from syndicateclaw.security.ssrf import SSRFError, validate_url
+from syndicateclaw.security.ssrf import PinnedIPAsyncTransport, SSRFError, validate_url
 
 __all__ = [
+    "PinnedIPAsyncTransport",
     "SSRFError",
     "create_access_token",
     "decode_access_token",

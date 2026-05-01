@@ -34,7 +34,7 @@ class TestSSRFAllowsPublicIPs:
         ["8.8.8.8", "1.1.1.1", "208.67.222.222", "93.184.216.34"],
     )
     def test_ssrf_allows_public_ips(self, ip: str) -> None:
-        assert validate_url(f"https://{ip}/path") is True
+        assert validate_url(f"https://{ip}/path") == ip
 
 
 class TestSSRFBlocksLocalhost:
@@ -57,7 +57,7 @@ class TestSSRFSchemeValidation:
             validate_url("file:///etc/passwd")
 
     def test_ssrf_allows_https(self) -> None:
-        assert validate_url("https://8.8.8.8/dns") is True
+        assert validate_url("https://8.8.8.8/dns") == "8.8.8.8"
 
 
 class TestSSRFEdgeCases:

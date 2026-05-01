@@ -98,7 +98,7 @@ async def test_webhook_plugin_posts_payload_in_dev_env(monkeypatch: pytest.Monke
     plugin = WebhookPlugin(url=url)
 
     with (
-        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value=True),
+        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.plugins.builtin.webhook.httpx.AsyncClient", return_value=mock_client),
     ):
         await plugin.on_workflow_end(ctx, status="completed")
@@ -133,7 +133,7 @@ async def test_webhook_plugin_allows_https_in_production(monkeypatch: pytest.Mon
     ctx = _make_ctx()
 
     with (
-        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value=True),
+        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.plugins.builtin.webhook.httpx.AsyncClient", return_value=mock_client),
     ):
         await plugin.on_workflow_end(ctx, status="failed")
@@ -163,7 +163,7 @@ async def test_webhook_plugin_raises_on_http_error(monkeypatch: pytest.MonkeyPat
     ctx = _make_ctx()
 
     with (
-        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value=True),
+        patch("syndicateclaw.plugins.builtin.webhook.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.plugins.builtin.webhook.httpx.AsyncClient", return_value=mock_client),
         pytest.raises(httpx.HTTPStatusError),
     ):

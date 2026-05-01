@@ -74,7 +74,9 @@ asyncio_default_fixture_loop_scope = "session"
 testpaths = ["tests"]
 norecursedirs = ["mutants", ".cache", "dist", ".git"]
 markers = [
+    "unit: marks tests that must not require external services",
     "integration: marks tests as integration tests (require DB/services)",
+    "e2e: marks end-to-end tests that exercise deployed/service boundaries",
     "requires_api_keys: marks tests that require real provider API keys",
     "pentest: security penetration scenarios (v2.0.0 gate)",
     "chaos: chaos / failure injection scenarios (v2.0.0 gate)",

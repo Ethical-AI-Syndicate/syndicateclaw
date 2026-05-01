@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syndicateclaw
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: SYNDICATECLAW_OBSERVABILITY_ENABLED
+              value: "true"
+            - name: SYNDICATECLAW_AUTH_REQUIRED
+              value: "true"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi

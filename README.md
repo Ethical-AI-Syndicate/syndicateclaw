@@ -45,11 +45,11 @@ cp .env.example .env    # edit secrets before production use
 docker compose up -d
 
 # Verify
-curl http://localhost:8000/health
-# {"status": "ok", "version": "0.1.0"}
+curl http://localhost:8000/healthz
+# {"status": "ok"}
 
-# Run database migrations
-docker compose exec app alembic upgrade head
+# Run the first-value workflow API check
+./examples/first_value_workflow.sh
 
 # Open the API docs
 open http://localhost:8000/docs

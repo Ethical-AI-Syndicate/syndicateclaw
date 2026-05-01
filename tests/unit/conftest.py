@@ -3,6 +3,19 @@ import os
 import pytest
 
 
+def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+    for item in items:
+        item.add_marker(pytest.mark.unit)
+        if "db_engine" in getattr(item, "fixturenames", ()):
+            item.add_marker(pytest.mark.integration)
+
+
+@pytest.fixture(scope="session", autouse=True)
+async def seed_rbac_for_tests() -> None:
+    """Unit tests must not run the live PostgreSQL RBAC seed subprocess."""
+    return None
+
+
 @pytest.fixture(autouse=True)
 def _unit_env(monkeypatch: pytest.MonkeyPatch) -> None:
     # Ensure any Settings() calls in unit tests get a valid fallback

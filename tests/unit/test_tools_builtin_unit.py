@@ -48,7 +48,7 @@ async def test_http_request_handler_get_success() -> None:
     mock_client.request = AsyncMock(return_value=mock_response)
 
     with (
-        patch("syndicateclaw.tools.builtin.validate_url"),
+        patch("syndicateclaw.tools.builtin.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.tools.builtin.httpx.AsyncClient", return_value=mock_client),
     ):
         result = await http_request_handler({"url": "http://example.com"})
@@ -70,7 +70,7 @@ async def test_http_request_handler_post_with_body() -> None:
     mock_client.request = AsyncMock(return_value=mock_response)
 
     with (
-        patch("syndicateclaw.tools.builtin.validate_url"),
+        patch("syndicateclaw.tools.builtin.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.tools.builtin.httpx.AsyncClient", return_value=mock_client),
     ):
         result = await http_request_handler(
@@ -101,7 +101,7 @@ async def test_http_request_handler_no_body_sends_none() -> None:
     mock_client.request = AsyncMock(return_value=mock_response)
 
     with (
-        patch("syndicateclaw.tools.builtin.validate_url"),
+        patch("syndicateclaw.tools.builtin.validate_url", return_value="93.184.216.34"),
         patch("syndicateclaw.tools.builtin.httpx.AsyncClient", return_value=mock_client),
     ):
         await http_request_handler({"url": "http://example.com", "method": "DELETE"})

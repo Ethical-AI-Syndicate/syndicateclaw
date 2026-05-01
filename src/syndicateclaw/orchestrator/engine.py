@@ -5,12 +5,20 @@ import json
 import operator
 import re
 from datetime import UTC, datetime
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Protocol, cast, runtime_checkable
 
 import structlog
 from opentelemetry import trace
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from ulid import ULID
 
+from syndicateclaw.db.models import ApprovalRequest as ApprovalRequestRow
+from syndicateclaw.db.models import NodeExecution as NodeExecutionRow
+from syndicateclaw.db.models import WorkflowRun as WorkflowRunRow
 from syndicateclaw.models import (
+    ApprovalRequest,
+    ApprovalStatus,
     AuditEvent,
     AuditEventType,
     EdgeDefinition,
@@ -18,13 +26,31 @@ from syndicateclaw.models import (
     NodeExecution,
     NodeExecutionStatus,
     NodeType,
+    ToolRiskLevel,
     WorkflowDefinition,
     WorkflowRun,
     WorkflowRunStatus,
 )
+from syndicateclaw.orchestrator.exceptions import WaitForApprovalError, WorkflowCycleDetected
 
 logger = structlog.get_logger(__name__)
 tracer = trace.get_tracer(__name__)
+
+MAX_WORKFLOW_STEPS = 1000
+_STEP_LIMIT_PATH_LENGTH = 50
+
+__all__ = [
+    "ExecutionContext",
+    "NodeHandler",
+    "NodeResult",
+    "PauseExecutionError",
+    "WaitForAgentResponseError",
+    "WaitForApprovalError",
+    "WorkflowCycleDetected",
+    "WorkflowEngine",
+    "WorkflowRunResult",
+    "safe_eval_condition",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -266,13 +292,21 @@ class WorkflowEngine:
         signing_key: bytes | None = None,
         state_cache: Any = None,
         plugin_executor: Any = None,
+        session_factory: async_sessionmaker[AsyncSession] | None = None,
+        max_steps: int = MAX_WORKFLOW_STEPS,
     ) -> None:
+        if max_steps < 1:
+            raise ValueError("max_steps must be at least 1")
+        if max_steps > MAX_WORKFLOW_STEPS:
+            raise ValueError(f"max_steps cannot exceed {MAX_WORKFLOW_STEPS}")
         self._handlers = handler_registry
         self._checkpoint_store = checkpoint_store
         self._audit_service = audit_service
         self._signing_key = signing_key
         self._state_cache = state_cache
         self._plugin_executor = plugin_executor
+        self._session_factory = session_factory
+        self._max_steps = max_steps
         self._runs: dict[str, WorkflowRunResult] = {}
 
     async def _maybe_cache_state(self, run: WorkflowRun) -> None:
@@ -305,23 +339,46 @@ class WorkflowEngine:
 
         nodes_by_id = {n.id: n for n in workflow.nodes}
         start_node = self._find_start_node(workflow)
-        current_node_id: str | None = run_result.current_node_id or start_node.id
+        resume_from = run.state.get("_resume_from")
+        current_node_id: str | None = (
+            run_result.current_node_id
+            or (str(resume_from) if isinstance(resume_from, str) else None)
+            or start_node.id
+        )
 
-        _step_count = 0
-        _visited_nodes = set()
+        step_count = 0
+        visited_nodes: list[str] = []
+        visited_node_set: set[str] = set()
 
         while current_node_id is not None:
-            if current_node_id in _visited_nodes:
-                run.status = WorkflowRunStatus.FAILED
-                run.error = f"Cycle detected at node {current_node_id}"
-                break
-            _visited_nodes.add(current_node_id)
+            step_count += 1
+            run_result.step_count = step_count
+            run_result.visited_nodes = list(visited_nodes)
 
-            _step_count += 1
-            if _step_count > 1000:
-                run.status = WorkflowRunStatus.FAILED
-                run.error = "Workflow execution exceeded max_steps=1000"
-                break
+            if current_node_id in visited_node_set:
+                first_seen = visited_nodes.index(current_node_id)
+                await self._raise_execution_bound_failure(
+                    run=run,
+                    workflow=workflow,
+                    reason="cycle_detected",
+                    message=f"Cycle detected at node {current_node_id}",
+                    cycle_path=visited_nodes[first_seen:],
+                    step_count=step_count,
+                )
+
+            if step_count > self._max_steps:
+                await self._raise_execution_bound_failure(
+                    run=run,
+                    workflow=workflow,
+                    reason="step_limit_exceeded",
+                    message=f"Workflow execution exceeded max_steps={self._max_steps}",
+                    cycle_path=visited_nodes[-_STEP_LIMIT_PATH_LENGTH:],
+                    step_count=step_count,
+                )
+
+            visited_nodes.append(current_node_id)
+            visited_node_set.add(current_node_id)
+            run_result.visited_nodes = list(visited_nodes)
 
             if run.status in (
                 WorkflowRunStatus.PAUSED,
@@ -408,6 +465,86 @@ class WorkflowEngine:
         )
         return run_result
 
+    async def resume_after_approval(
+        self,
+        *,
+        run_id: str,
+        approval_id: str,
+        workflow: WorkflowDefinition,
+        context: ExecutionContext,
+    ) -> WorkflowRunResult:
+        """Resume a waiting run after an approved approval has been consumed.
+
+        The approval row is locked and marked consumed before execution continues.
+        A second call for the same approval raises ``ValueError`` before a handler
+        can run, which keeps side effects one-shot.
+        """
+        if self._session_factory is None:
+            run_result = self._runs.get(run_id)
+            if run_result is None:
+                raise ValueError(f"Run not found: {run_id}")
+            run = run_result.run
+            resume = self._approval_resume_payload(run.state, approval_id)
+            run.state["_approval_resume"] = resume
+            run.state["_approved_approval_id"] = approval_id
+            run.status = WorkflowRunStatus.RUNNING
+            return await self.execute(run, context, workflow=workflow)
+
+        async with self._session_factory() as session, session.begin():
+            approval_stmt = (
+                select(ApprovalRequestRow)
+                .where(
+                    ApprovalRequestRow.id == approval_id,
+                    ApprovalRequestRow.run_id == run_id,
+                )
+                .with_for_update()
+            )
+            approval = (await session.execute(approval_stmt)).scalar_one_or_none()
+            if approval is None:
+                raise ValueError(f"Approval request {approval_id} not found for run {run_id}")
+            if approval.status != ApprovalStatus.APPROVED.value:
+                raise ValueError(f"Approval request {approval_id} is not APPROVED")
+            approval_context = dict(approval.context or {})
+            if approval_context.get("consumed_at"):
+                raise ValueError(f"Approval request {approval_id} has already been consumed")
+
+            run_row = await session.get(WorkflowRunRow, run_id, with_for_update=True)
+            if run_row is None:
+                raise ValueError(f"Run not found: {run_id}")
+            if run_row.status != WorkflowRunStatus.WAITING_APPROVAL.value:
+                raise ValueError(f"Run {run_id} is not waiting for approval")
+
+            run_state = dict(run_row.state or {})
+            resume_node = self._resume_node_from_state(run_state, approval_context)
+            resume_payload = {
+                "approval_id": approval_id,
+                "node_id": resume_node,
+                "tool_name": approval.tool_name,
+                "resumed_at": _utcnow().isoformat(),
+            }
+            run_state["_approval_resume"] = resume_payload
+            run_state["_approved_approval_id"] = approval_id
+            run_state["_resume_from"] = resume_node
+
+            approval_context["consumed_at"] = _utcnow().isoformat()
+            approval_context["consumed_for_run_id"] = run_id
+            approval_context["resume_node_id"] = resume_node
+            approval.context = approval_context
+            approval.updated_at = _utcnow()
+
+            run_row.status = WorkflowRunStatus.RUNNING.value
+            run_row.state = run_state
+            run_row.updated_at = _utcnow()
+            await session.flush()
+
+            run = WorkflowRun.model_validate(run_row)
+
+        run_result = self._runs.get(run.id) or WorkflowRunResult(run=run)
+        run_result.run = run
+        run_result.current_node_id = str(run.state.get("_resume_from", ""))
+        self._runs[run.id] = run_result
+        return await self.execute(run, context, workflow=workflow)
+
     async def replay(self, run_id: str) -> WorkflowRunResult:
         """Reset a run to its last checkpoint for re-execution.
 
@@ -454,6 +591,80 @@ class WorkflowEngine:
             raise ValueError(
                 "Checkpoint integrity check failed: HMAC mismatch. "
                 "Checkpoint data may have been tampered with."
+            )
+
+    async def _raise_execution_bound_failure(
+        self,
+        *,
+        run: WorkflowRun,
+        workflow: WorkflowDefinition,
+        reason: str,
+        message: str,
+        cycle_path: list[str],
+        step_count: int,
+    ) -> None:
+        run.status = WorkflowRunStatus.FAILED
+        run.completed_at = _utcnow()
+        run.error = reason
+        run.state["_failure_reason"] = reason
+        run.state["_execution_bound"] = {
+            "reason": reason,
+            "cycle_path": list(cycle_path),
+            "step_count": step_count,
+            "failed_at": run.completed_at.isoformat(),
+        }
+        await self._maybe_cache_state(run)
+        await self._persist_run_failure(run)
+        await self._emit_workflow_failed_audit(
+            run=run,
+            workflow=workflow,
+            reason=reason,
+            cycle_path=cycle_path,
+            step_count=step_count,
+        )
+        raise WorkflowCycleDetected(
+            message,
+            run_id=run.id,
+            cycle_path=cycle_path,
+            step_count=step_count,
+        )
+
+    async def _persist_run_failure(self, run: WorkflowRun) -> None:
+        if self._session_factory is None:
+            return
+        async with self._session_factory() as session, session.begin():
+            await self._upsert_run(session, run)
+
+    async def _emit_workflow_failed_audit(
+        self,
+        *,
+        run: WorkflowRun,
+        workflow: WorkflowDefinition,
+        reason: str,
+        cycle_path: list[str],
+        step_count: int,
+    ) -> None:
+        try:
+            await self._emit_audit(
+                AuditEventType.WORKFLOW_FAILED,
+                actor=run.initiated_by or "system:engine",
+                resource_type="workflow",
+                resource_id=workflow.id,
+                action="failed",
+                details={
+                    "run_id": run.id,
+                    "reason": reason,
+                    "cycle_path": list(cycle_path),
+                    "step_count": step_count,
+                    "timestamp": _utcnow().isoformat(),
+                },
+            )
+        except Exception:
+            logger.exception(
+                "workflow_failed_audit_failed",
+                run_id=run.id,
+                reason=reason,
+                step_count=step_count,
             )
 
     async def pause(self, run_id: str) -> None:
@@ -520,6 +731,8 @@ class WorkflowEngine:
         multiplier = retry_policy.backoff_multiplier if retry_policy else 1.0
 
         result: NodeResult | None = None
+        approval_interrupt: WaitForApprovalError | None = None
+        boundary_persisted = False
 
         for attempt in range(1, max_attempts + 1):
             execution.attempt = attempt
@@ -560,15 +773,27 @@ class WorkflowEngine:
                 execution.completed_at = _utcnow()
                 result = NodeResult(output_state=run.state)
                 break
-            except WaitForApprovalError:
+            except WaitForApprovalError as exc:
                 run.status = WorkflowRunStatus.WAITING_APPROVAL
-                execution.status = NodeExecutionStatus.COMPLETED
+                execution.status = NodeExecutionStatus.WAITING_APPROVAL
                 execution.completed_at = _utcnow()
+                execution.output_state = dict(run.state)
+                if execution.started_at:
+                    execution.duration_ms = int(
+                        (execution.completed_at - execution.started_at).total_seconds() * 1000
+                    )
+                approval_interrupt = await self._prepare_approval_interrupt(
+                    exc=exc,
+                    node=node,
+                    run=run,
+                    execution=execution,
+                )
+                boundary_persisted = True
                 result = NodeResult(output_state=run.state)
                 break
             except WaitForAgentResponseError:
                 run.status = WorkflowRunStatus.WAITING_AGENT_RESPONSE
-                execution.status = NodeExecutionStatus.COMPLETED
+                execution.status = NodeExecutionStatus.WAITING_AGENT_RESPONSE
                 execution.completed_at = _utcnow()
                 result = NodeResult(output_state=run.state)
                 break
@@ -597,6 +822,14 @@ class WorkflowEngine:
         if result is None:
             raise RuntimeError(f"Handler for node {node.id} returned None")
 
+        if approval_interrupt is not None:
+            raise approval_interrupt
+
+        self._clear_consumed_resume_marker(run, node.id)
+
+        if not boundary_persisted:
+            await self._persist_run_and_node(run, execution)
+
         if self._plugin_executor is not None and execution.status == NodeExecutionStatus.COMPLETED:
             ns = run.state.get("_namespace", "default")
             await self._plugin_executor.invoke_on_node_execute(
@@ -609,6 +842,302 @@ class WorkflowEngine:
                 output_state=dict(result.output_state),
             )
         return result
+
+    async def _prepare_approval_interrupt(
+        self,
+        *,
+        exc: WaitForApprovalError,
+        node: NodeDefinition,
+        run: WorkflowRun,
+        execution: NodeExecution,
+    ) -> WaitForApprovalError:
+        request = self._approval_request_for_interrupt(exc, node, run, execution)
+        run.state["_waiting_approval"] = {
+            "approval_id": request.id,
+            "tool_name": request.tool_name or "",
+            "node_id": node.id,
+            "run_id": run.id,
+            "requested_at": _utcnow().isoformat(),
+        }
+        run.state["_resume_from"] = node.id
+        run.state["_pending_approval_id"] = request.id
+        await self._persist_checkpoint(run)
+        await self._maybe_cache_state(run)
+        await self._persist_approval_boundary(run, execution, request)
+
+        persisted_state = self._jsonable(run.state)
+        enriched = exc.with_boundary_context(
+            approval_id=request.id,
+            tool_name=request.tool_name or "",
+            node_id=node.id,
+            run_id=run.id,
+            persisted_state=persisted_state,
+        )
+        await self._emit_approval_required_audit(enriched, run)
+        return enriched
+
+    def _approval_request_for_interrupt(
+        self,
+        exc: WaitForApprovalError,
+        node: NodeDefinition,
+        run: WorkflowRun,
+        execution: NodeExecution,
+    ) -> ApprovalRequest:
+        raw = self._approval_payload_from_state(run.state, exc.approval_id)
+        if raw is not None:
+            request = ApprovalRequest.model_validate(raw)
+        else:
+            request = ApprovalRequest(
+                id=exc.approval_id or str(ULID()),
+                run_id=run.id,
+                node_execution_id=execution.id,
+                tool_name=exc.tool_name or node.handler,
+                action_description=f"Approval required for node {node.id}",
+                risk_level=ToolRiskLevel.MEDIUM,
+                requested_by=run.initiated_by or "system:engine",
+                assigned_to=[],
+                expires_at=_utcnow(),
+                context={},
+            )
+
+        request.run_id = run.id
+        request.node_execution_id = execution.id
+        if not request.tool_name:
+            request.tool_name = exc.tool_name or node.handler
+        context = dict(request.context or {})
+        context.update(
+            {
+                "run_id": run.id,
+                "node_id": node.id,
+                "resume_node_id": node.id,
+                "state": self._jsonable(run.state),
+            }
+        )
+        request.context = context
+        return request
+
+    @staticmethod
+    def _approval_payload_from_state(
+        state: dict[str, Any],
+        approval_id: str,
+    ) -> dict[str, Any] | None:
+        pending = state.get("_pending_approval")
+        if isinstance(pending, dict) and (
+            not approval_id or str(pending.get("id", "")) == approval_id
+        ):
+            return pending
+
+        pending_many = state.get("_pending_approvals")
+        if isinstance(pending_many, list):
+            for item in reversed(pending_many):
+                if isinstance(item, dict) and (
+                    not approval_id or str(item.get("id", "")) == approval_id
+                ):
+                    return item
+        return None
+
+    async def _persist_approval_boundary(
+        self,
+        run: WorkflowRun,
+        execution: NodeExecution,
+        request: ApprovalRequest,
+    ) -> None:
+        if self._session_factory is None:
+            return
+
+        async with self._session_factory() as session, session.begin():
+            await self._upsert_run(session, run)
+            await self._upsert_node_execution(session, execution)
+            existing = await session.get(ApprovalRequestRow, request.id)
+            if existing is None:
+                session.add(
+                    ApprovalRequestRow(
+                        id=request.id,
+                        run_id=request.run_id,
+                        node_execution_id=request.node_execution_id,
+                        tool_name=request.tool_name or "",
+                        action_description=request.action_description,
+                        risk_level=request.risk_level.value,
+                        status=request.status.value,
+                        requested_by=request.requested_by,
+                        assigned_to=request.assigned_to,
+                        expires_at=request.expires_at,
+                        context=self._jsonable(request.context),
+                        scope=request.scope.model_dump(mode="json"),
+                    )
+                )
+            else:
+                existing.node_execution_id = request.node_execution_id
+                existing.tool_name = request.tool_name or ""
+                existing.action_description = request.action_description
+                existing.risk_level = request.risk_level.value
+                existing.status = request.status.value
+                existing.requested_by = request.requested_by
+                cast(Any, existing).assigned_to = request.assigned_to
+                existing.expires_at = request.expires_at
+                existing.context = self._jsonable(request.context)
+                existing.scope = request.scope.model_dump(mode="json")
+                existing.updated_at = _utcnow()
+            await session.flush()
+
+    async def _persist_run_and_node(
+        self,
+        run: WorkflowRun,
+        execution: NodeExecution,
+    ) -> None:
+        if self._session_factory is None:
+            return
+        async with self._session_factory() as session, session.begin():
+            await self._upsert_run(session, run)
+            await self._upsert_node_execution(session, execution)
+
+    async def _upsert_run(self, session: AsyncSession, run: WorkflowRun) -> None:
+        row = await session.get(WorkflowRunRow, run.id)
+        version_manifest = (
+            run.version_manifest.model_dump(mode="json") if run.version_manifest else None
+        )
+        if row is None:
+            session.add(
+                WorkflowRunRow(
+                    id=run.id,
+                    workflow_id=run.workflow_id,
+                    workflow_version=run.workflow_version,
+                    status=run.status.value,
+                    state=self._jsonable(run.state),
+                    parent_run_id=run.parent_run_id,
+                    initiated_by=run.initiated_by,
+                    started_at=run.started_at,
+                    completed_at=run.completed_at,
+                    error=run.error,
+                    checkpoint_data=run.checkpoint_data,
+                    tags=run.tags,
+                    version_manifest=version_manifest,
+                    replay_mode=run.replay_mode.value,
+                )
+            )
+            await session.flush()
+            return
+
+        row.status = run.status.value
+        row.state = self._jsonable(run.state)
+        row.started_at = run.started_at
+        row.completed_at = run.completed_at
+        row.error = run.error
+        row.checkpoint_data = run.checkpoint_data
+        row.tags = run.tags
+        row.version_manifest = version_manifest
+        row.replay_mode = run.replay_mode.value
+        row.updated_at = _utcnow()
+        await session.flush()
+
+    async def _upsert_node_execution(
+        self,
+        session: AsyncSession,
+        execution: NodeExecution,
+    ) -> None:
+        row = await session.get(NodeExecutionRow, execution.id)
+        if row is None:
+            session.add(
+                NodeExecutionRow(
+                    id=execution.id,
+                    run_id=execution.run_id,
+                    node_id=execution.node_id,
+                    node_name=execution.node_name,
+                    status=execution.status.value,
+                    attempt=execution.attempt,
+                    input_state=self._jsonable(execution.input_state),
+                    output_state=self._jsonable(execution.output_state),
+                    started_at=execution.started_at,
+                    completed_at=execution.completed_at,
+                    error=execution.error,
+                    duration_ms=execution.duration_ms,
+                )
+            )
+            await session.flush()
+            return
+
+        row.status = execution.status.value
+        row.attempt = execution.attempt
+        row.input_state = self._jsonable(execution.input_state)
+        row.output_state = self._jsonable(execution.output_state)
+        row.started_at = execution.started_at
+        row.completed_at = execution.completed_at
+        row.error = execution.error
+        row.duration_ms = execution.duration_ms
+        row.updated_at = _utcnow()
+        await session.flush()
+
+    async def _emit_approval_required_audit(
+        self,
+        interrupt: WaitForApprovalError,
+        run: WorkflowRun,
+    ) -> None:
+        try:
+            policy_version = ""
+            if run.version_manifest is not None:
+                policy_version = run.version_manifest.policy_version
+            await self._emit_audit(
+                AuditEventType.APPROVAL_REQUIRED,
+                actor=run.initiated_by or "system:engine",
+                resource_type="workflow_run",
+                resource_id=run.id,
+                action="approval_required",
+                details={
+                    "run_id": interrupt.run_id,
+                    "node_id": interrupt.node_id,
+                    "tool_name": interrupt.tool_name,
+                    "approval_id": interrupt.approval_id,
+                    "policy_version": policy_version,
+                    "timestamp": _utcnow().isoformat(),
+                },
+            )
+        except Exception:
+            logger.exception(
+                "approval_required_audit_failed",
+                run_id=interrupt.run_id,
+                node_id=interrupt.node_id,
+                approval_id=interrupt.approval_id,
+            )
+
+    @staticmethod
+    def _jsonable(value: Any) -> Any:
+        return json.loads(json.dumps(value, default=str))
+
+    @staticmethod
+    def _resume_node_from_state(
+        state: dict[str, Any],
+        approval_context: dict[str, Any],
+    ) -> str:
+        resume_node = approval_context.get("resume_node_id") or state.get("_resume_from")
+        if not resume_node:
+            waiting = state.get("_waiting_approval")
+            if isinstance(waiting, dict):
+                resume_node = waiting.get("node_id")
+        if not resume_node:
+            raise ValueError("Persisted approval checkpoint is missing resume node")
+        return str(resume_node)
+
+    @staticmethod
+    def _approval_resume_payload(state: dict[str, Any], approval_id: str) -> dict[str, Any]:
+        waiting = state.get("_waiting_approval")
+        if not isinstance(waiting, dict) or str(waiting.get("approval_id", "")) != approval_id:
+            raise ValueError(f"Approval {approval_id} is not the waiting approval for this run")
+        return {
+            "approval_id": approval_id,
+            "node_id": str(waiting.get("node_id", "")),
+            "tool_name": str(waiting.get("tool_name", "")),
+            "resumed_at": _utcnow().isoformat(),
+        }
+
+    @staticmethod
+    def _clear_consumed_resume_marker(run: WorkflowRun, node_id: str) -> None:
+        resume = run.state.get("_approval_resume")
+        if not isinstance(resume, dict) or resume.get("node_id") != node_id:
+            return
+        run.state.pop("_approval_resume", None)
+        run.state.pop("_approved_approval_id", None)
+        run.state.pop("_resume_from", None)
+        run.state.pop("_waiting_approval", None)
 
     @staticmethod
     def _find_start_node(workflow: WorkflowDefinition) -> NodeDefinition:
@@ -683,6 +1212,8 @@ class WorkflowEngine:
         )
         if self._audit_service is not None and hasattr(self._audit_service, "record"):
             await self._audit_service.record(event)
+        elif self._audit_service is not None and hasattr(self._audit_service, "emit"):
+            await self._audit_service.emit(event)
         logger.info("audit.event", event_type=event_type.value, resource_id=resource_id)
 
 
@@ -693,14 +1224,12 @@ class WorkflowRunResult:
     run: WorkflowRun
     node_executions: list[NodeExecution] = dataclasses.field(default_factory=list)
     current_node_id: str | None = None
+    step_count: int = 0
+    visited_nodes: list[str] = dataclasses.field(default_factory=list)
 
 
 class PauseExecutionError(Exception):
     """Raised by handlers that need to pause workflow execution."""
-
-
-class WaitForApprovalError(Exception):
-    """Raised by handlers that need approval before proceeding."""
 
 
 class WaitForAgentResponseError(Exception):

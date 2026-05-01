@@ -15,37 +15,120 @@ spec:
         app.kubernetes.io/name: syndicateclaw
     spec:
       securityContext:
+        runAsNonRoot: true
         runAsUser: 1000
         runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       initContainers:
         - name: migrate
           image: REGISTRY_IMAGE:TAG
           command: ["python", "-m", "alembic", "upgrade", "head"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           envFrom:
             - configMapRef:
                 name: syndicateclaw-config
-            - secretRef:
-                name: syndicateclaw-secrets
+          env:
+            - name: SYNDICATECLAW_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_DATABASE_URL
+            - name: SYNDICATECLAW_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_REDIS_URL
+            - name: SYNDICATECLAW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_SECRET_KEY
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
         - name: seed-rbac
           image: REGISTRY_IMAGE:TAG
           command: ["python", "scripts/seed_rbac_phase0.py"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
           envFrom:
             - configMapRef:
                 name: syndicateclaw-config
-            - secretRef:
-                name: syndicateclaw-secrets
+          env:
+            - name: SYNDICATECLAW_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_DATABASE_URL
+            - name: SYNDICATECLAW_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_REDIS_URL
+            - name: SYNDICATECLAW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_SECRET_KEY
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
       containers:
         - name: app
           image: REGISTRY_IMAGE:TAG
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8000
               name: http
           envFrom:
             - configMapRef:
                 name: syndicateclaw-config
-            - secretRef:
-                name: syndicateclaw-secrets
+          env:
+            - name: SYNDICATECLAW_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_DATABASE_URL
+            - name: SYNDICATECLAW_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_REDIS_URL
+            - name: SYNDICATECLAW_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: syndicateclaw-secrets
+                  key: SYNDICATECLAW_SECRET_KEY
           livenessProbe:
             httpGet:
               path: /healthz
@@ -65,3 +148,9 @@ spec:
             limits:
               cpu: "1"
               memory: 512Mi
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}

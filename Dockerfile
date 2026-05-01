@@ -42,7 +42,6 @@ COPY migrations/ ./migrations/
 COPY scripts/ ./scripts/
 COPY alembic.ini ./
 
-RUN chown -R app:app /app
 USER app
 
 EXPOSE 8000

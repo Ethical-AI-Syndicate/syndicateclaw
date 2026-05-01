@@ -26,6 +26,37 @@ def validate_hs256_secret_strength(secret_key: str, *, key_name: str = "secret_k
         raise ValueError(f"{key_name} must be at least {_MIN_HS256_SECRET_BYTES} bytes for HS256")
 
 
+def validate_auth_settings(settings: Settings) -> None:
+    """Fail closed on production auth settings that would undermine token validation."""
+    env_name = (getattr(settings, "environment", "production") or "production").lower()
+    prod_like = env_name not in {"development", "dev", "test", "testing"}
+    jwt_algorithm = (getattr(settings, "jwt_algorithm", "HS256") or "HS256").upper()
+
+    if prod_like and jwt_algorithm == "HS256":
+        validate_hs256_secret_strength(settings.secret_key, key_name="SYNDICATECLAW_SECRET_KEY")
+        secondary = getattr(settings, "jwt_secondary_secret_key", None)
+        if secondary:
+            validate_hs256_secret_strength(
+                secondary,
+                key_name="SYNDICATECLAW_JWT_SECONDARY_SECRET_KEY",
+            )
+
+    if getattr(settings, "oidc_jwks_url", None):
+        missing: list[str] = []
+        if not getattr(settings, "oidc_issuer", None):
+            missing.append("SYNDICATECLAW_OIDC_ISSUER")
+        if not getattr(settings, "jwt_audience", None):
+            missing.append("SYNDICATECLAW_JWT_AUDIENCE")
+        if missing:
+            raise ValueError(
+                "OIDC bearer validation requires explicit issuer and audience: "
+                + ", ".join(missing)
+            )
+
+    if prod_like and getattr(settings, "streaming_token_ttl_seconds", 300) > 3600:
+        raise ValueError("SYNDICATECLAW_STREAMING_TOKEN_TTL_SECONDS must be <= 3600 in production")
+
+
 def _get_jwks_client(url: str) -> jwt.PyJWKClient:
     with _JWKS_CLIENTS_LOCK:
         client = _JWKS_CLIENTS.get(url)

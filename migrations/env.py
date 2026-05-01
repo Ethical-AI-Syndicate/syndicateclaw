@@ -3,7 +3,7 @@ import os
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import DateTime, pool
+from sqlalchemy import DateTime, inspect, pool
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
@@ -27,6 +27,16 @@ def _compare_type(context, inspected_column, metadata_column, inspected_type, me
     return None  # fall through to alembic default
 
 
+def _is_empty_application_database(connection) -> bool:
+    """Return True only for a database with no Alembic state or app tables."""
+    inspector = inspect(connection)
+    existing_tables = set(inspector.get_table_names())
+    if "alembic_version" in existing_tables:
+        return False
+    application_tables = set(target_metadata.tables.keys())
+    return existing_tables.isdisjoint(application_tables)
+
+
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
@@ -47,7 +57,11 @@ def do_run_migrations(connection):
         compare_type=_compare_type,
     )
     with context.begin_transaction():
-        context.run_migrations()
+        if _is_empty_application_database(connection):
+            target_metadata.create_all(bind=connection)
+            context.get_context().stamp(context.script, "head")
+        else:
+            context.run_migrations()
 
 
 async def run_async_migrations() -> None:

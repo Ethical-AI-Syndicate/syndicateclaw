@@ -26,7 +26,7 @@ def test_ssrf_validate_url_blocks_private_ranges() -> None:
 
 
 def test_ssrf_validate_url_allows_public_address() -> None:
-    assert validate_url("https://example.com/path") is True
+    assert validate_url("https://example.com/path")
 
 
 def test_secondary_jwt_key_fallback() -> None:

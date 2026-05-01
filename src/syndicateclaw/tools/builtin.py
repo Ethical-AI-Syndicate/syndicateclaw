@@ -7,7 +7,7 @@ import httpx
 import structlog
 
 from syndicateclaw.models import Tool, ToolRiskLevel
-from syndicateclaw.security.ssrf import SSRFError, validate_url
+from syndicateclaw.security.ssrf import PinnedIPAsyncTransport, SSRFError, validate_url
 
 logger = structlog.get_logger(__name__)
 
@@ -55,13 +55,22 @@ async def http_request_handler(input_data: dict[str, Any]) -> dict[str, Any]:
     if not parsed.hostname:
         raise ValueError(f"Invalid URL: {url}")
 
-    # SSRF-hardened: DNS resolution + blocklist via security.ssrf.validate_url
+    # SSRF-hardened: resolve once, validate, then pin the transport to that IP.
     try:
-        validate_url(url)
+        pinned_ip = validate_url(url)
     except SSRFError as exc:
         raise PermissionError(str(exc)) from exc
 
-    async with httpx.AsyncClient(timeout=25.0) as client:
+    port = parsed.port or (443 if parsed.scheme == "https" else 80)
+    transport = PinnedIPAsyncTransport(
+        pinned_ip=pinned_ip,
+        hostname=parsed.hostname,
+        scheme=parsed.scheme,
+        port=port,
+        timeout=25.0,
+    )
+
+    async with httpx.AsyncClient(timeout=25.0, transport=transport) as client:
         response = await client.request(
             method,
             url,

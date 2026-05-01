@@ -33,7 +33,7 @@ from syndicateclaw.connectors.slack.bot import router as slack_router
 from syndicateclaw.connectors.telegram.bot import router as telegram_router
 from syndicateclaw.middleware import RBACMiddleware
 from syndicateclaw.middleware.csrf import BuilderCSRFMiddleware
-from syndicateclaw.security.auth import validate_hs256_secret_strength
+from syndicateclaw.security.auth import validate_auth_settings
 
 logger = structlog.get_logger(__name__)
 
@@ -186,17 +186,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     _configure_structlog()
     running_under_pytest = "PYTEST_CURRENT_TEST" in os.environ
 
-    env_name = (getattr(settings, "environment", "production") or "production").lower()
-    if env_name not in {"development", "dev", "test", "testing"} and (
-        (getattr(settings, "jwt_algorithm", "HS256") or "HS256").upper() == "HS256"
-    ):
-        validate_hs256_secret_strength(settings.secret_key, key_name="SYNDICATECLAW_SECRET_KEY")
-        secondary = getattr(settings, "jwt_secondary_secret_key", None)
-        if secondary:
-            validate_hs256_secret_strength(
-                secondary,
-                key_name="SYNDICATECLAW_JWT_SECONDARY_SECRET_KEY",
-            )
+    validate_auth_settings(settings)
 
     engine = get_engine(settings.database_url)
     if not running_under_pytest:
@@ -366,6 +356,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         signing_key=signing_key,
         state_cache=state_cache,
         plugin_executor=_plugin_executor,
+        session_factory=session_factory,
     )
     agent_service = AgentService(
         session_factory,

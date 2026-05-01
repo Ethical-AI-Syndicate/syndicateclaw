@@ -195,6 +195,7 @@ class TestAuditEventType:
             "POLICY_DELETED",
             "POLICY_EVALUATED",
             "POLICY_DENIED",
+            "APPROVAL_REQUIRED",
             "APPROVAL_REQUESTED",
             "APPROVAL_APPROVED",
             "APPROVAL_REJECTED",

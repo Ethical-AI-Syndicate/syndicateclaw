@@ -92,6 +92,15 @@ async def checkpoint_handler(state: dict[str, Any], context: ExecutionContext) -
 
 async def approval_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
     """Creates an approval request and pauses execution until approved."""
+    resume = state.get("_approval_resume")
+    if isinstance(resume, dict) and resume.get("node_id") == context.node_id:
+        state["_approval_completed"] = {
+            "approval_id": str(resume.get("approval_id", "")),
+            "node_id": context.node_id,
+            "approved_at": _utcnow().isoformat(),
+        }
+        return NodeResult(output_state=state)
+
     request = ApprovalRequest(
         run_id=context.run_id,
         node_execution_id=context.config.get("node_execution_id", str(ULID())),
@@ -106,7 +115,14 @@ async def approval_handler(state: dict[str, Any], context: ExecutionContext) -> 
     state["_pending_approval"] = request.model_dump(mode="json")
     logger.info("approval.requested", run_id=context.run_id, approval_id=request.id)
 
-    raise WaitForApprovalError(f"Approval required: {request.id}")
+    raise WaitForApprovalError(
+        f"Approval required: {request.id}",
+        approval_id=request.id,
+        tool_name=request.tool_name or context.config.get("tool_name", "approval"),
+        node_id=context.node_id,
+        run_id=context.run_id,
+        persisted_state=state,
+    )
 
 
 async def llm_handler(state: dict[str, Any], context: ExecutionContext) -> NodeResult:
@@ -228,18 +244,23 @@ async def _emit_tool_call_audit(
     action: str,
     details: dict[str, Any],
 ) -> None:
-    if context.audit_service is None or not hasattr(context.audit_service, "record"):
+    if context.audit_service is None:
         return
-    await context.audit_service.record(
-        AuditEvent(
-            event_type=AuditEventType.TOOL_EXECUTION_STARTED,
-            actor="system:engine",
-            resource_type="tool",
-            resource_id=str(details.get("tool", "unknown")),
-            action=action,
-            details=details,
-        )
+    event = AuditEvent(
+        event_type=AuditEventType.TOOL_EXECUTION_STARTED,
+        actor="system:engine",
+        resource_type="tool",
+        resource_id=str(details.get("tool", "unknown")),
+        action=action,
+        details=details,
     )
+    try:
+        if hasattr(context.audit_service, "record"):
+            await context.audit_service.record(event)
+        elif hasattr(context.audit_service, "emit"):
+            await context.audit_service.emit(event)
+    except Exception:
+        logger.warning("llm_tool_call_audit_failed", action=action, exc_info=True)
 
 
 async def _process_llm_tool_calls(
@@ -306,29 +327,49 @@ async def _process_llm_tool_calls(
             continue
 
         if decision == PolicyEffect.REQUIRE_APPROVAL:
-            approval = ApprovalRequest(
-                run_id=context.run_id,
-                node_execution_id=context.config.get("node_execution_id", str(ULID())),
-                tool_name=name,
-                action_description=f"LLM tool call requires approval: {name}",
-                risk_level=tool_def.tool.risk_level,
-                requested_by="system:engine",
-                expires_at=_utcnow() + timedelta(hours=24),
-                context={"tool": name, "arguments": args},
-            )
-            state.setdefault("_pending_approvals", []).append(approval.model_dump(mode="json"))
+            resume = state.get("_approval_resume")
+            if (
+                isinstance(resume, dict)
+                and resume.get("node_id") == context.node_id
+                and resume.get("tool_name") == name
+            ):
+                await _emit_tool_call_audit(
+                    context,
+                    action="llm.tool_call_approved",
+                    details={"tool": name, "approval_id": str(resume.get("approval_id", ""))},
+                )
+            else:
+                approval = ApprovalRequest(
+                    run_id=context.run_id,
+                    node_execution_id=context.config.get("node_execution_id", str(ULID())),
+                    tool_name=name,
+                    action_description=f"LLM tool call requires approval: {name}",
+                    risk_level=tool_def.tool.risk_level,
+                    requested_by="system:engine",
+                    expires_at=_utcnow() + timedelta(hours=24),
+                    context={"tool": name, "arguments": args},
+                )
+                state.setdefault("_pending_approvals", []).append(approval.model_dump(mode="json"))
+                await _emit_tool_call_audit(
+                    context,
+                    action="llm.tool_call_requires_approval",
+                    details={"tool": name, "approval_id": approval.id},
+                )
+                raise WaitForApprovalError(
+                    f"Approval required: {approval.id}",
+                    approval_id=approval.id,
+                    tool_name=name,
+                    node_id=context.node_id,
+                    run_id=context.run_id,
+                    persisted_state=state,
+                )
+        else:
             await _emit_tool_call_audit(
                 context,
-                action="llm.tool_call_requires_approval",
-                details={"tool": name, "approval_id": approval.id},
+                action="llm.tool_call",
+                details={"tool": name},
             )
-            raise WaitForApprovalError(f"Approval required: {approval.id}")
 
-        await _emit_tool_call_audit(
-            context,
-            action="llm.tool_call",
-            details={"tool": name},
-        )
         tool_context = ExecutionContext(
             run_id=context.run_id,
             node_id=context.node_id,
