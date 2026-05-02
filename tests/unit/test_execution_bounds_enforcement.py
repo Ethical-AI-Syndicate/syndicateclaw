@@ -99,8 +99,7 @@ async def test_step_ceiling_raises_before_completing(monkeypatch: pytest.MonkeyP
         for i in range(1001)
     ]
     edges = [
-        EdgeDefinition(source_node_id=f"n{i}", target_node_id=f"n{i + 1}")
-        for i in range(1000)
+        EdgeDefinition(source_node_id=f"n{i}", target_node_id=f"n{i + 1}") for i in range(1000)
     ]
     workflow = _workflow(name="step-limit-test", nodes=nodes, edges=edges)
     run = _run(workflow)

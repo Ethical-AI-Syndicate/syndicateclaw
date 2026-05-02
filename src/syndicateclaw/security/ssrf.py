@@ -151,9 +151,7 @@ class PinnedIPAsyncTransport(httpx.AsyncBaseTransport):
         request_port = request.url.port or _default_port_for_scheme(request_scheme)
 
         if request_scheme != self._scheme:
-            raise SSRFError(
-                f"Scheme mismatch: request={request_scheme}, pinned={self._scheme}"
-            )
+            raise SSRFError(f"Scheme mismatch: request={request_scheme}, pinned={self._scheme}")
         if request_host != self._hostname:
             raise SSRFError(f"Host mismatch: request={request_host}, pinned={self._hostname}")
         if request_port != self._port:
