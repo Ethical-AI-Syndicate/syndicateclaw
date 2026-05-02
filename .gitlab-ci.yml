@@ -426,9 +426,10 @@ prod_release_gate:
 
 docker_build:
   stage: build
-  image: docker:24-dind
+  image: docker:24
   services:
-    - docker:24-dind
+    - name: docker:24-dind
+      command: ["--tls=false"]
   resource_group: ci-image-bound
   needs:
     - job: unit_tests
@@ -447,7 +448,20 @@ docker_build:
     IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
   before_script:
     - set -euo pipefail
-    - until docker info > /dev/null 2>&1; do echo "Waiting for Docker daemon..."; sleep 1; done
+    - |
+      docker_ready=false
+      for i in $(seq 1 60); do
+        if docker info > /dev/null 2>&1; then
+          docker_ready=true
+          break
+        fi
+        echo "Waiting for Docker daemon..."
+        sleep 2
+      done
+      if [ "${docker_ready}" != "true" ]; then
+        echo "ERROR: Docker daemon was not ready after waiting."
+        exit 1
+      fi
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
     - docker pull "$CI_REGISTRY_IMAGE:latest" || true
   script:
