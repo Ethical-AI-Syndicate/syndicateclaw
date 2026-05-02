@@ -18,6 +18,8 @@ from syndicateclaw.models import ApprovalRequest, ApprovalStatus, ToolRiskLevel
 router = APIRouter(prefix="/api/v1/gate/approvals", tags=["gate-approvals"])
 
 GATE_WORKFLOW_ID = "gate-sensitive-request-approval"
+DEP_CURRENT_ACTOR = Depends(get_current_actor)
+DEP_APPROVAL_SERVICE = Depends(get_approval_service)
 
 
 class GateApprovalCreateRequest(BaseModel):
@@ -47,8 +49,8 @@ class GateApprovalResponse(BaseModel):
 async def create_gate_approval(
     body: GateApprovalCreateRequest,
     request: Request,
-    actor: str = Depends(get_current_actor),
-    approval_service: Any = Depends(get_approval_service),
+    actor: str = DEP_CURRENT_ACTOR,
+    approval_service: Any = DEP_APPROVAL_SERVICE,
 ) -> GateApprovalResponse:
     session_factory = request.app.state.session_factory
     run_id, node_execution_id = await _ensure_gate_execution(session_factory, body, actor)
@@ -84,7 +86,7 @@ async def create_gate_approval(
 async def get_gate_approval(
     approval_id: str,
     request: Request,
-    actor: str = Depends(get_current_actor),
+    actor: str = DEP_CURRENT_ACTOR,
 ) -> GateApprovalResponse:
     from syndicateclaw.db.models import ApprovalRequest as ApprovalRequestRow
 
@@ -176,7 +178,11 @@ async def _ensure_gate_execution(
 
 
 def _to_response(approval: ApprovalRequest) -> GateApprovalResponse:
-    status_value = approval.status.value if hasattr(approval.status, "value") else str(approval.status)
+    status_value = (
+        approval.status.value
+        if hasattr(approval.status, "value")
+        else str(approval.status)
+    )
     return GateApprovalResponse(
         id=approval.id,
         status=status_value,
