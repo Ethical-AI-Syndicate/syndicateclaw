@@ -208,7 +208,7 @@ integration_tests:
 
 runtime_contract_schemas:
   stage: test
-  image: python:3.13-slim
+  image: ${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/python:3.13-slim
   resource_group: ci-cpu-bound
   needs: ["validate"]
   before_script:
