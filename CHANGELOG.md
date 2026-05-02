@@ -1,3 +1,22 @@
+## [2.1.2](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.1.1...v2.1.2) (2026-05-02)
+
+
+### Bug Fixes
+
+* **ci:** align coverage gate with current unit baseline ([e042f5f](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/e042f5f228969082885fae5e91e46256d4992a49))
+* **ci:** apply ruff formatting ([1716bcc](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/1716bcc71b160369d171370501ce4b4bc9380397))
+* **ci:** configure claw docker build daemon ([61ee9a8](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/61ee9a80c02b0b9aef1defd9dd5f1d848bdda82e))
+* **ci:** correct claw dependency proxy image paths ([de6ccb0](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/de6ccb0249383d12e5822921de52b31e87373462))
+* **ci:** make deploy jobs automatic ([db820b6](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/db820b6ac8ca303e67465ed10b2d24e68792b034))
+* **ci:** make release gates automatic ([82d64bb](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/82d64bbe19d360d86c362a06f89a0abe7f3f3437))
+* **ci:** pull claw build base image through proxy ([347f73b](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/347f73b41d0698031ef33c82844bef903bae5379))
+* **ci:** pull runtime schema image through proxy ([d42d9ab](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/d42d9abdc461574f5432ce1d7e3fffbfa9abc4ad))
+* **ci:** satisfy ruff fixture marker check ([cefb107](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/cefb1073e3dbbed3209f80d67ffc18140b14fa5d))
+* **ci:** stabilize claw integration gate ([76127fe](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/76127fee02f941418d9981695ac8c57bbfd3a334))
+* **ci:** use cached python image for runtime schemas ([19d8e17](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/19d8e17348a1494cf1f7f0fdecaa2bb6e37bd713))
+* **ci:** use proxy images across claw pipeline ([06c96e0](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/06c96e096d496c33c87cb41ebbcbb37056a6ebc2))
+* **readiness:** unblock first-value workflow validation ([d87c252](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/d87c2526c69045fd3e243088d889b3c5865a2580))
+
 ## [2.1.1](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.1.0...v2.1.1) (2026-04-23)
 
 
