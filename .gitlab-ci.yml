@@ -620,7 +620,7 @@ mutation_test:
 
 deploy_staging:
   stage: deploy
-  image: bitnami/kubectl:1.31.1
+  image: alpine/k8s:1.31.1
   needs:
     - docker_build
     - container_scan
@@ -642,7 +642,7 @@ deploy_staging:
 
 deploy_production:
   stage: deploy
-  image: bitnami/kubectl:1.31.1
+  image: alpine/k8s:1.31.1
   needs:
     - docker_build
     - container_scan
