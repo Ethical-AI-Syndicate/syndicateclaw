@@ -1,5 +1,6 @@
 # ---------- base ----------
-FROM python:3.14.3-alpine3.22 AS base
+ARG PYTHON_IMAGE=python:3.14.3-alpine3.22
+FROM ${PYTHON_IMAGE} AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

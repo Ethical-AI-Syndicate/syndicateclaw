@@ -464,9 +464,22 @@ docker_build:
         exit 1
       fi
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - |
+      if [ -n "${CI_DEPENDENCY_PROXY_SERVER:-}" ] && [ -n "${CI_DEPENDENCY_PROXY_USER:-}" ] && [ -n "${CI_DEPENDENCY_PROXY_PASSWORD:-}" ]; then
+        echo "$CI_DEPENDENCY_PROXY_PASSWORD" | docker login -u "$CI_DEPENDENCY_PROXY_USER" --password-stdin "$CI_DEPENDENCY_PROXY_SERVER"
+      fi
     - docker pull "$CI_REGISTRY_IMAGE:latest" || true
   script:
-    - docker build --pull --build-arg BUILDKIT_INLINE_CACHE=1 --cache-from "$CI_REGISTRY_IMAGE:latest" -t "$IMAGE_TAG" .
+    - |
+      PYTHON_IMAGE="python:3.14.3-alpine3.22"
+      if [ -n "${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX:-}" ]; then
+        PYTHON_IMAGE="${CI_DEPENDENCY_PROXY_GROUP_IMAGE_PREFIX}/library/python:3.14.3-alpine3.22"
+      fi
+      docker build --pull \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --build-arg PYTHON_IMAGE="$PYTHON_IMAGE" \
+        --cache-from "$CI_REGISTRY_IMAGE:latest" \
+        -t "$IMAGE_TAG" .
     - docker push "$IMAGE_TAG"
     - |
       if [ "${CI_COMMIT_BRANCH:-}" = "main" ]; then
