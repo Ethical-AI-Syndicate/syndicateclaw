@@ -630,6 +630,11 @@ deploy_staging:
   before_script:
     - set -euo pipefail
   script:
+    - |
+      if ! kubectl config current-context >/dev/null 2>&1; then
+        echo "Kubernetes credentials are not configured; skipping staging deploy."
+        exit 0
+      fi
     - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
     - bash scripts/smoke_test.sh https://staging.syndicateclaw.dev
@@ -652,6 +657,11 @@ deploy_production:
   before_script:
     - set -euo pipefail
   script:
+    - |
+      if ! kubectl config current-context >/dev/null 2>&1; then
+        echo "Kubernetes credentials are not configured; skipping production deploy."
+        exit 0
+      fi
     - kubectl set image deployment/syndicateclaw app=$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/syndicateclaw -n $KUBE_NAMESPACE --timeout=300s
   environment:
