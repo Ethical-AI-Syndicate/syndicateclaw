@@ -36,7 +36,13 @@ class ApprovalService:
     # Public API
     # ------------------------------------------------------------------
 
-    async def request_approval(self, request: ApprovalRequest, actor: str) -> ApprovalRequest:
+    async def request_approval(
+        self,
+        request: ApprovalRequest,
+        actor: str,
+        *,
+        resolve_authority: bool = True,
+    ) -> ApprovalRequest:
         """Create and persist a new approval request.
 
         If an authority resolver is configured, it overrides any client-supplied
@@ -48,7 +54,7 @@ class ApprovalService:
         request.status = ApprovalStatus.PENDING
         request.requested_by = actor
 
-        if self._authority_resolver:
+        if resolve_authority and self._authority_resolver:
             resolved = await self._authority_resolver.resolve(
                 tool_name=request.tool_name or "",
                 risk_level=request.risk_level,

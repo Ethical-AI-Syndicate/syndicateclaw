@@ -1,12 +1,17 @@
 # Python
 __pycache__/
 *.py[cod]
+*.pyc
+*.pyo
 *$py.class
 *.so
 *.egg-info/
 dist/
 build/
+bin/
 *.egg
+*.o
+*.a
 
 # Virtual environments
 .venv/
@@ -22,25 +27,50 @@ env/
 
 # Environment
 .env
+.env.*
 .env.local
 .env.*.local
 .env.dev
 .env.staging
 .env.prod
 .env.test
+!.env.example
 
 # Testing / Coverage
 .coverage
+coverage.out
+coverage.xml
+*.test
+testdata/tmp/
+junit.xml
+*-junit.xml
+.tmp-*.log
 htmlcov/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
 
 # Docker
+.docker/
 docker-compose.override.yml
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated files
+*.pb.go
+*_gen.go
+mocks/
+
+# Node
+node_modules/
+.next/
+out/
+
+# Local scripts
+scripts/local/
+*.local.sh
 
 # Local worktrees
 .worktrees/

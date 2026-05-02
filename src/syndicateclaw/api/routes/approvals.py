@@ -174,6 +174,20 @@ async def reject_request(
             detail=f"Approval is already in status {approval.status}",
         )
 
+    if approval.requested_by and actor == approval.requested_by:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Self-rejection prohibited: requester cannot reject their own request",
+        )
+
+    at_raw: Any = approval.assigned_to
+    assigned: list[str] = [str(x) for x in at_raw] if isinstance(at_raw, list) else []
+    if assigned and actor not in assigned:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Actor '{actor}' is not in the assigned approvers list",
+        )
+
     approval.status = ApprovalStatus.REJECTED.value
     approval.decided_by = actor
     approval.decided_at = datetime.now(UTC)

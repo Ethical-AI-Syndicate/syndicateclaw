@@ -20,6 +20,7 @@ PERMISSION_VOCABULARY: frozenset[str] = frozenset(
         "message:read",
         "message:ack",
         "approval:read",
+        "approval:request",
         "approval:decide",
         "approval:manage",
         "policy:read",

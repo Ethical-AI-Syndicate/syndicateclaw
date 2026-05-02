@@ -652,6 +652,19 @@ ROUTE_PERMISSION_MAP: dict[tuple[str, str], RouteAuthzSpec] = {
         legacy_check="authenticated_only",
         notes="Legacy: executor may 403 via ToolDeniedError (policy engine, not auth).",
     ),
+    # ── Gate approval bridge ───────────────────────────────────────────
+    ("POST", "/api/v1/gate/approvals"): RouteAuthzSpec(
+        permission="approval:request",
+        scope_resolver="platform",
+        legacy_check="authenticated_only",
+        notes="Gate runtime creates approval tasks before provider invocation.",
+    ),
+    ("GET", "/api/v1/gate/approvals/{approval_id}"): RouteAuthzSpec(
+        permission="approval:read",
+        scope_resolver="approval_by_id",
+        legacy_check="approval_visibility",
+        notes="Gate polls the same approval task by id until approved/rejected/expired.",
+    ),
     # ── Approvals ──────────────────────────────────────────────────────
     ("GET", "/api/v1/approvals/"): RouteAuthzSpec(
         permission="approval:read",
