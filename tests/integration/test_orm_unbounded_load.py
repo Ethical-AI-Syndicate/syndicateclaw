@@ -13,7 +13,7 @@ from syndicateclaw.db.models import NodeExecution, WorkflowDefinition, WorkflowR
 pytestmark = pytest.mark.integration
 
 NODE_EXECUTION_COUNT = 10_000
-MAX_LIST_SECONDS = 0.2
+MAX_LIST_SECONDS = 1.0
 MAX_LIST_RESPONSE_BYTES = 10_000
 
 

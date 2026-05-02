@@ -33,6 +33,7 @@ from syndicateclaw.models import (
     WorkflowRunStatus,
 )
 from syndicateclaw.orchestrator.engine import ExecutionContext, WorkflowEngine
+from syndicateclaw.orchestrator.exceptions import WaitForApprovalError
 from syndicateclaw.orchestrator.handlers import BUILTIN_HANDLERS
 
 pytestmark = pytest.mark.integration
@@ -218,7 +219,10 @@ async def test_approval_gate_blocks_and_unblocks_workflow_engine() -> None:
     run = WorkflowRun.new(workflow_id=wf.id, workflow_version="1.0", initiated_by="test")
     engine = WorkflowEngine(BUILTIN_HANDLERS)
     ctx = ExecutionContext(run_id=run.id)
-    result = await engine.execute(run, ctx, workflow=wf)
+    with pytest.raises(WaitForApprovalError):
+        await engine.execute(run, ctx, workflow=wf)
+
+    result = engine._runs[run.id]
     assert result.run.status == WorkflowRunStatus.WAITING_APPROVAL
     resumed = await engine.resume(run.id)
     assert resumed.run.status == WorkflowRunStatus.RUNNING

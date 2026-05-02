@@ -198,7 +198,7 @@ integration_tests:
   variables:
     SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED: "false"
   script:
-    - pytest tests/ -m integration -q --tb=line --junitxml=integration-junit.xml
+    - PYTHONPATH=src pytest tests/integration -m integration -q --tb=line --junitxml=integration-junit.xml
   artifacts:
     when: always
     reports:
