@@ -1,3 +1,10 @@
+## [2.2.3](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.2...v2.2.3) (2026-05-02)
+
+
+### Bug Fixes
+
+* **ci:** use available kubectl image ([89fc75c](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/89fc75cb861b5c6ad2efe12cc67164d79e8c3aaf))
+
 ## [2.1.2](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.1.1...v2.1.2) (2026-05-02)
 
 
