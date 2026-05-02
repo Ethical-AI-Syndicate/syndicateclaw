@@ -179,9 +179,7 @@ async def _ensure_gate_execution(
 
 def _to_response(approval: ApprovalRequest) -> GateApprovalResponse:
     status_value = (
-        approval.status.value
-        if hasattr(approval.status, "value")
-        else str(approval.status)
+        approval.status.value if hasattr(approval.status, "value") else str(approval.status)
     )
     return GateApprovalResponse(
         id=approval.id,
