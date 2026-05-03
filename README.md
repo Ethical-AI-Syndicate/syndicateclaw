@@ -28,54 +28,24 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture docum
 
 - **RBAC mode**: `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED` defaults to `true` (enforcement on). Set it to `false` to run shadow-only during a rollout window.
 - **API key scope model**: OAuth-style per-key scopes are stored and validated at key creation, but request authorization is still decided by the resolved actor's RBAC permissions (not by key scope alone).
-- **Python runtime**: SyndicateClaw requires Python 3.14.3+. If your target environment does not provide 3.14.3 packages yet, deploy via the project Docker image (`python:3.14.3-slim`) or stage a host runtime upgrade first.
+- **Python runtime**: SyndicateClaw requires Python 3.12 or newer, matching the verified package metadata.
 
 See [docs/operations.md](docs/operations.md) for runtime preflight checks and an upgrade path.
 
-## Quick Start
+## First Run
 
-### Docker Compose
+Install the SyndicateClaw package for your platform, then start the approval service:
 
 ```bash
-# Clone and start the stack
-git clone <repo-url> syndicateclaw
-cd syndicateclaw
-cp .env.example .env    # edit secrets before production use
-
-docker compose up -d
-
-# Verify
-curl http://localhost:8000/healthz
-# {"status": "ok"}
-
-# Run the first-value workflow API check
-./examples/first_value_workflow.sh
-
-# Open the API docs
-open http://localhost:8000/docs
+syndicateclaw start
 ```
 
-### Development Setup
+When Gate sends a sensitive request, SyndicateClaw creates a pending approval task. The operator approves or rejects that task from the approval surface, and Gate resumes or terminates the same request with the same correlation ID.
 
-Requires Python 3.14.3+, a running PostgreSQL instance, and optionally Redis.
+Verify readiness:
 
 ```bash
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate
-
-# Install with dev dependencies
-pip install -e ".[dev]"
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your DATABASE_URL, SECRET_KEY, etc.
-
-# Run database migrations
-alembic upgrade head
-
-# Start the dev server
-uvicorn syndicateclaw.api.main:app --reload --host 0.0.0.0 --port 8000
+curl http://localhost:8000/healthz
 ```
 
 ## API Endpoints
@@ -148,16 +118,11 @@ syndicateclaw/
 │   │   ├── models.py           #   ORM table definitions (10 tables)
 │   │   └── repository.py       #   Async CRUD repositories
 │   ├── models.py               # Domain models (Pydantic)
-│   └── config.py               # Settings (env vars + .env)
+│   └── config.py               # Runtime settings
 ├── tests/
 │   ├── conftest.py
 │   └── unit/
 │       └── test_models.py
-├── examples/
-│   ├── incident_triage.py      # Incident response workflow
-│   ├── knowledge_capture.py    # Knowledge extraction pipeline
-│   ├── outbound_comms.py       # Outbound communication workflow
-│   └── scheduled_memory_review.py  # Periodic memory review
 ├── migrations/                 # Alembic database migrations
 │   └── env.py
 ├── docs/
@@ -169,13 +134,12 @@ syndicateclaw/
 ├── Dockerfile                  # Multi-stage production image
 ├── pyproject.toml              # Project metadata and dependencies
 ├── alembic.ini                 # Alembic configuration
-├── .env.example                # Environment variable template
 └── .gitignore
 ```
 
 ## Configuration
 
-Configuration is loaded from environment variables with the `SYNDICATECLAW_` prefix. Copy `.env.example` to `.env` and edit:
+Configuration is loaded from environment variables with the `SYNDICATECLAW_` prefix:
 
 ```bash
 SYNDICATECLAW_DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/syndicateclaw
@@ -185,7 +149,7 @@ SYNDICATECLAW_LOG_LEVEL=INFO
 SYNDICATECLAW_OTEL_ENDPOINT=http://localhost:4317  # optional
 ```
 
-See [docs/operations.md](docs/operations.md) for the full configuration reference.
+The package bootstrap path supplies the verified defaults for first run. See [docs/operations.md](docs/operations.md) for the full operator configuration reference.
 
 ## Testing
 
