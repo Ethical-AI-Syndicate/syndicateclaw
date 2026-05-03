@@ -1,8 +1,8 @@
 # SyndicateClaw
 
-Production-oriented agent orchestration platform with stateful graph-based workflows, governance-first design, and full auditability.
+Runtime approval enforcement for sensitive AI execution.
 
-SyndicateClaw executes agent workflows as directed graphs where every tool invocation is policy-gated, every state transition is checkpointed, and every action is recorded in an append-only audit log. Built for teams that need to run autonomous agents in regulated or high-trust environments.
+SyndicateClaw is the approval service used by Gate when a policy marks a request as sensitive. It creates a real approval task, blocks execution until an authorized operator decides, and returns the approval or rejection decision to Gate with the same correlation ID.
 
 ## Architecture Overview
 
@@ -41,6 +41,8 @@ syndicateclaw start
 ```
 
 When Gate sends a sensitive request, SyndicateClaw creates a pending approval task. The operator approves or rejects that task from the approval surface, and Gate resumes or terminates the same request with the same correlation ID.
+
+The approval surface shows pending tasks immediately. A granted approval resumes the waiting Gate request; a rejection ends it cleanly with no provider call.
 
 Verify readiness:
 
