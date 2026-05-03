@@ -1,3 +1,11 @@
+## [2.2.5](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.4...v2.2.5) (2026-05-03)
+
+
+### Bug Fixes
+
+* **claw:** clarify Gate approval enforcement path ([c757103](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/c75710354e11444856be5851abc228852cc1d3fa))
+* **claw:** package-first first-run documentation ([4fc5e94](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/4fc5e940b8492dcc8b7121db097165eafeec51f3))
+
 ## [2.2.3](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.2...v2.2.3) (2026-05-02)
 
 
