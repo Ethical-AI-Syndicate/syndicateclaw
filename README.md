@@ -1,13 +1,13 @@
-# SyndicateClaw
+# Syndicate Claw
 
 Runtime approval enforcement for sensitive AI execution.
 
-SyndicateClaw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. When Gate receives a sensitive request, it creates a Claw approval task. The request blocks until an approver acts, then Gate resumes or terminates the same request with the same correlation ID.
+Syndicate Claw is the approval workflow engine for the AI Syndicate runtime execution enforcement suite. When Syndicate Gate receives a sensitive request, it creates a Syndicate Claw approval task. The request blocks until an approver acts, then Syndicate Gate resumes or terminates the same request with the same correlation ID.
 
 ## Gate Approval Path
 
-1. Gate receives a sensitive request and sends the approval checkpoint to SyndicateClaw.
-2. SyndicateClaw creates a pending approval task for an authorized operator.
+1. Gate receives a sensitive request and sends the approval checkpoint to Syndicate Claw.
+2. Syndicate Claw creates a pending approval task for an authorized operator.
 3. Gate blocks execution before the provider call while the approval is pending.
 4. Approval resumes the same Gate request; rejection terminates it cleanly with no provider call.
 
@@ -35,19 +35,19 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture docum
 
 - **RBAC mode**: `SYNDICATECLAW_RBAC_ENFORCEMENT_ENABLED` defaults to `true` (enforcement on). Set it to `false` to run shadow-only during a rollout window.
 - **API key scope model**: OAuth-style per-key scopes are stored and validated at key creation, but request authorization is still decided by the resolved actor's RBAC permissions (not by key scope alone).
-- **Python runtime**: SyndicateClaw requires Python 3.12 or newer, matching the verified package metadata.
+- **Python runtime**: Syndicate Claw requires Python 3.12 or newer, matching the verified package metadata.
 
 See [docs/operations.md](docs/operations.md) for runtime preflight checks and an upgrade path.
 
 ## First Run
 
-Install the SyndicateClaw package for your platform, then start the approval service:
+Install the Syndicate Claw package for your platform, then start the approval service:
 
 ```bash
 syndicateclaw start
 ```
 
-When Gate sends a sensitive request, SyndicateClaw creates a pending approval task. The operator approves or rejects that task from the approval surface, and Gate resumes or terminates the same request with the same correlation ID.
+When Gate sends a sensitive request, Syndicate Claw creates a pending approval task. The operator approves or rejects that task from the approval surface, and Gate resumes or terminates the same request with the same correlation ID.
 
 The approval surface shows pending tasks immediately. A granted approval resumes the waiting Gate request; a rejection ends it cleanly with no provider call.
 
@@ -186,7 +186,7 @@ ruff format --check src/ tests/
 
 ## Commercial Packaging
 
-SyndicateClaw is distributed as part of the AI Syndicate commercial enforcement suite. Package builds are intended for licensed enterprise deployments where Gate uses Claw to enforce human approval before sensitive AI execution.
+Syndicate Claw is distributed as part of the AI Syndicate commercial enforcement suite. Package builds are intended for licensed enterprise deployments where Gate uses Claw to enforce human approval before sensitive AI execution.
 
 ## License
 

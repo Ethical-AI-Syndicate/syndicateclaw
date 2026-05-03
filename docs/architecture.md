@@ -1,10 +1,10 @@
-# SyndicateClaw Architecture
+# Syndicate Claw Architecture
 
 ## System Overview
 
 When Gate receives a sensitive request, it creates a Claw approval task. The request blocks until an approver acts; approval resumes the same Gate request with the same correlation ID, and rejection terminates it cleanly with no provider call.
 
-SyndicateClaw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. Its workflow engine, policy checks, and audit trail support that Gate approval path while keeping every approval decision attributable and reconstructable.
+Syndicate Claw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. Its workflow engine, policy checks, and audit trail support that Gate approval path while keeping every approval decision attributable and reconstructable.
 
 ### Design Principles
 

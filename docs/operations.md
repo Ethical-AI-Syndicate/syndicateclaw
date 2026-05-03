@@ -1,6 +1,6 @@
-# SyndicateClaw Operations Guide
+# Syndicate Claw Operations Guide
 
-This document covers deployment, configuration, monitoring, maintenance, and troubleshooting for the SyndicateClaw platform.
+This document covers deployment, configuration, monitoring, maintenance, and troubleshooting for the Syndicate Claw platform.
 
 ---
 
@@ -12,7 +12,7 @@ The `docker-compose.yml` at the project root brings up three services:
 
 | Service | Image | Port | Purpose |
 |---|---|---|---|
-| `app` | Built from `Dockerfile` | 8000 | SyndicateClaw API |
+| `app` | Built from `Dockerfile` | 8000 | Syndicate Claw API |
 | `postgres` | `postgres:16` | 5432 | Primary data store |
 | `redis` | `redis:7-alpine` | 6379 | Memory cache |
 
@@ -46,7 +46,7 @@ docker compose logs -f app
 
 ### Syndicate Gate As The Preferred Provider
 
-SyndicateClaw can route chat and embedding traffic through Syndicate Gate using the same contract Syndicate Code uses for its preferred provider path:
+Syndicate Claw can route chat and embedding traffic through Syndicate Gate using the same contract Syndicate Code uses for its preferred provider path:
 
 - OpenAI-compatible base URL
 - Gate-issued API key in `SYNDICATEGATE_API_KEY`
@@ -65,7 +65,7 @@ docker compose -f docker-compose.yml -f docker-compose.syndicategate.yml up -d -
 
 This starts:
 
-- `app` — SyndicateClaw
+- `app` — Syndicate Claw
 - `postgres` / `redis` — Claw dependencies
 - `syndicategate` / `syndicategate-postgres` — Gate and its database
 
@@ -115,7 +115,7 @@ docker build -t syndicateclaw:latest .
 
 ### Python Runtime Availability and Upgrade Path
 
-SyndicateClaw targets **Python 3.14.3+**. Validate runtime availability in each target environment before cutover.
+Syndicate Claw requires **Python 3.12 or newer**, matching the verified package metadata. Validate runtime availability in each target environment before cutover.
 
 **Preflight checks (host deployments):**
 
@@ -224,7 +224,7 @@ Returns 200 with per-check status when all checks pass. Returns 503 with `{"stat
 
 ### Structured Logging
 
-SyndicateClaw uses `structlog` with JSON output. Every log line includes:
+Syndicate Claw uses `structlog` with JSON output. Every log line includes:
 
 - `timestamp` (ISO 8601)
 - `level` (debug, info, warning, error)
@@ -250,7 +250,7 @@ Audit events carry `trace_id` and `span_id` fields for correlation.
 **Recommended observability stack:**
 
 ```
-SyndicateClaw → OTLP gRPC → OpenTelemetry Collector → Jaeger / Tempo / Datadog
+Syndicate Claw → OTLP gRPC → OpenTelemetry Collector → Jaeger / Tempo / Datadog
 ```
 
 ### Key Metrics to Monitor
