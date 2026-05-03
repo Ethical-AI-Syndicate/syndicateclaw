@@ -2,7 +2,9 @@
 
 ## System Overview
 
-SyndicateClaw is a production-oriented agent orchestration platform built on stateful graph-based workflows. Inspired by LangGraph-style architecture, it takes a governance-first approach to agent execution — every action is auditable, every tool invocation is policy-gated, and every workflow state transition is recorded.
+When Gate receives a sensitive request, it creates a Claw approval task. The request blocks until an approver acts; approval resumes the same Gate request with the same correlation ID, and rejection terminates it cleanly with no provider call.
+
+SyndicateClaw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. Its workflow engine, policy checks, and audit trail support that Gate approval path while keeping every approval decision attributable and reconstructable.
 
 ### Design Principles
 

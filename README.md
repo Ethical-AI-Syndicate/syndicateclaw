@@ -2,7 +2,14 @@
 
 Runtime approval enforcement for sensitive AI execution.
 
-SyndicateClaw is the approval service used by Gate when a policy marks a request as sensitive. It creates a real approval task, blocks execution until an authorized operator decides, and returns the approval or rejection decision to Gate with the same correlation ID.
+SyndicateClaw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. When Gate receives a sensitive request, it creates a Claw approval task. The request blocks until an approver acts, then Gate resumes or terminates the same request with the same correlation ID.
+
+## Gate Approval Path
+
+1. Gate receives a sensitive request and sends the approval checkpoint to SyndicateClaw.
+2. SyndicateClaw creates a pending approval task for an authorized operator.
+3. Gate blocks execution before the provider call while the approval is pending.
+4. Approval resumes the same Gate request; rejection terminates it cleanly with no provider call.
 
 ## Architecture Overview
 
@@ -177,15 +184,10 @@ ruff format --check src/ tests/
 - [Failure Modes](docs/failure-modes.md) — failure scenarios, detection, mitigation, recovery procedures
 - [Operations](docs/operations.md) — deployment, configuration, monitoring, migrations, backup, scaling, troubleshooting
 
-## Contributing
+## Commercial Packaging
 
-1. Fork the repository and create a feature branch.
-2. Install dev dependencies: `pip install -e ".[dev]"`
-3. Run tests and linting before submitting: `pytest && ruff check src/ tests/ && mypy src/syndicateclaw`
-4. Write tests for new functionality.
-5. Follow the existing code style (enforced by ruff, configured in `pyproject.toml`).
-6. Submit a pull request with a clear description of the change.
+SyndicateClaw is distributed as part of the AI Syndicate commercial enforcement suite. Package builds are intended for licensed enterprise deployments where Gate uses Claw to enforce human approval before sensitive AI execution.
 
 ## License
 
-MIT
+Proprietary commercial license. Redistribution or standalone open source use is not permitted without a commercial agreement.
