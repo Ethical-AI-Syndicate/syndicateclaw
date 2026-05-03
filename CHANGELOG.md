@@ -1,3 +1,10 @@
+## [2.2.7](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.6...v2.2.7) (2026-05-03)
+
+
+### Bug Fixes
+
+* **claw:** align approval workflow positioning ([652fe33](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/652fe3339af3e539317837b6714809f9c3823970))
+
 ## [2.2.5](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.4...v2.2.5) (2026-05-03)
 
 
