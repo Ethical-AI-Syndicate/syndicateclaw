@@ -2,14 +2,29 @@
 
 ## System Overview
 
-When Gate receives a sensitive request, it creates a Claw approval task. The request blocks until an approver acts; approval resumes the same Gate request with the same correlation ID, and rejection terminates it cleanly with no provider call.
+Syndicate Claw is the governed execution plane for AI Syndicate. It executes
+workflow graphs, policy-gated tools, inference calls, runtime checkpoints, and
+replay. It also emits the runtime evidence needed to reconstruct what happened.
 
-Syndicate Claw is the enterprise approval add-on for the AI Syndicate runtime execution enforcement suite. Its workflow engine, policy checks, and audit trail support that Gate approval path while keeping every approval decision attributable and reconstructable.
+When Gate receives a sensitive request, it can create a Claw approval task. The
+request blocks until an approver acts; approval resumes the same Gate request
+with the same correlation ID, and rejection terminates it cleanly with no
+provider call.
+
+In standalone deployments, Claw may use its own local policy, approval, and
+audit services as the authority source. In enterprise deployments that install
+Claw, ControlPlane Enterprise is the only authority source. Claw verifies
+ControlPlane-issued authority before execution and emits correlated evidence
+back to ControlPlane. ControlPlane does not execute Claw workflows or dispatch
+Claw tools. Enterprise deployments may omit Claw and let Code execute locally;
+that fallback is outside Claw and requires evidence reconciliation into
+ControlPlane.
 
 ### Design Principles
 
 | Principle | Over | Rationale |
 |---|---|---|
+| **Authority separation** | Convenience | ControlPlane authorizes; Claw executes |
 | **Auditability** | Autonomy | Every action produces an audit event with actor attribution |
 | **Explicitness** | Convenience | Tools must be registered by hand; no auto-discovery or plugin loading |
 | **Replayability** | Speed | Checkpoints and append-only logs allow full run reconstruction |
@@ -48,6 +63,20 @@ Syndicate Claw is the enterprise approval add-on for the AI Syndicate runtime ex
 │  └──────────┘  └───────────┘  └─────────────┘              │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## Deployment Modes
+
+| Mode | Authority Source | Execution Source | Evidence Destination |
+|---|---|---|---|
+| Standalone | Claw local policy, approval, and audit services | Claw | Claw local audit store |
+| Enterprise with Claw | ControlPlane Enterprise | Claw | ControlPlane Enterprise ledger, with local Claw audit retained for replay |
+| Enterprise without Claw | ControlPlane Enterprise | Code local execution fallback | ControlPlane Enterprise ledger, with local Code evidence reconciled for replay |
+
+Enterprise mode with Claw requires a fail-closed authority adapter. If ControlPlane
+permit validation, approval binding, revocation checks, or evidence writes fail,
+Claw must not continue the governed execution step.
 
 ---
 

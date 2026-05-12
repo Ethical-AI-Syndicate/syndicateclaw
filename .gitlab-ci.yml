@@ -1,3 +1,8 @@
+include:
+  - project: 'ai-syndicate/ci-templates'
+    ref: main
+    file: '/templates/governance-semantics.yml'
+
 stages:
   - validate
   - test

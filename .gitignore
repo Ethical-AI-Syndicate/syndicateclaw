@@ -92,3 +92,17 @@ console/node_modules/
 .remember/
 patch.py
 .worktrees/
+
+# Local governance/evidence runtime outputs
+.faultline/
+faultline-report.html
+artifacts/governance/
+governance-evidence*.jsonl
+governance-events*.jsonl
+*.local-governance.jsonl
+*.attestation.local.json
+*.reconciliation.local.json
+*.ed25519
+*.ed25519.pub
+*.signing-key
+governance-signing-key*

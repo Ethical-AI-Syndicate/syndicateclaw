@@ -28,6 +28,18 @@ Missing Secret keys, failed Alembic migration, database DNS failure, Redis outag
 
 Application logs, init-container migration logs, audit/RBAC seed logs, readiness probe failures, provider timeout/error rates, and database pool errors must be captured from stdout/stderr and cluster events.
 
+## Governance State And Evidence Incidents
+
+Verification authority is `enterprise_operator` for deployed Claw runtimes.
+Capture policy decisions, approval records, run IDs, checkpoint identifiers,
+audit write failures, dead-letter state, and ControlPlane permit validation
+failures where enterprise mode is configured.
+
+Evidence continuity is not the same as reconstruction. If audit persistence,
+checkpoint verification, or ControlPlane evidence handoff fails, preserve the
+original records and document the discontinuity. Do not patch historical audit
+or checkpoint artifacts to make replay or evidence chains appear continuous.
+
 ## Restart Procedure
 
 Use Kubernetes rollout restart only after verifying migration state and dependency availability. Do not repeatedly restart during migration failures until the database revision is known.
