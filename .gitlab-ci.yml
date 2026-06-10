@@ -30,6 +30,9 @@ default:
       - api_failure
 
 variables:
+  SEMGREP_CI_IMAGE: "registry.mikeholownych.com/ai-syndicate/syndicateclaw/semgrep:1.91.0"
+  TRIVY_CI_IMAGE: "registry.mikeholownych.com/ai-syndicate/syndicateclaw/trivy:0.56.2"
+  K8S_CI_IMAGE: "registry.mikeholownych.com/ai-syndicate/syndicateclaw/alpine-k8s:1.31.1"
   DEBIAN_FRONTEND: "noninteractive"
   PIP_DISABLE_PIP_VERSION_CHECK: "1"
   PIP_DEFAULT_TIMEOUT: "120"
@@ -295,7 +298,7 @@ bandit_and_audit:
 
 semgrep_scan:
   stage: security
-  image: semgrep/semgrep:1.91.0
+  image: ${SEMGREP_CI_IMAGE}
   needs: ["validate"]
   before_script:
     - set -euo pipefail
@@ -497,7 +500,7 @@ container_scan:
   stage: build
   resource_group: ci-image-bound
   image:
-    name: aquasec/trivy:0.56.2
+    name: ${TRIVY_CI_IMAGE}
     entrypoint: [""]
   needs:
     - docker_build
@@ -625,7 +628,7 @@ mutation_test:
 
 deploy_staging:
   stage: deploy
-  image: alpine/k8s:1.31.1
+  image: ${K8S_CI_IMAGE}
   needs:
     - docker_build
     - container_scan
@@ -652,7 +655,7 @@ deploy_staging:
 
 deploy_production:
   stage: deploy
-  image: alpine/k8s:1.31.1
+  image: ${K8S_CI_IMAGE}
   needs:
     - docker_build
     - container_scan
