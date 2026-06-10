@@ -33,7 +33,7 @@ RUN pip install --no-cache-dir --prefix=/install .
 FROM base AS runtime
 
 RUN apk add --no-cache \
-    libpq \
+    "libpq>=17.10-r0" \
     libstdc++
 
 COPY --from=builder /install /usr/local
