@@ -163,6 +163,16 @@ enterprise_readiness_check:
     - ./scripts/enterprise-readiness-check.sh
   <<: *rules_mr_or_main
 
+ci_image_governance_advisory:
+  stage: validate
+  image: alpine:3.20
+  allow_failure: true
+  script:
+    - apk add --no-cache bash git
+    - git clone --depth 1 https://gitlab.mikeholownych.com/ai-syndicate/ci-templates.git /tmp/ci-templates
+    - ROOT_DIR="$CI_PROJECT_DIR" bash /tmp/ci-templates/scripts/check-ci-images.sh "$CI_PROJECT_DIR"
+  <<: *rules_mr_or_main
+
 security_review_check:
   stage: validate
   extends: .python_base_job
