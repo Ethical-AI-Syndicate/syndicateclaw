@@ -378,10 +378,50 @@ class TestReadinessProbeDesign:
             reload(main_mod)
             app = main_mod.create_app()
 
-        route_paths = {route.path for route in app.routes}
+        # Introspect via the OpenAPI schema (supported public contract) rather than
+        # walking app.routes, whose object types are framework-internal and vary
+        # across Starlette versions (e.g. _IncludedRouter exposes no `.path`).
+        route_paths = set(app.openapi()["paths"].keys())
         assert "/healthz" in route_paths, "Liveness probe missing"
         assert "/readyz" in route_paths, "Readiness probe missing"
         assert "/health" not in route_paths, "Old /health endpoint should be removed"
+
+    def test_liveness_and_readiness_have_distinct_semantics(self) -> None:
+        """Liveness proves the process is up; readiness fails closed when a
+        required dependency is unavailable. The two probes are distinct."""
+        import os
+
+        env_overrides = {
+            "SYNDICATECLAW_DATABASE_URL": "postgresql+asyncpg://syndicateclaw:syndicateclaw@postgres:5432/syndicateclaw_test",
+            "SYNDICATECLAW_SECRET_KEY": "test-secret-key-for-testing",
+        }
+        from starlette.testclient import TestClient
+
+        with patch.dict(os.environ, env_overrides):
+            from importlib import reload
+
+            import syndicateclaw.api.main as main_mod
+
+            reload(main_mod)
+            app = main_mod.create_app()
+
+            # Construct the client without entering the lifespan context, so
+            # runtime dependencies (DB/Redis) are intentionally absent and the
+            # readiness probe must fail closed.
+            client = TestClient(app, raise_server_exceptions=False)
+            live = client.get("/healthz")
+            ready = client.get("/readyz")
+
+        # Liveness: process is alive regardless of dependency state.
+        assert live.status_code == 200
+        assert live.json()["status"] == "ok"
+
+        # Readiness: must fail closed (non-2xx) when dependencies are not ready,
+        # and must be a distinct response from liveness.
+        assert ready.status_code == 503, (
+            "Readiness must fail closed (503) when dependencies are unavailable"
+        )
+        assert ready.status_code != live.status_code
 
 
 # ===========================================================================
