@@ -192,6 +192,25 @@ validate:
     expire_in: 7 days
   <<: *rules_mr_or_main
 
+release_provenance_check:
+  stage: validate
+  extends: .python_base_job
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq git gnupg
+  script:
+    - python3 scripts/release/generate_release_manifest.py
+    - |
+      if [ -n "${CI_COMMIT_TAG:-}" ]; then
+        python3 scripts/release/verify_release_provenance.py --require-signed
+      else
+        python3 scripts/release/verify_release_provenance.py
+      fi
+  artifacts:
+    paths:
+      - release_manifest.json
+    expire_in: 30 days
+  <<: *rules_mr_or_main
+
 unit_tests:
   stage: test
   extends: .python_base_job
