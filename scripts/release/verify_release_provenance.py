@@ -192,16 +192,74 @@ def main():
     # 6. Inventory legacy unsigned tags
     verdict["unsigned_legacy_tags"] = get_unsigned_legacy_tags(repo_path)
 
-    # 7. Check for signature: null in release-bound attestations
-    # Walk the directory for any governance/attestation files and fail if signature is null
-    for p in repo_path.glob("docs/evidence/**/*.json"):
-        try:
-            data = json.loads(p.read_text(encoding="utf-8"))
-            if "attestation" in p.name or "verdict" in p.name or "provenance" in p.name:
-                if data.get("signature") is None:
-                    verdict["errors"].append(f"Release-bound attestation {p.name} has null signature")
-        except Exception:
-            pass
+    # 7. Check for null-signature in RELEASE-BOUND attestations across the repo.
+    #    Broadened beyond docs/evidence/** so a release-bound attestation cannot
+    #    hide in another directory. Detection is strict: only artifacts that bind
+    #    themselves to a specific release (manifest shape, a version-like tag/release
+    #    field, or a release-typed artifact) are evaluated. Advisory/runtime evidence,
+    #    JSON Schemas, fixtures/examples, and the manifest itself are excluded, so the
+    #    scan does not false-positive on documentation-governance records that are
+    #    legitimately observable-only or self-declared non-release.
+    skip_dirs = {".git", ".worktrees", "node_modules", ".venv", "venv",
+                 "examples", "test", "tests", "testdata", "fixtures",
+                 "vendor", "templates", "__pycache__", "dist", "build"}
+    manifest_name = manifest_path.name
+
+    def _release_bound(data):
+        if not isinstance(data, dict):
+            return False
+        # Explicit opt-outs: advisory / observable-only / self-declared non-release.
+        if data.get("release_bound") is False:
+            return False
+        if str(data.get("enforcement_mode", "")).upper() == "OBSERVABLE_ONLY":
+            return False
+        if data.get("release_bound") is True:
+            return True
+        # Release-manifest shape.
+        if {"commit_sha", "tag", "manifest_hash"}.issubset(data.keys()):
+            return True
+        # Explicit release/tag reference with a version-like value.
+        for key in ("tag", "release_tag", "release", "release_ref"):
+            val = data.get(key)
+            if isinstance(val, str) and (val[:1] == "v" or val[:1].isdigit()):
+                return True
+        for key in ("artifact_type", "type", "event_class"):
+            val = data.get(key)
+            if isinstance(val, str) and "release" in val.lower():
+                return True
+        return False
+
+    def _effective_signature(data):
+        # Returns (has_signature_field, value); supports nested integrity.signature.
+        if isinstance(data, dict):
+            if "signature" in data:
+                return True, data.get("signature")
+            integ = data.get("integrity")
+            if isinstance(integ, dict) and "signature" in integ:
+                return True, integ.get("signature")
+        return False, None
+
+    for root, sub_dirs, files in os.walk(repo_path):
+        sub_dirs[:] = [d for d in sub_dirs if d not in skip_dirs]
+        for fn in files:
+            if not fn.endswith(".json"):
+                continue
+            if fn.endswith(".schema.json") or fn == manifest_name or fn == "release_manifest.json":
+                continue
+            low = fn.lower()
+            if any(tok in low for tok in ("placeholder", "template", "sample", "fixture", "example")):
+                continue
+            fpath = Path(root) / fn
+            try:
+                data = json.loads(fpath.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if not _release_bound(data):
+                continue
+            has_sig, sig = _effective_signature(data)
+            rel = fpath.relative_to(repo_path)
+            if not has_sig or sig is None or sig == "":
+                verdict["errors"].append(f"Release-bound attestation {rel} has null/missing signature")
 
     # Determine status
     if not verdict["errors"]:

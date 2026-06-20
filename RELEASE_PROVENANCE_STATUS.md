@@ -4,7 +4,7 @@ This file inventories the GPG signing status of historical release tags and docu
 
 ## 1. Policy Status
 
-- **Release Provenance Policy**: Active (governed by [docs/release/RELEASE_PROVENANCE_SPECIFICATION.md](file:///home/mike/Projects/ai-syndicate/syndicateclaw/docs/release/RELEASE_PROVENANCE_SPECIFICATION.md)).
+- **Release Provenance Policy**: Active (governed by [docs/release/RELEASE_PROVENANCE_SPECIFICATION.md](docs/release/RELEASE_PROVENANCE_SPECIFICATION.md)).
 - **Tagging Requirement**: New tags must be annotated and GPG-signed (`git tag -s`). Lightweight tags are prohibited.
 - **Manifest Requirement**: All release candidates must build a signed `release_manifest.json` before building production artifacts.
 
