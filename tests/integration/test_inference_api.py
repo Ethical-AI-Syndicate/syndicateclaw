@@ -48,15 +48,18 @@ INFERENCE_HTTP_ROUTES: frozenset[tuple[str, str]] = frozenset(
 
 
 def _collect_api_route_keys(app) -> set[tuple[str, str]]:
-    from fastapi.routing import APIRoute
-
+    """Collect (METHOD, path) keys from the OpenAPI schema (supported public
+    contract). Walking ``app.routes`` is unreliable across Starlette versions:
+    included routers may be opaque proxies (``_IncludedRouter``) that expose
+    neither their sub-routes nor ``.path``, which would make registered routes
+    appear missing."""
+    http_methods = {"get", "put", "post", "delete", "patch", "trace"}
     out: set[tuple[str, str]] = set()
-    for r in app.routes:
-        if isinstance(r, APIRoute):
-            for m in r.methods:
-                if m in ("HEAD", "OPTIONS"):
-                    continue
-                out.add((m, r.path))
+    for path, operations in app.openapi().get("paths", {}).items():
+        for method in operations:
+            if method.lower() not in http_methods:
+                continue
+            out.add((method.upper(), path))
     return out
 
 
