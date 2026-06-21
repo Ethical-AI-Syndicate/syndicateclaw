@@ -86,6 +86,13 @@ def main():
     parser.add_argument("--manifest", type=Path, default=Path("release_manifest.json"))
     parser.add_argument("--repo-path", type=Path, default=Path("."))
     parser.add_argument("--require-signed", action="store_true")
+    parser.add_argument(
+        "--expected-key-id",
+        type=str,
+        default=os.environ.get("RELEASE_SIGNING_KEY_ID") or os.environ.get("GPG_KEY_ID"),
+        help="If set (or RELEASE_SIGNING_KEY_ID/GPG_KEY_ID in env), the manifest "
+        "signer key id must match this value when a signature is present.",
+    )
     args = parser.parse_args()
 
     repo_path = args.repo_path.resolve()
@@ -98,6 +105,8 @@ def main():
         "tag": None,
         "signed_tag_verified": False,
         "manifest_signature_verified": False,
+        "signer_key_id": None,
+        "signature_algorithm": None,
         "unsigned_legacy_tags": [],
         "errors": [],
         "warnings": [],
@@ -127,7 +136,10 @@ def main():
     orig_hash = manifest.get("manifest_hash")
     orig_sig = manifest.get("signature")
     orig_key_id = manifest.get("signer_key_id")
+    orig_algo = manifest.get("signature_algorithm")
     orig_status = manifest.get("verification_status")
+    verdict["signer_key_id"] = orig_key_id
+    verdict["signature_algorithm"] = orig_algo
     
     # Exclude mutable verification fields to check hash determinism
     calc_manifest = manifest.copy()
@@ -145,11 +157,26 @@ def main():
 
     # 2. Verify GPG signature if present
     if orig_sig:
+        # Only the GPG algorithm is supported by this verifier contract.
+        if orig_algo != "gpg":
+            verdict["errors"].append(
+                f"Unsupported signature_algorithm {orig_algo!r}; expected 'gpg'"
+            )
         sig_ok = verify_gpg_signature(calc_hash, orig_sig, orig_key_id)
         if sig_ok:
             verdict["manifest_signature_verified"] = True
         else:
             verdict["errors"].append(f"GPG signature verification failed for key {orig_key_id}")
+        # If an expected signer key id is supplied, the manifest must match it.
+        # GPG key ids appear in short (16-char) or full (40-char fingerprint)
+        # forms, so compare by suffix, case-insensitively.
+        if args.expected_key_id and orig_key_id:
+            exp = args.expected_key_id.upper().replace(" ", "")
+            got = str(orig_key_id).upper().replace(" ", "")
+            if not (exp.endswith(got) or got.endswith(exp)):
+                verdict["errors"].append(
+                    f"Signer key id {orig_key_id} does not match expected key id"
+                )
     else:
         if args.require_signed or orig_status == "signed":
             verdict["errors"].append("Signed provenance required but no signature found in manifest")

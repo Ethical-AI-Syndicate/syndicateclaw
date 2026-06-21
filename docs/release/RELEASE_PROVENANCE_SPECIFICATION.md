@@ -83,3 +83,50 @@ If GPG keys or passphrases are missing:
 - Manifest generation falls back to an unsigned draft manifest (`signature: null`, `verification_status: "unsigned"`).
 - Verification fails if signed verification is required, or passes with warnings stating that `signed release provenance` is **not proven**.
 - No repo may claim signed release provenance without a verifiable signature.
+
+## 8. CI Signing Dry-Run (Non-Tag Positive Proof) — SDD-GATE-SIGNING-001
+
+**Signing architecture (Option A — GPG in CI).** Manifest signing is GPG. The
+generator (`scripts/release/generate_release_manifest.py`) produces a detached,
+ASCII-armored signature over `manifest_hash` and embeds it in the manifest
+(`signature`, `signer_key_id`, `signature_algorithm: "gpg"`). The generator
+signs **non-interactively** with passphrase-protected keys via
+`--pinentry-mode loopback` and a passphrase read from a dedicated file
+descriptor — never from argv. Container-image signing uses cosign separately and
+is **not** part of this JSON-manifest contract; do not switch manifest signing to
+cosign without rewriting `verify_release_provenance.py`.
+
+**Required CI variables** (protected group variables, exposed only on protected
+branches/tags):
+- `GPG_PRIVATE_KEY` — ASCII-armored private key (imported into an ephemeral
+  `GNUPGHOME`). Note: this variable is **not masked**, so it must never be echoed.
+- `GPG_PASSPHRASE` (or `RELEASE_SIGNING_PASSPHRASE`) — signing passphrase.
+- `GPG_KEY_ID` (or `RELEASE_SIGNING_KEY_ID`) — expected signer key id; the
+  verifier rejects a manifest whose `signer_key_id` does not match it.
+
+**Secret-handling rules.**
+- Import the key under `set +x`; never `echo`/`cat`/print key or passphrase.
+- Never pass the passphrase via argv (use `--passphrase-fd`).
+- Use an ephemeral `GNUPGHOME="$(mktemp -d)"`, removed via `trap ... EXIT`.
+- Never commit key material; artifacts contain only the verification verdict JSON.
+
+**Non-tag dry-run behavior.** The `release_manifest_signing_dry_run` CI job runs
+as a **manual job on the protected default branch (`main`)**, where the protected
+GPG variables are exposed (default-branch evidence is the proof of record). It
+generates a signed manifest with `--require-signing`
+(an unsigned result fails the job closed), then runs the verifier and asserts
+`manifest_signature_verified == true`, `signature_algorithm == "gpg"`, and no
+errors. It does **not** create a tag, does **not** deploy, and does **not**
+require a signed tag.
+
+**Release-tag requirement for full closure.** Full `--require-signed` verification
+requires **both** a signed manifest **and** an `annotated_signed` tag. The dry-run
+deliberately does not require the tag.
+
+**Proven vs not proven.**
+- *Proven by the dry-run:* signed manifest generation and signature verification
+  with the real protected key, non-interactively, in CI.
+- *Not proven by the dry-run:* signed-release closure. **Manifest signing dry-run
+  proves signed manifest generation and verification. It does not prove signed
+  release closure unless the release tag is also annotated and signed.** No
+  production-readiness claim is implied.
