@@ -1,3 +1,10 @@
+## [2.2.9](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.8...v2.2.9) (2026-06-21)
+
+
+### Bug Fixes
+
+* **claw:** restore runtime health and inference pipeline ([915a49f](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/915a49f9a1eac9d4e6667ed6c37356547a46ce25))
+
 ## [2.2.7](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.6...v2.2.7) (2026-05-03)
 
 
