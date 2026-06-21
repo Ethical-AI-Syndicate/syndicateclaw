@@ -104,8 +104,11 @@ def get_previous_release(tag_name: str) -> str | None:
     return None
 
 def detect_gpg_key() -> str | None:
-    if os.environ.get("RELEASE_SIGNING_KEY_ID"):
-        return os.environ.get("RELEASE_SIGNING_KEY_ID")
+    # Explicit env override (release tooling: RELEASE_SIGNING_KEY_ID; CI custody: GPG_KEY_ID).
+    for env_name in ("RELEASE_SIGNING_KEY_ID", "GPG_KEY_ID"):
+        val = os.environ.get(env_name)
+        if val:
+            return val
     keys = run_cmd(["gpg", "--list-secret-keys", "--with-colons"])
     if keys:
         for line in keys.splitlines():
@@ -114,20 +117,64 @@ def detect_gpg_key() -> str | None:
                 return parts[4]
     return None
 
+def _detect_passphrase() -> str | None:
+    # RELEASE_SIGNING_PASSPHRASE preferred; GPG_PASSPHRASE is the CI custody variable.
+    return os.environ.get("RELEASE_SIGNING_PASSPHRASE") or os.environ.get("GPG_PASSPHRASE")
+
 def sign_hash(manifest_hash: str, key_id: str) -> tuple[str | None, str | None]:
+    """Produce a detached, ASCII-armored GPG signature over ``manifest_hash``.
+
+    Supports passphrase-protected keys non-interactively via loopback pinentry.
+    The passphrase is passed on a dedicated file descriptor (never via argv) so
+    it cannot appear in process listings or logs. The data to sign is fed on
+    stdin. Neither the passphrase nor any key material is logged.
+    """
     if not key_id:
         return None, None
+    base = [
+        "gpg", "--local-user", key_id,
+        "--detach-sign", "--armor",
+        "--batch", "--yes", "--no-tty",
+        "--pinentry-mode", "loopback",
+    ]
+    passphrase = _detect_passphrase()
     try:
-        p = subprocess.run(
-            ["gpg", "--local-user", key_id, "--detach-sign", "--armor", "--batch", "--no-tty"],
-            input=manifest_hash.encode("utf-8"),
-            capture_output=True,
-            check=True
-        )
+        if passphrase:
+            # Passphrase travels on a private pipe fd, not argv.
+            read_fd, write_fd = os.pipe()
+            try:
+                os.write(write_fd, (passphrase + "\n").encode("utf-8"))
+            finally:
+                os.close(write_fd)
+            try:
+                p = subprocess.run(
+                    base + ["--passphrase-fd", str(read_fd)],
+                    input=manifest_hash.encode("utf-8"),
+                    capture_output=True,
+                    check=True,
+                    pass_fds=(read_fd,),
+                )
+            finally:
+                os.close(read_fd)
+        else:
+            p = subprocess.run(
+                base,
+                input=manifest_hash.encode("utf-8"),
+                capture_output=True,
+                check=True,
+            )
         signature = p.stdout.decode("utf-8").strip()
+        if not signature:
+            return None, None
         return signature, "gpg"
-    except Exception as e:
-        print(f"Warning: GPG signing failed (passphrase may be required): {e}", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        # gpg stderr never contains the passphrase or key material; surface a
+        # bounded tail to aid debugging without leaking secrets.
+        detail = (e.stderr.decode("utf-8", "replace").strip().splitlines() or [""])[-1]
+        print(f"Warning: GPG signing failed ({detail[:200]}).", file=sys.stderr)
+        return None, None
+    except Exception:
+        print("Warning: GPG signing failed (key/passphrase unavailable).", file=sys.stderr)
         return None, None
 
 def main():
@@ -138,6 +185,12 @@ def main():
     parser.add_argument("--artifacts", nargs="*", default=[])
     parser.add_argument("--key-id", type=str)
     parser.add_argument("--out", type=Path, default=Path("release_manifest.json"))
+    parser.add_argument(
+        "--require-signing",
+        action="store_true",
+        help="Exit non-zero if a signature is not produced (for signed dry-runs). "
+        "Without this flag, signing failure falls back to an unsigned manifest.",
+    )
     args = parser.parse_args()
 
     repo_path = args.repo_path.resolve()
@@ -189,6 +242,7 @@ def main():
 
     # Signing step
     key_id = args.key_id or detect_gpg_key()
+    signed = False
     if key_id:
         signature, algo = sign_hash(manifest_hash, key_id)
         if signature:
@@ -196,6 +250,7 @@ def main():
             manifest["signature_algorithm"] = algo
             manifest["signature"] = signature
             manifest["verification_status"] = "signed"
+            signed = True
         else:
             print("Warning: Signing failed. Manifest remains unsigned.", file=sys.stderr)
     else:
@@ -204,6 +259,15 @@ def main():
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, sort_keys=True)
     print(f"Release manifest written to {args.out} (status: {manifest['verification_status']})")
+
+    # Fail closed for signed dry-runs: an unsigned result must not pass silently.
+    if args.require_signing and not signed:
+        print(
+            "ERROR: --require-signing was set but the manifest is unsigned "
+            "(no signing key, or signing failed).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

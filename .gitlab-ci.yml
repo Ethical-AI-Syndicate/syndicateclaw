@@ -733,3 +733,67 @@ release:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
       when: on_success
+
+# Phase 3 positive signing dry-run (SDD-GATE-SIGNING-001).
+# Proves a real, protected GPG key can sign the release manifest
+# non-interactively in CI and that the signature verifies. Runs as a MANUAL job
+# on the protected default branch (main), where the protected GPG_* variables
+# are exposed. It does NOT create a tag,
+# does NOT deploy, and does NOT require a signed tag. An unsigned result fails
+# the job closed via --require-signing. Key material and passphrase are never
+# echoed; the ephemeral GNUPGHOME is always removed.
+release_manifest_signing_dry_run:
+  stage: validate
+  image: python:3.12-alpine
+  needs: []
+  before_script:
+    - apk add --no-cache git gnupg
+  script:
+    - |
+      set -e
+      if [ -z "${GPG_PRIVATE_KEY:-}" ]; then
+        echo "GPG_PRIVATE_KEY is not exposed on this ref (protected variable)."
+        echo "This signing dry-run must run on a protected branch/ref; failing closed."
+        exit 1
+      fi
+      export GNUPGHOME="$(mktemp -d)"
+      chmod 700 "$GNUPGHOME"
+      cleanup() { gpgconf --kill all >/dev/null 2>&1 || true; rm -rf "$GNUPGHOME"; }
+      trap cleanup EXIT
+      printf 'allow-loopback-pinentry\n' > "$GNUPGHOME/gpg-agent.conf"
+      # --- secret-sensitive: import key without ever echoing it. Tolerate the
+      #     common CI storage formats (raw armored, base64, or backslash-n
+      #     escaped) so the proof does not depend on how the variable was set. ---
+      set +x
+      import_key() {
+        printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>/tmp/imp.err && return 0
+        printf '%s'    "$GPG_PRIVATE_KEY" | base64 -d 2>/dev/null | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        printf '%b'    "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        return 1
+      }
+      if ! import_key; then
+        echo "GPG private key import failed (tried raw, base64, and escaped forms)."
+        echo "Sanitized gpg stderr (key/base64 lines stripped):"
+        grep -av -E 'BEGIN|END|^[A-Za-z0-9+/=]{16,}$' /tmp/imp.err 2>/dev/null | tail -8 || true
+        exit 1
+      fi
+      # --- end secret-sensitive ---
+      echo "Imported secret key id(s) (public info):"
+      gpg --list-secret-keys --keyid-format=long 2>/dev/null | awk '/^sec/{print "  "$2}'
+      # Generator reads GPG_KEY_ID + GPG_PASSPHRASE from env; --require-signing
+      # makes an unsigned result fail the job instead of passing silently.
+      python3 scripts/release/generate_release_manifest.py --out signed_manifest.json --require-signing
+      # Verifier enforces signature + algorithm + (env GPG_KEY_ID) signer match.
+      # Advisory on the tag (no signed tag required for a dry-run).
+      python3 scripts/release/verify_release_provenance.py --manifest signed_manifest.json --repo-path . > signing_verification.json || true
+      cat signing_verification.json
+      python3 -c "import json,sys; d=json.load(open('signing_verification.json')); ok = d.get('manifest_signature_verified') is True and d.get('signature_algorithm')=='gpg' and not d.get('errors'); print('SIGNING DRY-RUN:', 'PASS' if ok else 'FAIL', '| signer_key_id=', d.get('signer_key_id')); sys.exit(0 if ok else 1)"
+  artifacts:
+    paths:
+      - signing_verification.json
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+      allow_failure: true
+
