@@ -130,3 +130,9 @@ deliberately does not require the tag.
   proves signed manifest generation and verification. It does not prove signed
   release closure unless the release tag is also annotated and signed.** No
   production-readiness claim is implied.
+
+## Signed-tag dry-run (SDD-GOV-SIGNTAG-001)
+
+The full `--require-signed` path (signed manifest **and** cryptographically
+verified annotated signed tag) is proven without creating or pushing a
+production release tag. See [SIGNED_TAG_DRY_RUN.md](./SIGNED_TAG_DRY_RUN.md).

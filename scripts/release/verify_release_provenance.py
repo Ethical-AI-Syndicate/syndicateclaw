@@ -81,6 +81,43 @@ def verify_gpg_signature(manifest_hash: str, signature: str, key_id: str) -> boo
         except Exception:
             return False
 
+def verify_tag_signature(tag_name, repo_path):
+    """Cryptographically verify an annotated tag's GPG signature.
+
+    Runs ``git verify-tag --raw`` and parses GnuPG status lines. Returns
+    ``(verified, signer_key)``. ``verified`` is True only when GnuPG reports
+    both GOODSIG and VALIDSIG and git exits 0. ``signer_key`` is the signing
+    key fingerprint (VALIDSIG) or long key id (GOODSIG) when available. The
+    signer's public key must be present in the active keyring (GNUPGHOME) for
+    verification to succeed; structural presence of a PGP block is not enough.
+    """
+    if not tag_name or tag_name == "absent":
+        return False, None
+    try:
+        res = subprocess.run(
+            ["git", "verify-tag", "--raw", tag_name],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+        )
+    except Exception:
+        return False, None
+    status = (res.stderr or "") + "\n" + (res.stdout or "")
+    good = False
+    valid = False
+    signer = None
+    for line in status.splitlines():
+        if not line.startswith("[GNUPG:]"):
+            continue
+        parts = line.split()
+        if len(parts) >= 3 and parts[1] == "GOODSIG":
+            good = True
+            signer = signer or parts[2]
+        elif len(parts) >= 3 and parts[1] == "VALIDSIG":
+            valid = True
+            signer = parts[2]
+    return (res.returncode == 0 and good and valid), signer
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=Path("release_manifest.json"))
@@ -106,6 +143,7 @@ def main():
         "signed_tag_verified": False,
         "manifest_signature_verified": False,
         "signer_key_id": None,
+        "tag_signer_key_id": None,
         "signature_algorithm": None,
         "unsigned_legacy_tags": [],
         "errors": [],
@@ -189,8 +227,31 @@ def main():
     if actual_tag_type != expected_tag_type:
         verdict["errors"].append(f"Tag type mismatch! Recorded: {expected_tag_type}, Actual: {actual_tag_type}")
 
+    # A signed tag is only "verified" when its GPG signature cryptographically
+    # checks out (git verify-tag) AND, when an expected key id is supplied, the
+    # tag signer matches it. Structural presence of a PGP block is necessary but
+    # not sufficient. This never weakens --require-signed; it strengthens it.
     if actual_tag_type == "annotated_signed":
-        verdict["signed_tag_verified"] = True
+        tag_sig_ok, tag_signer = verify_tag_signature(manifest.get("tag"), repo_path)
+        verdict["tag_signer_key_id"] = tag_signer
+        key_ok = True
+        if args.expected_key_id and tag_signer:
+            exp = args.expected_key_id.upper().replace(" ", "")
+            got = str(tag_signer).upper().replace(" ", "")
+            key_ok = exp.endswith(got) or got.endswith(exp)
+        if tag_sig_ok and key_ok:
+            verdict["signed_tag_verified"] = True
+        elif not tag_sig_ok:
+            if args.require_signed:
+                verdict["errors"].append(
+                    "Annotated tag signature failed cryptographic "
+                    "verification (git verify-tag)"
+                )
+            verdict["not_proven"].append("signed tag (cryptographic)")
+        else:
+            verdict["errors"].append(
+                f"Tag signer key {tag_signer} does not match expected key id"
+            )
     else:
         if args.require_signed:
             verdict["errors"].append(f"Signed annotated tag required but found tag type: {actual_tag_type}")
