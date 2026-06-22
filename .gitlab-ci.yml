@@ -800,3 +800,92 @@ release_manifest_signing_dry_run:
       when: manual
       allow_failure: true
 
+
+# Signed-tag dry-run (SDD-GOV-SIGNTAG-001).
+# Proves the FULL --require-signed path verifies BOTH a signed release manifest
+# AND an annotated signed tag, using the real protected GPG key. It creates a
+# LOCAL-ONLY, non-release, non-semver annotated signed tag, generates a signed
+# manifest bound to that tag, and runs the verifier in full signed mode
+# (--require-signed + --expected-key-id). The tag is NEVER pushed (asserted
+# against origin) and is deleted in a cleanup trap. This job does NOT create a
+# release tag, does NOT push, and does NOT deploy. It is MANUAL on the protected
+# default branch (main), where GPG_* protected variables are exposed; on any
+# other ref it fails closed because the protected key is absent. Key material and
+# passphrase are never echoed; the ephemeral GNUPGHOME is always removed.
+release_signed_tag_dry_run:
+  stage: validate
+  image: python:3.12-alpine
+  needs: []
+  before_script:
+    - apk add --no-cache git gnupg
+  script:
+    - |
+      set -e
+      if [ -z "${GPG_PRIVATE_KEY:-}" ]; then
+        echo "GPG_PRIVATE_KEY is not exposed on this ref (protected variable)."
+        echo "This signed-tag dry-run must run on a protected branch/ref; failing closed."
+        exit 1
+      fi
+      if [ -z "${GPG_KEY_ID:-}" ]; then
+        echo "GPG_KEY_ID is required to assert the tag signer identity; failing closed."
+        exit 1
+      fi
+      export GNUPGHOME="$(mktemp -d)"
+      chmod 700 "$GNUPGHOME"
+      TAG="provenance-ci-test/${CI_PIPELINE_ID:-local}/${CI_COMMIT_SHORT_SHA:-nohead}"
+      cleanup() {
+        git tag -d "$TAG" >/dev/null 2>&1 || true
+        gpgconf --kill all >/dev/null 2>&1 || true
+        rm -rf "$GNUPGHOME" >/dev/null 2>&1 || true
+      }
+      trap cleanup EXIT
+      printf 'allow-loopback-pinentry\n' > "$GNUPGHOME/gpg-agent.conf"
+      # --- secret-sensitive: import key + stage passphrase, never echoed ---
+      set +x
+      import_key() {
+        if [ -f "$GPG_PRIVATE_KEY" ]; then
+          gpg --batch --import "$GPG_PRIVATE_KEY" >/dev/null 2>/tmp/imp.err && return 0
+        fi
+        printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        printf '%s'    "$GPG_PRIVATE_KEY" | base64 -d 2>/dev/null | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        printf '%b'    "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        return 1
+      }
+      if ! import_key; then
+        echo "GPG private key import failed (tried raw, base64, and escaped forms)."
+        echo "Sanitized gpg stderr (key/base64 lines stripped):"
+        grep -av -E 'BEGIN|END|^[A-Za-z0-9+/=]{16,}$' /tmp/imp.err 2>/dev/null | tail -8 || true
+        exit 1
+      fi
+      : "${GPG_PASSPHRASE:=}"
+      printf '%s' "$GPG_PASSPHRASE" > "$GNUPGHOME/pp"
+      chmod 600 "$GNUPGHOME/pp"
+      printf '#!/bin/sh\nexec gpg --pinentry-mode loopback --passphrase-file "$GNUPGHOME/pp" --batch --no-tty "$@"\n' > "$GNUPGHOME/gpgwrap.sh"
+      chmod 700 "$GNUPGHOME/gpgwrap.sh"
+      # --- end secret-sensitive ---
+      echo "Imported secret key id(s) (public info):"
+      gpg --list-secret-keys --keyid-format=long 2>/dev/null | awk '/^sec/{print "  "$2}'
+      # Create a LOCAL-ONLY, non-release, non-semver annotated SIGNED tag.
+      git config gpg.program "$GNUPGHOME/gpgwrap.sh"
+      git -c user.email="release-ci@local" -c user.name="release-ci" \
+          -c user.signingkey="$GPG_KEY_ID" \
+          tag -s -m "signed-tag provenance dry-run (local-only, never pushed)" "$TAG"
+      echo "Created local annotated signed tag: $TAG"
+      git verify-tag "$TAG"
+      # Generate a signed manifest bound to the tag, then verify in FULL signed mode.
+      python3 scripts/release/generate_release_manifest.py --tag "$TAG" --out signed_tag_manifest.json --require-signing
+      python3 scripts/release/verify_release_provenance.py --manifest signed_tag_manifest.json --repo-path . --require-signed --expected-key-id "$GPG_KEY_ID" > signed_tag_verification.json || true
+      cat signed_tag_verification.json
+      # Assert the temp tag was NOT pushed to origin (must be absent).
+      if [ -n "$(git ls-remote --tags origin "refs/tags/$TAG" 2>/dev/null)" ]; then
+        echo "FATAL: temp tag unexpectedly present on origin"; exit 1
+      fi
+      echo "Confirmed: $TAG is absent on origin (never pushed)."
+      python3 -c "import json,sys,os; d=json.load(open('signed_tag_verification.json')); kid=os.environ.get('GPG_KEY_ID','').upper().replace(' ',''); ts=str(d.get('tag_signer_key_id') or '').upper().replace(' ',''); keym=bool(ts) and (ts.endswith(kid) or kid.endswith(ts)); ok=d.get('status')=='pass' and d.get('signed_tag_verified') is True and d.get('manifest_signature_verified') is True and keym and not d.get('errors'); print('SIGNED-TAG DRY-RUN:', 'PASS' if ok else 'FAIL', '| signed_tag_verified=', d.get('signed_tag_verified'), '| manifest_signature_verified=', d.get('manifest_signature_verified'), '| tag_signer=', d.get('tag_signer_key_id')); sys.exit(0 if ok else 1)"
+  artifacts:
+    paths:
+      - signed_tag_verification.json
+    expire_in: 30 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
