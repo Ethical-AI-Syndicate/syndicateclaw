@@ -1,3 +1,10 @@
+## [2.2.10](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.9...v2.2.10) (2026-06-22)
+
+
+### Bug Fixes
+
+* **ci:** keep release_signed_tag_dry_run non-blocking (allow_failure: true) ([ed46168](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/commit/ed4616803511cfc02bf7655c65ea536f45eb09a1))
+
 ## [2.2.9](https://gitlab.mikeholownych.com/ai-syndicate/[secure]/compare/v2.2.8...v2.2.9) (2026-06-21)
 
 
