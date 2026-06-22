@@ -192,6 +192,25 @@ validate:
     expire_in: 7 days
   <<: *rules_mr_or_main
 
+# Release/deploy gating policy check (SDD-GOV-SIGNTAG-001 follow-up;
+# [claw-release-flow-gating]). Statically proves that no release-cutting,
+# tag-creating, or deploy job can run AUTOMATICALLY on an ordinary main push.
+# It only parses .gitlab-ci.yml and evaluates rule `if:` expressions under the
+# ordinary-main-push environment; it NEVER runs a release or a deploy. Fails the
+# pipeline closed if a release/deploy job would auto-run on an ordinary main push.
+"validate:release-deploy-gating":
+  stage: validate
+  image: python:3.12-slim
+  needs: []
+  before_script:
+    - set -euo pipefail
+    - python -m pip install --upgrade pip
+    - pip install --prefer-binary "pyyaml>=6"
+  script:
+    - python3 scripts/ci/check_release_deploy_gating.py --selftest
+    - python3 scripts/ci/check_release_deploy_gating.py --file .gitlab-ci.yml
+  <<: *rules_mr_or_main
+
 release_provenance_check:
   stage: validate
   extends: .python_base_job
@@ -679,8 +698,14 @@ deploy_staging:
     name: staging
     url: https://staging.syndicateclaw.dev
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
-      when: on_success
+    # Staging deploy must NOT run automatically on ordinary main pushes. It
+    # requires an explicit, operator-initiated context: a web-triggered pipeline
+    # with DEPLOY_STAGING == "true", and is still manual + non-blocking.
+    # [claw-release-flow-gating]
+    - if: '$CI_PIPELINE_SOURCE == "web" && $DEPLOY_STAGING == "true"'
+      when: manual
+      allow_failure: true
+    - when: never
 
 deploy_production:
   stage: deploy
@@ -731,8 +756,14 @@ release:
         @semantic-release/git
     - npx --no-install semantic-release
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+    # Releases are NOT cut on ordinary main pushes. semantic-release creates tags
+    # and a changelog commit, so it must only run in an explicit, operator-initiated
+    # release context: a web-triggered pipeline with RELEASE == "true". This prevents
+    # a stray fix:/feat: merge from auto-cutting a release tag (e.g. v2.2.10).
+    # [claw-release-flow-gating]
+    - if: '$CI_PIPELINE_SOURCE == "web" && $RELEASE == "true"'
       when: on_success
+    - when: never
 
 # Phase 3 positive signing dry-run (SDD-GATE-SIGNING-001).
 # Proves a real, protected GPG key can sign the release manifest
