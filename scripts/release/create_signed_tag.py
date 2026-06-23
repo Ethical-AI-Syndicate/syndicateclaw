@@ -57,13 +57,22 @@ def create_signed_tag(
     repo_path: str = ".",
     gpg_program: str | None = None,
     commit: str = "HEAD",
+    tagger_name: str = "syndicateclaw release",
+    tagger_email: str = "release-ci@syndicateclaw.local",
 ) -> None:
     """Create an annotated GPG-signed tag. Raises CalledProcessError on failure.
 
     The passphrase is never passed here; it is supplied by ``gpg_program`` (a
     loopback wrapper reading a passphrase file). This keeps secrets out of argv.
+
+    The tagger identity is set explicitly so tag creation never depends on
+    ambient git config (clean CI runners have no committer identity).
     """
-    cfg = ["-c", f"user.signingkey={key_id}"]
+    cfg = [
+        "-c", f"user.signingkey={key_id}",
+        "-c", f"user.name={tagger_name}",
+        "-c", f"user.email={tagger_email}",
+    ]
     if gpg_program:
         cfg += ["-c", f"gpg.program={gpg_program}"]
     subprocess.run(
@@ -84,6 +93,8 @@ def main() -> int:
                     help="Path to a gpg wrapper (loopback + passphrase-file). "
                          "Keeps the passphrase out of argv.")
     ap.add_argument("--commit", default="HEAD")
+    ap.add_argument("--tagger-name", default="syndicateclaw release")
+    ap.add_argument("--tagger-email", default="release-ci@syndicateclaw.local")
     ap.add_argument("--expected-key-id", default=None,
                     help="If set, the tag signer must match this key id.")
     ap.add_argument("--allow-release-tag", action="store_true",
@@ -132,6 +143,7 @@ def main() -> int:
             args.tag, args.key_id, args.message,
             repo_path=args.repo_path, gpg_program=args.gpg_program,
             commit=args.commit,
+            tagger_name=args.tagger_name, tagger_email=args.tagger_email,
         )
     except subprocess.CalledProcessError as e:
         # gpg/git stderr here does not contain the passphrase (it is read from a
