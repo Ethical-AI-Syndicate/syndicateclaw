@@ -197,12 +197,18 @@ class ToolExecutor:
         audit_service: Any = None,
         decision_ledger: Any = None,
         snapshot_store: Any = None,
+        runtime_boundary: Any = None,
     ) -> None:
         self._registry = registry
         self._policy_engine = policy_engine
         self._audit_service = audit_service
         self._decision_ledger = decision_ledger
         self._snapshot_store = snapshot_store
+        # Optional upstream ControlPlane runtime authority boundary
+        # (SDD-CLAW-RUNTIME-BOUNDARY-001). When configured, every tool side
+        # effect is gated on a re-validated ControlPlane authority decision and
+        # fails closed otherwise. When None, executor behavior is unchanged.
+        self._runtime_boundary = runtime_boundary
 
     async def execute(
         self,
@@ -274,6 +280,16 @@ class ToolExecutor:
                 tool_name,
                 reason="Decision ledger unavailable — execution denied (fail-closed)",
             )
+
+        # --- 4b. Upstream ControlPlane runtime authority boundary (fail-closed) ---
+        # SDD-CLAW-RUNTIME-BOUNDARY-001. ControlPlane is the sole authority: Claw
+        # re-validates the upstream permit + binding before ANY side effect. This
+        # runs only when a boundary is configured; missing/invalid/mismatched/
+        # stale/revoked/expired/consumed authority — or an unavailable
+        # ControlPlane in production mode — denies before the side effect. The
+        # local policy/sandbox/decision-ledger checks above are retained.
+        if self._runtime_boundary is not None:
+            self._enforce_runtime_boundary(tool_name, input_data, context, tool_meta)
 
         # --- 5. Execute with timeout ---
         record = ToolExecution(
@@ -453,6 +469,48 @@ class ToolExecutor:
             )
         except Exception:
             logger.warning("snapshot.capture_failed", tool=tool_name, exc_info=True)
+
+    def _enforce_runtime_boundary(
+        self,
+        tool_name: str,
+        input_data: dict[str, Any],
+        context: ExecutionContext,
+        tool_meta: Tool,
+    ) -> None:
+        """Fail-closed upstream-authority gate. Raises ToolDeniedError unless the
+        ControlPlane runtime boundary allows the side effect.
+
+        SDD-CLAW-RUNTIME-BOUNDARY-001. The authority context is supplied by the
+        caller on ``context.config['authority']``; the expected binding is derived
+        from the tool actually being invoked, so a mismatch between what was
+        authorized upstream and what is executing is caught.
+        """
+        from syndicateclaw.runtime_boundary import AuthorityContext, ExpectedBinding
+
+        auth_cfg = (context.config or {}).get("authority")
+        ctx = AuthorityContext.from_mapping(auth_cfg)
+
+        action = tool_meta.side_effects[0] if tool_meta.side_effects else "execute"
+        expected = ExpectedBinding(
+            actor=self._policy_actor(context),
+            tenant_id=str((context.config or {}).get("tenant_id", "")),
+            project_id=str((context.config or {}).get("project_id", "")),
+            workspace_id=str((context.config or {}).get("workspace_id", "")),
+            tool_identity=tool_name,
+            action=action,
+            resource_scope=str((context.config or {}).get("resource_scope", "")),
+            approval_id=(ctx.approval_id if ctx else None),
+            require_approval=bool((context.config or {}).get("require_approval", False)),
+        )
+        decision = self._runtime_boundary.authorize(ctx, expected)
+        if not decision.allowed:
+            raise ToolDeniedError(
+                tool_name,
+                reason=(
+                    f"Runtime authority boundary denied ({decision.reason}); "
+                    f"no upstream ControlPlane authority — fail-closed"
+                ),
+            )
 
     async def _emit_audit(self, event_type: AuditEventType, record: ToolExecution) -> None:
         event = AuditEvent(
