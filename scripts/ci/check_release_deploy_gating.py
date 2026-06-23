@@ -136,6 +136,7 @@ def classify(name: str, job: dict):
 # job's script must contain at least one substring from each requirement.
 RELEASE_SIGNING_REQUIREMENTS = [
     ("fail-closed signing-key guard", ["gpg_private_key"]),
+    ("release commit with version/changelog before tag", ["build_release_commit"]),
     ("signed annotated tag creation", ["create_signed_tag", "git tag -s"]),
     ("signed provenance verification", ["--require-signed"]),
 ]
@@ -218,14 +219,22 @@ def selftest() -> int:
     # Release signing-config cases.
     signed_release = {"release": {"script": [
         'if [ -z "${GPG_PRIVATE_KEY:-}" ]; then exit 1; fi',
+        "python3 scripts/release/build_release_commit.py --version $V",
         "python3 scripts/release/create_signed_tag.py --tag v$V",
         "verify_release_provenance.py --require-signed",
     ]}}
     unsigned_release = {"release": {"script": ["npx --no-install semantic-release"]}}
+    # Missing only the release-commit step => exactly one violation.
+    no_relcommit = {"release": {"script": [
+        'if [ -z "${GPG_PRIVATE_KEY:-}" ]; then exit 1; fi',
+        "python3 scripts/release/create_signed_tag.py --tag v$V",
+        "verify_release_provenance.py --require-signed",
+    ]}}
     no_release = {"validate": {"script": ["ruff check"]}}
     signing_cases = [
         ("signed release job has all signing requirements", signed_release, 0),
-        ("unsigned release job flagged", unsigned_release, 3),
+        ("unsigned release job flagged", unsigned_release, 4),
+        ("release without version/changelog commit flagged", no_relcommit, 1),
         ("no release job => nothing to assert", no_release, 0),
     ]
     for desc, jobs, expect_n in signing_cases:
