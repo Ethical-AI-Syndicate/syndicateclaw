@@ -16,7 +16,11 @@
 # claw_context.json consumed by the Sentinel stage) are written there.
 set -euo pipefail
 
-REPO_ROOT="${CI_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
+# Resolve the repo root from the SCRIPT's own location, not the caller's CWD.
+# The cross-product golden path invokes this script by absolute path from a
+# non-git working directory (integration/ is workspace-level, not a git repo), so
+# a CWD-based `git rev-parse` would fail. CI_PROJECT_DIR overrides when set.
+REPO_ROOT="${CI_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$REPO_ROOT"
 
 RUN_ID="${CLAW_RUN_ID:-claw-boundary-$(date -u +%Y%m%dT%H%M%SZ)}"
