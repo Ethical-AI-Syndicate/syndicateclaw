@@ -131,6 +131,37 @@ def classify(name: str, job: dict):
     return is_tag_creator, is_deploy
 
 
+# Tokens that prove the release job is wired to the signed-release flow.
+# Each tuple is (human-readable requirement, list-of-acceptable-substrings); the
+# job's script must contain at least one substring from each requirement.
+RELEASE_SIGNING_REQUIREMENTS = [
+    ("fail-closed signing-key guard", ["gpg_private_key"]),
+    ("signed annotated tag creation", ["create_signed_tag", "git tag -s"]),
+    ("signed provenance verification", ["--require-signed"]),
+]
+
+
+def check_release_signing(jobs: dict):
+    """Assert the `release` job is wired to create *signed* tags, fail-closed.
+
+    This is policy, not execution: it only inspects the job's script text. If no
+    job named ``release`` exists, there is nothing to assert.
+    """
+    violations = []
+    job = jobs.get("release")
+    if not isinstance(job, dict):
+        return violations
+    txt = _job_script_text(job)
+    for requirement, tokens in RELEASE_SIGNING_REQUIREMENTS:
+        if not any(tok in txt for tok in tokens):
+            violations.append(
+                f"release: missing {requirement} "
+                f"(expected one of: {', '.join(tokens)}). A release must be "
+                f"signed and verified, or it must not happen."
+            )
+    return violations
+
+
 def check(path: Path):
     data = yaml.safe_load(path.read_text())
     violations = []
@@ -152,6 +183,7 @@ def check(path: Path):
                 f"(first matching rule under push+main is non-manual). "
                 f"Require explicit release/deploy context or `when: manual`."
             )
+    violations.extend(check_release_signing(jobs))
     return violations, sorted(jobs)
 
 
@@ -182,6 +214,26 @@ def selftest() -> int:
         if got != expect_auto:
             ok = False
         print(f"  [{status}] {desc}: auto_on_main={got} (expected {expect_auto})")
+
+    # Release signing-config cases.
+    signed_release = {"release": {"script": [
+        'if [ -z "${GPG_PRIVATE_KEY:-}" ]; then exit 1; fi',
+        "python3 scripts/release/create_signed_tag.py --tag v$V",
+        "verify_release_provenance.py --require-signed",
+    ]}}
+    unsigned_release = {"release": {"script": ["npx --no-install semantic-release"]}}
+    no_release = {"validate": {"script": ["ruff check"]}}
+    signing_cases = [
+        ("signed release job has all signing requirements", signed_release, 0),
+        ("unsigned release job flagged", unsigned_release, 3),
+        ("no release job => nothing to assert", no_release, 0),
+    ]
+    for desc, jobs, expect_n in signing_cases:
+        got_n = len(check_release_signing(jobs))
+        status = "PASS" if got_n == expect_n else "FAIL"
+        if got_n != expect_n:
+            ok = False
+        print(f"  [{status}] {desc}: violations={got_n} (expected {expect_n})")
     return 0 if ok else 1
 
 

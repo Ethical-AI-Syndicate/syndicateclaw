@@ -94,6 +94,10 @@ still requires an **annotated, signed** release tag verified by
 `verify_release_provenance.py --require-signed`. That remains **not proven** for
 ordinary releases and is future work tracked under SDD-GOV-SIGNTAG-001.
 
+The signed-release flow that creates those annotated signed tags under explicit
+release context is designed and CI-proven in dry-run in
+[`SIGNED_RELEASE_FLOW.md`](./SIGNED_RELEASE_FLOW.md).
+
 ## What this proves / does not prove
 
 **Proves:** on an ordinary `main` push, no release/tag-creating/deploy job

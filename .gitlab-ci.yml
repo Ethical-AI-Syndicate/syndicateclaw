@@ -736,17 +736,53 @@ deploy_production:
 release:
   stage: deploy
   image: node:20.18.0-slim
+  # Image-build jobs do not run in a web-triggered release pipeline, so they are
+  # optional needs: the signed-tag + provenance flow does not depend on them.
   needs:
-    - docker_build
-    - container_scan
+    - job: docker_build
+      optional: true
+    - job: container_scan
+      optional: true
   variables:
     GIT_SSL_NO_VERIFY: "true"
   before_script:
     - set -euo pipefail
     - apt-get update -o Acquire::Retries=3
-    - apt-get install -y --no-install-recommends git
+    - apt-get install -y --no-install-recommends git gnupg python3
     - rm -rf /var/lib/apt/lists/*
   script:
+    # Signed-release flow (SDD-GOV-SIGNTAG-001, Option B): semantic-release
+    # computes the version from conventional commits; scripts/release/
+    # create_signed_tag.py creates the annotated GPG-SIGNED release tag; the
+    # manifest is generated and verified under --require-signed; only then is the
+    # tag pushed. A release is signed or it does not happen. See
+    # docs/release/SIGNED_RELEASE_FLOW.md.
+    - |
+      set -euo pipefail
+      # Fail closed: a release MUST be signed. No key material => no release.
+      if [ -z "${GPG_PRIVATE_KEY:-}" ] || [ -z "${GPG_KEY_ID:-}" ]; then
+        echo "Signing material (GPG_PRIVATE_KEY/GPG_KEY_ID) absent; refusing to cut an unsigned release. Failing closed."
+        exit 1
+      fi
+      export GNUPGHOME="$(mktemp -d)"; chmod 700 "$GNUPGHOME"
+      cleanup() { gpgconf --kill all >/dev/null 2>&1 || true; rm -rf "$GNUPGHOME" >/dev/null 2>&1 || true; }
+      trap cleanup EXIT
+      printf 'allow-loopback-pinentry\n' > "$GNUPGHOME/gpg-agent.conf"
+      # --- secret-sensitive: import key + stage passphrase, never echoed ---
+      set +x
+      import_key() {
+        if [ -f "$GPG_PRIVATE_KEY" ]; then gpg --batch --import "$GPG_PRIVATE_KEY" >/dev/null 2>/tmp/imp.err && return 0; fi
+        printf '%s\n' "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        printf '%s'    "$GPG_PRIVATE_KEY" | base64 -d 2>/dev/null | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        printf '%b'    "$GPG_PRIVATE_KEY" | gpg --batch --import >/dev/null 2>>/tmp/imp.err && return 0
+        return 1
+      }
+      if ! import_key; then echo "GPG private key import failed."; exit 1; fi
+      : "${GPG_PASSPHRASE:=}"
+      printf '%s' "$GPG_PASSPHRASE" > "$GNUPGHOME/pp"; chmod 600 "$GNUPGHOME/pp"
+      printf '#!/bin/sh\nexec gpg --pinentry-mode loopback --passphrase-file "%s/pp" --batch --no-tty "$@"\n' "$GNUPGHOME" > "$GNUPGHOME/gpgwrap.sh"
+      chmod 700 "$GNUPGHOME/gpgwrap.sh"
+      # --- end secret-sensitive ---
     - npm install --no-save
         semantic-release@24
         @semantic-release/commit-analyzer
@@ -754,13 +790,34 @@ release:
         @semantic-release/exec
         @semantic-release/changelog
         @semantic-release/git
-    - npx --no-install semantic-release
+    - |
+      set -euo pipefail
+      # Version determination only (no tag/commit/push): semantic-release --dry-run.
+      VERSION="$(npx --no-install semantic-release --dry-run 2>/dev/null | sed -n 's/.*next release version is \([0-9][0-9.]*\).*/\1/p' | head -1)"
+      if [ -z "$VERSION" ]; then
+        echo "semantic-release determined no release is due; nothing to release."
+        exit 0
+      fi
+      echo "Next release version: v$VERSION"
+      # Create the annotated SIGNED release tag (authorized release context).
+      python3 scripts/release/create_signed_tag.py \
+        --tag "v$VERSION" --key-id "$GPG_KEY_ID" \
+        --gpg-program "$GNUPGHOME/gpgwrap.sh" \
+        --expected-key-id "$GPG_KEY_ID" \
+        --allow-release-tag \
+        --message "release v$VERSION"
+      git verify-tag "v$VERSION"
+      # Generate + verify the signed provenance manifest under full signed mode.
+      python3 scripts/release/generate_release_manifest.py --tag "v$VERSION" --out release_manifest.json --require-signing
+      python3 scripts/release/verify_release_provenance.py --manifest release_manifest.json --repo-path . --require-signed --expected-key-id "$GPG_KEY_ID"
+      # Authorized push: this is the ONLY mutation that leaves CI, and only here.
+      git push origin "refs/tags/v$VERSION"
   rules:
-    # Releases are NOT cut on ordinary main pushes. semantic-release creates tags
-    # and a changelog commit, so it must only run in an explicit, operator-initiated
-    # release context: a web-triggered pipeline with RELEASE == "true". This prevents
-    # a stray fix:/feat: merge from auto-cutting a release tag (e.g. v2.2.10).
-    # [claw-release-flow-gating]
+    # Releases are NOT cut on ordinary main pushes. The flow creates a signed tag
+    # and pushes it, so it must only run in an explicit, operator-initiated
+    # release context: a web-triggered pipeline with RELEASE == "true". This
+    # prevents a stray fix:/feat: merge from auto-cutting a release tag (e.g.
+    # the unintended lightweight v2.2.10). [claw-release-flow-gating]
     - if: '$CI_PIPELINE_SOURCE == "web" && $RELEASE == "true"'
       when: on_success
     - when: never
@@ -921,3 +978,24 @@ release_signed_tag_dry_run:
     - if: '$CI_COMMIT_BRANCH == "main"'
       when: manual
       allow_failure: true
+
+
+# Signed-release FLOW dry-run (SDD-GOV-SIGNTAG-001 follow-up).
+# Proves the syndicateclaw signed-release path end-to-end using a THROWAWAY GPG
+# key generated in-job — so it needs NO protected secret and runs automatically
+# on every MR and on main. It proves the production primitives
+# (create_signed_tag.py + generate_release_manifest.py + verify_release_provenance.py)
+# would create an annotated SIGNED tag, that lightweight and unsigned tags are
+# rejected under --require-signed, that missing key material fails closed, that
+# the release-tag guard refuses semver tags, and that nothing is pushed. Every
+# tag it creates is non-semver, local-only, and deleted on exit. This dry-run is
+# NOT a release and is NOT full signed-release closure.
+release_signed_flow_dry_run:
+  stage: validate
+  image: python:3.12-alpine
+  needs: []
+  before_script:
+    - apk add --no-cache git gnupg bash
+  script:
+    - bash scripts/release/release_dry_run.sh
+  <<: *rules_mr_or_main
