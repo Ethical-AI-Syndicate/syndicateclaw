@@ -799,18 +799,29 @@ release:
         exit 0
       fi
       echo "Next release version: v$VERSION"
-      # Create the annotated SIGNED release tag (authorized release context).
+      # Build the RELEASE COMMIT first: bump pyproject version + prepend the
+      # changelog entry, then commit. The signed tag must point to THIS commit
+      # (release state), not the pre-release commit.
+      python3 scripts/release/build_release_commit.py --version "$VERSION" --repo-path .
+      REL_COMMIT="$(git rev-parse HEAD)"
+      # Create the annotated SIGNED release tag ON the release commit.
       python3 scripts/release/create_signed_tag.py \
         --tag "v$VERSION" --key-id "$GPG_KEY_ID" \
         --gpg-program "$GNUPGHOME/gpgwrap.sh" \
         --expected-key-id "$GPG_KEY_ID" \
         --allow-release-tag \
+        --commit "$REL_COMMIT" \
         --message "release v$VERSION"
       git verify-tag "v$VERSION"
-      # Generate + verify the signed provenance manifest under full signed mode.
+      # Generate + verify the signed manifest. Under --require-signed the verifier
+      # now also asserts the manifest commit == the signed tag target, i.e. the
+      # tag points to the manifested release commit.
       python3 scripts/release/generate_release_manifest.py --tag "v$VERSION" --out release_manifest.json --require-signing
       python3 scripts/release/verify_release_provenance.py --manifest release_manifest.json --repo-path . --require-signed --expected-key-id "$GPG_KEY_ID"
-      # Authorized push: this is the ONLY mutation that leaves CI, and only here.
+      # Authorized push of the release commit + tag: the ONLY mutation that leaves
+      # CI, and only here. Push the commit to main first, then the tag that points
+      # to it, so the tagged release commit is reachable on the default branch.
+      git push origin "HEAD:${CI_COMMIT_BRANCH:-main}"
       git push origin "refs/tags/v$VERSION"
   rules:
     # Releases are NOT cut on ordinary main pushes. The flow creates a signed tag
@@ -998,4 +1009,23 @@ release_signed_flow_dry_run:
     - apk add --no-cache git gnupg bash
   script:
     - bash scripts/release/release_dry_run.sh
+  <<: *rules_mr_or_main
+
+
+# Signed-release VERSION/CHANGELOG STATE dry-run (SDD-GOV-SIGNTAG-001 follow-up).
+# Proves the release commit carries the version bump + changelog and that the
+# annotated SIGNED tag points to that RELEASE commit (not the pre-release commit),
+# that the manifest binds the same commit the tag targets, and the NEGATIVE cases
+# (tag on pre-release commit rejected; missing version fails closed). Uses a
+# disposable worktree + throwaway key, creates only local non-semver tags, pushes
+# nothing. Needs no protected secret, so it runs on every MR and on main. NOT a
+# release and NOT full signed-release closure.
+release_state_dry_run:
+  stage: validate
+  image: python:3.12-alpine
+  needs: []
+  before_script:
+    - apk add --no-cache git gnupg bash
+  script:
+    - bash scripts/release/release_state_dry_run.sh
   <<: *rules_mr_or_main

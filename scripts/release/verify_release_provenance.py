@@ -81,6 +81,17 @@ def verify_gpg_signature(manifest_hash: str, signature: str, key_id: str) -> boo
         except Exception:
             return False
 
+def tag_target_commit(tag_name, repo_path):
+    """Return the commit SHA an annotated/lightweight tag ultimately points to.
+
+    ``git rev-list -n 1 <tag>`` dereferences a tag object to its target commit
+    (and is the identity commit for a lightweight tag). Returns None if unknown.
+    """
+    if not tag_name or tag_name == "absent":
+        return None
+    return run_cmd(["git", "rev-list", "-n", "1", tag_name], cwd=repo_path)
+
+
 def verify_tag_signature(tag_name, repo_path):
     """Cryptographically verify an annotated tag's GPG signature.
 
@@ -142,6 +153,8 @@ def main():
         "tag": None,
         "signed_tag_verified": False,
         "manifest_signature_verified": False,
+        "manifest_commit_matches_tag_target": None,
+        "tag_target_commit": None,
         "signer_key_id": None,
         "tag_signer_key_id": None,
         "signature_algorithm": None,
@@ -256,6 +269,30 @@ def main():
         if args.require_signed:
             verdict["errors"].append(f"Signed annotated tag required but found tag type: {actual_tag_type}")
         verdict["not_proven"].append("signed tag")
+
+    # 3b. The manifest must bind to the SAME commit the tag targets. This proves
+    # the signed tag points to the release commit the manifest describes (e.g.
+    # the version/changelog release commit), not some other commit. Only checked
+    # when a tag is present; under --require-signed a mismatch is an error.
+    manifest_commit = manifest.get("commit_sha")
+    tag_target = tag_target_commit(manifest.get("tag"), repo_path)
+    verdict["tag_target_commit"] = tag_target
+    if tag_target and manifest_commit:
+        match = (tag_target == manifest_commit)
+        verdict["manifest_commit_matches_tag_target"] = match
+        if not match:
+            msg = (f"Manifest commit {manifest_commit} does not match the tag "
+                   f"target commit {tag_target} (tag does not point to the "
+                   f"manifested release commit)")
+            if args.require_signed:
+                verdict["errors"].append(msg)
+            else:
+                verdict["warnings"].append(msg)
+                verdict["not_proven"].append("manifest/tag-target commit binding")
+    elif args.require_signed and manifest.get("tag") not in (None, "absent"):
+        verdict["errors"].append(
+            "Could not determine tag target commit to bind against the manifest"
+        )
 
     # 4. Check artifact hashes
     for art, recorded_hash in manifest.get("artifact_hashes", {}).items():
