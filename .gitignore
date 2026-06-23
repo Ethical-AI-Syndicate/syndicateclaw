@@ -97,6 +97,7 @@ patch.py
 .faultline/
 faultline-report.html
 artifacts/governance/
+artifacts/claw-runtime-boundary/
 governance-evidence*.jsonl
 governance-events*.jsonl
 *.local-governance.jsonl

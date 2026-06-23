@@ -211,6 +211,38 @@ validate:
     - python3 scripts/ci/check_release_deploy_gating.py --file .gitlab-ci.yml
   <<: *rules_mr_or_main
 
+# Claw runtime authority boundary proof (SDD-CLAW-RUNTIME-BOUNDARY-001).
+# Proves Claw fails closed without re-validated upstream ControlPlane authority,
+# audits before side effect, and treats Sentinel as advisory-only — via focused
+# boundary tests plus the integration proof script. Creates no tags, runs no
+# deploy, exposes no secrets. Runs on every MR and on main.
+claw_runtime_boundary:
+  stage: validate
+  extends: .python_base_job
+  before_script:
+    - set -euo pipefail
+    - apt-get update -o Acquire::Retries=3
+    - apt-get install -y --no-install-recommends git
+    - rm -rf /var/lib/apt/lists/*
+    - python -m pip install --upgrade pip wheel setuptools
+    - pip install --prefer-binary -e ".[dev]"
+  script:
+    # Focused boundary tests (allow + all fail-closed deny paths + audit replay
+    # + Sentinel-not-authority).
+    - PYTHONPATH=src pytest tests/unit/test_runtime_boundary.py -q --tb=short
+    # Integration proof: drives the real boundary, produces required artifacts.
+    - bash scripts/integration/run-claw-boundary.sh
+    # Fail closed if the integration verdict is not PASS.
+    - |
+      RUN_DIR="$(ls -dt artifacts/claw-runtime-boundary/*/ 2>/dev/null | head -1)"
+      python3 -c "import json,sys; d=json.load(open('${RUN_DIR}verdict.json')); print('verdict:', d['verdict']); sys.exit(0 if d['verdict']=='PASS' else 1)"
+  artifacts:
+    when: always
+    paths:
+      - artifacts/claw-runtime-boundary/
+    expire_in: 30 days
+  <<: *rules_mr_or_main
+
 release_provenance_check:
   stage: validate
   extends: .python_base_job
