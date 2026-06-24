@@ -16,7 +16,9 @@
 # claw_context.json consumed by the Sentinel stage) are written there.
 set -euo pipefail
 
-REPO_ROOT="${CI_PROJECT_DIR:-$(git rev-parse --show-toplevel)}"
+# Resolve repo root from the SCRIPT's own location, not the caller's CWD: the
+# cross-product golden path invokes this by absolute path from a non-git dir.
+REPO_ROOT="${CI_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 cd "$REPO_ROOT"
 
 RUN_ID="${CLAW_RUN_ID:-claw-boundary-$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -32,30 +34,39 @@ echo "== Claw runtime boundary integration proof =="
 echo "  run_id=$RUN_ID correlation_id=$CORRELATION_ID"
 echo "  evidence_dir=$EVIDENCE_DIR"
 
+# Real-executor proof (SDD-CLAW-DURABLE-EXECUTOR-BOUNDARY-002): drives the real
+# ToolExecutor + durable fsync audit, consuming the verified upstream
+# Code->ControlPlane artifact (CLAW_REAL_BOUNDARY_EVIDENCE_DIR) when in the
+# enterprise golden path; a schema-valid synthetic artifact standalone.
 CLAW_EVIDENCE_DIR="$EVIDENCE_DIR" \
 CLAW_RUN_ID="$RUN_ID" \
 CLAW_CORRELATION_ID="$CORRELATION_ID" \
 CLAW_TENANT_ID="${CLAW_TENANT_ID:-t1}" \
 CLAW_APPROVAL_ID="${CLAW_APPROVAL_ID:-dec-1}" \
-PYTHONPATH="$REPO_ROOT/src" "$PY" "$REPO_ROOT/scripts/integration/_claw_boundary_proof.py"
+CLAW_TRACE_ID="${CLAW_TRACE_ID:-trace-$RUN_ID}" \
+CLAW_GATEWAY_REQUEST_ID="${CLAW_GATEWAY_REQUEST_ID:-gw-$RUN_ID}" \
+CLAW_REAL_BOUNDARY_EVIDENCE_DIR="${CLAW_REAL_BOUNDARY_EVIDENCE_DIR:-}" \
+PYTHONPATH="$REPO_ROOT/src" "$PY" "$REPO_ROOT/scripts/integration/_claw_real_executor_proof.py"
 rc=$?
 
 echo "== Artifact check =="
 required=(
-  claw_runtime_boundary.json
-  claw_authority_validation.json
+  claw_verification.json
+  claw_context.json
+  claw_decision_record.json
+  claw_tool_result.json
+  claw_audit_event.json
+  claw_negative_cases.json
   claw_audit_chain.jsonl
   claw_audit_chain_verification.json
+  claw_runtime_boundary.json
+  claw_authority_validation.json
   sentinel_ingest_result.json
   verdict.json
 )
 missing=0
 for f in "${required[@]}"; do
   if [ -s "$EVIDENCE_DIR/$f" ]; then echo "  [OK] $f"; else echo "  [MISSING] $f"; missing=1; fi
-done
-# Golden-path Sentinel stage consumes these two names from the claw-boundary dir.
-for f in claw_audit_event.json claw_context.json; do
-  [ -s "$EVIDENCE_DIR/$f" ] && echo "  [OK] $f" || { echo "  [MISSING] $f"; missing=1; }
 done
 
 verdict="$("$PY" -c "import json,sys; print(json.load(open('$EVIDENCE_DIR/verdict.json')).get('verdict','FAIL'))" 2>/dev/null || echo FAIL)"

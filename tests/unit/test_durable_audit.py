@@ -75,7 +75,7 @@ def test_tampered_record_fails_closed(tmp_path):
 
 def test_concurrent_appends_do_not_fork_chain(tmp_path):
     p = tmp_path / "audit.jsonl"
-    chain = DurableAuditChain(p)
+    DurableAuditChain(p)  # create the file; workers each reopen it
     n_threads, per = 8, 10
 
     def worker(tid):
