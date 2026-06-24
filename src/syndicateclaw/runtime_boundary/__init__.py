@@ -25,6 +25,7 @@ from .controlplane_client import (
     ValidationResult,
     ValidationStatus,
 )
+from .durable_audit import DurableAuditChain, VerifyResult, reopen
 from .reason_codes import ALLOW_REASON, BoundaryReason, is_allow
 
 __all__ = [
@@ -36,7 +37,10 @@ __all__ = [
     "BoundaryReason",
     "ClawRuntimeBoundary",
     "ControlPlaneAuthorityValidator",
+    "DurableAuditChain",
     "ExpectedBinding",
+    "VerifyResult",
+    "reopen",
     "HttpControlPlaneValidator",
     "InMemoryControlPlaneValidator",
     "ValidationResult",

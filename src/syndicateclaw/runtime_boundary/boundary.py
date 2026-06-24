@@ -184,8 +184,13 @@ class ClawRuntimeBoundary:
         validator: ControlPlaneAuthorityValidator,
         *,
         production_mode: bool = True,
-        audit_chain: _AppendOnlyAuditChain | None = None,
+        audit_chain: Any = None,
     ) -> None:
+        # audit_chain may be the in-run _AppendOnlyAuditChain (default) OR a
+        # DurableAuditChain (durable_audit.DurableAuditChain) — both expose the
+        # same append(event) -> (seq, hash) contract and raise on append failure.
+        # Production / golden-path use the durable file_fsync chain; the in-run
+        # chain remains for lightweight unit scenarios.
         self._validator = validator
         self._production = production_mode
         self.audit = audit_chain or _AppendOnlyAuditChain()
